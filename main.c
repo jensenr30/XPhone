@@ -6,6 +6,10 @@
 #define NUM_KEYS 8
 #define PLAY_SPEED 200
 
+/// Key structure
+// SDL rect - holds a rectangle for the rendering
+// a rectangle or "a key"
+// color - the color of the rect or "the key"
 typedef struct Key {
     SDL_Rect rect;
     int color;
@@ -73,6 +77,7 @@ int main( int argc, char* args[] )
                         clicked = 1;
                     } else if(event.type == SDL_MOUSEBUTTONUP) {
                         clicked = 0;
+                    // check key presses
                     } else if(event.type == SDL_KEYDOWN) {
                         switch(event.key.keysym.sym) {
                             case SDLK_a:
@@ -93,7 +98,7 @@ int main( int argc, char* args[] )
                 //Get window surface
                 screen = SDL_GetWindowSurface(window);
 
-                //Fill background with white
+                //Fill background with black
                 SDL_FillRect(screen, NULL, 0x000000);
 
                 // play all keys sequentially
