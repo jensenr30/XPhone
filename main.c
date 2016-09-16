@@ -15,12 +15,15 @@ int main( int argc, char* args[] )
     // key variables
     SDLKey keys[NUM_KEYS];
     int playKeys = 0, playSpeed = 0, currentlyPlayedKey = 0;
-    /*
-    Song *head = NULL;
-    head = malloc(sizeof(Song));
-    head->note = 0;
-    head->next = NULL;
-    */
+
+    // song variables
+    Song *currentSong = malloc(sizeof(Song));
+    Note n;
+
+    n.key = 1;
+    n.duration = 0;
+    n.intensity = 0;
+    insert_note(currentSong, n);
 
     // clock speed
     int clockspeed = 0;
@@ -80,6 +83,9 @@ int main( int argc, char* args[] )
                             case SDLK_s:
                                 playKeys = 1;
                                 break;
+                            case SDLK_d:
+                                play_track(currentSong, keys, 1000);
+                                break;
                             default:
                                 break;
                         }
@@ -112,9 +118,12 @@ int main( int argc, char* args[] )
                         // increase timer
                         playSpeed++;
                         // keep key set to blue
-                        keys[currentlyPlayedKey].color = 0x0000FF;
+                        //keys[currentlyPlayedKey].color = 0x0000FF;
                     }
                 }
+
+
+                //play_track()
 
                 // render keys as red
                 for(i = 0; i < NUM_KEYS; i++) {

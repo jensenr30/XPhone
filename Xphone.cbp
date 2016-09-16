@@ -36,6 +36,11 @@
 			<Add option="-lmingw32 -lSDL2main -lSDL2" />
 			<Add directory="C:/Users/JoshP/Downloads/SDL2-devel-2.0.4-mingw/SDL2-2.0.4/i686-w64-mingw32/lib" />
 		</Linker>
+		<Unit filename="globals.h" />
+		<Unit filename="key.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="key.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>

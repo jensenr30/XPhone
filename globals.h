@@ -11,4 +11,7 @@
 #define PLAY_SPEED 200
 #define SONG_LENGTH 100
 
+#define SDL_PROGRAM 1
+#define MICRO_PROGRAM 0
+
 #endif // GLOBALS_H_INCLUDED
