@@ -1,19 +1,4 @@
-#include <stdio.h>
-#include <SDL2/SDL.h>
-
-#define SCREEN_WIDTH 1024
-#define SCREEN_HEIGHT 768
-#define NUM_KEYS 8
-#define PLAY_SPEED 200
-
-/// Key structure
-// SDL rect - holds a rectangle for the rendering
-// a rectangle or "a key"
-// color - the color of the rect or "the key"
-typedef struct Key {
-    SDL_Rect rect;
-    int color;
-} Key;
+#include "globals.h"
 
 int main( int argc, char* args[] )
 {
@@ -27,16 +12,22 @@ int main( int argc, char* args[] )
     int x, y, clicked = 0;
     SDL_Rect mousePos;
 
-    // keys variable
-    Key keys[NUM_KEYS];
+    // key variables
+    SDLKey keys[NUM_KEYS];
     int playKeys = 0, playSpeed = 0, currentlyPlayedKey = 0;
+    /*
+    Song *head = NULL;
+    head = malloc(sizeof(Song));
+    head->note = 0;
+    head->next = NULL;
+    */
 
     // clock speed
     int clockspeed = 0;
 
     // create keys
     for(i = 1; i < NUM_KEYS + 1; i++) {
-        Key curKey;
+        SDLKey curKey;
         curKey.rect.x = i * 100;
         curKey.rect.y = 100;
         curKey.rect.w = 50;
@@ -52,22 +43,22 @@ int main( int argc, char* args[] )
 	SDL_Surface* screen = NULL;
 
 	//Initialize SDL
-	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
+	if(SDL_Init( SDL_INIT_VIDEO) < 0)
 	{
-		printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
+		printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
 	}
 	else
 	{
 		//Create window
 		window = SDL_CreateWindow( "X Phone", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
-		if( window == NULL )
+		if(window == NULL)
 		{
-			printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
+			printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
 		}
 		else
 		{
 		    while(1) {
-                while( SDL_PollEvent( &event ) ){
+                while(SDL_PollEvent(&event)){
                     if(event.type == SDL_QUIT) {
                         SDL_Quit();
                         return 0;
@@ -103,16 +94,24 @@ int main( int argc, char* args[] )
 
                 // play all keys sequentially
                 if(playKeys == 1) {
+                    // play the next key only if the timer has elapsed
                     if(playSpeed > PLAY_SPEED) {
+                        // set current key back to starting value
                         keys[currentlyPlayedKey].color = 0xFF0000;
+                        // get the next speed
                         currentlyPlayedKey++;
+                        // reset timer
                         playSpeed = 0;
+                        // check to see if we played all the keys
                         if(currentlyPlayedKey > NUM_KEYS) {
+                            // reset
                             playKeys = 0;
                             currentlyPlayedKey = 0;
                         }
                     } else {
+                        // increase timer
                         playSpeed++;
+                        // keep key set to blue
                         keys[currentlyPlayedKey].color = 0x0000FF;
                     }
                 }
@@ -122,6 +121,7 @@ int main( int argc, char* args[] )
                     SDL_FillRect(screen , &keys[i].rect , keys[i].color);
                 }
 
+                // check if mouse was clicked
                 if(clicked == 1) {
                     // get current location
                     SDL_GetMouseState(&x, &y);
