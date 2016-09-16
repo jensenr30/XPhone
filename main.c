@@ -118,12 +118,9 @@ int main( int argc, char* args[] )
                         // increase timer
                         playSpeed++;
                         // keep key set to blue
-                        //keys[currentlyPlayedKey].color = 0x0000FF;
+                        keys[currentlyPlayedKey].color = 0x0000FF;
                     }
                 }
-
-
-                //play_track()
 
                 // render keys as red
                 for(i = 0; i < NUM_KEYS; i++) {
