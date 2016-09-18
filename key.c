@@ -1,37 +1,64 @@
 #include "key.h"
 #include "globals.h"
 
+/// insert a note into the song
+// Note *song is the address of the list to be inserted into
+// Note *note is the address of the note to be inserted into the list
 void insert_note(Note *song, Note *note) {
+    // iteration variables
     Note *cur = song;
-    Note *after = malloc(sizeof(Note));
+    Note *after = NULL;
 
+    // iterate over all the elements
     while(cur != NULL) {
+        // check if the note should go before the current note
         if(cur->time > note->time) {
             break;
         }
-        if(note->time < note->time) {
+        // check if the note should go after the current note
+        if(cur->time < note->time) {
+            // save the note for later use
             after = cur;
         }
+        // get next element
         cur = cur->next;
     }
 
-    note->next = cur;
-    after->next = note;
-    free(cur);
-    free(after);
+    // check if it is the first element to be added
+    if(after == NULL) {
+        // set each field to the proper value
+        song->key = note->key;
+        song->time = note->time;
+        song->intensity = note->intensity;
+        song->next = note->next;
+    // check if it is the last item to be added
+    } else if(cur == NULL) {
+        after->next = note;
+    // add if between two items already in the list
+    } else {
+        after->next = note;
+        note->next = cur;
+    }
 }
 
 #if SDL_PROGRAM
 
+/// play the current track
+// Note* song is the address to the song to be played
+// SDLKey *key is the address to the key structure used for rendering a change to the keys
 void play_track(Note *song, SDLKey *keys) {
+    // if the song does not have any elements don't play it
+    if(song == NULL)
+        return;
+    // iteration variable
     Note *cur = song;
-
+    // iterate through the list
     while(cur != NULL) {
+        // set the color of the key to be rendered to white
         keys[cur->key].color = 0xFFFFFF;
+        // get next element
         cur = cur->next;
     }
-
-    free(cur);
 }
 
 #endif // SDL_PROGRAM

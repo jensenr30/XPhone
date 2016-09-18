@@ -18,14 +18,25 @@ int main( int argc, char* args[] )
 
     // song variables
     Note *currentSong = malloc(sizeof(Note));
-    // creating a note to insert
+    // creating notes to inserted
     Note *n = malloc(sizeof(Note));
-    n->key = 1;
+    n->key = 2;
     n->time = 0;
     n->intensity = 0;
+    n->next = NULL;
     insert_note(currentSong, n);
-    // free dat memory
-    free(n);
+    Note *n2 = malloc(sizeof(Note));
+    n2->key = 5;
+    n2->time = 2;
+    n2->intensity = 0;
+    n2->next = NULL;
+    insert_note(currentSong, n2);
+    Note *n3 = malloc(sizeof(Note));
+    n3->key = 7;
+    n3->time = 1;
+    n3->intensity = 0;
+    n3->next = NULL;
+    insert_note(currentSong, n3);
 
     // clock speed
     int clockspeed = 0;
