@@ -26,11 +26,8 @@ void insert_note(Note *song, Note *note) {
 
     // check if it is the first element to be added
     if(after == NULL) {
-        // set each field to the proper value
-        song->key = note->key;
-        song->time = note->time;
-        song->intensity = note->intensity;
-        song->next = note->next;
+        // set note as first element
+        *song = *note;
     // check if it is the last item to be added
     } else if(cur == NULL) {
         after->next = note;
