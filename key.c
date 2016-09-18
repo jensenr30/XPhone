@@ -25,7 +25,7 @@ void insert_note(Note *song, Note *note) {
     }
 
     // check if it is the first element to be added
-    if(after == NULL) {
+    if(after->key == 255) {
         // set note as first element
         *song = *note;
     // check if it is the last item to be added
@@ -45,7 +45,7 @@ void insert_note(Note *song, Note *note) {
 // SDLKey *key is the address to the key structure used for rendering a change to the keys
 void play_song(Note *song, SDLKey *keys) {
     // if the song does not have any elements don't play it
-    if(song == NULL)
+    if(song->key == 255)
         return;
     // iteration variable
     Note *cur = song;

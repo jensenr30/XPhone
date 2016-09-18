@@ -1,6 +1,6 @@
 #include "globals.h"
 
-int main( int argc, char* args[] )
+int main(int argc, char* args[])
 {
     // event variable
     SDL_Event event;
@@ -12,31 +12,15 @@ int main( int argc, char* args[] )
     int x, y, clicked = 0;
     SDL_Rect mousePos;
 
-    // key variables
+    // SDL key variables
     SDLKey keys[NUM_KEYS];
     int playKeys = 0, playSpeed = 0, currentlyPlayedKey = 0;
 
-    // song variables
+    // current song to be played
     Note *currentSong = malloc(sizeof(Note));
-    // creating notes to inserted
-    Note *n = malloc(sizeof(Note));
-    n->key = 2;
-    n->time = 0;
-    n->intensity = 0;
-    n->next = NULL;
-    insert_note(currentSong, n);
-    Note *n2 = malloc(sizeof(Note));
-    n2->key = 5;
-    n2->time = 2;
-    n2->intensity = 0;
-    n2->next = NULL;
-    insert_note(currentSong, n2);
-    Note *n3 = malloc(sizeof(Note));
-    n3->key = 7;
-    n3->time = 1;
-    n3->intensity = 0;
-    n3->next = NULL;
-    insert_note(currentSong, n3);
+    // the 255 key indicates that the track is empty
+    currentSong->key = 255;
+    int currentTime = 0;
 
     // clock speed
     int clockspeed = 0;
@@ -59,7 +43,7 @@ int main( int argc, char* args[] )
 	SDL_Surface* screen = NULL;
 
 	//Initialize SDL
-	if(SDL_Init( SDL_INIT_VIDEO) < 0)
+	if(SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
 		printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
 	}
@@ -159,6 +143,13 @@ int main( int argc, char* args[] )
                         if(x > keys[i].rect.x && x < keys[i].rect.x + keys[i].rect.w && y > keys[i].rect.y && y < keys[i].rect.y + keys[i].rect.h) {
                             // change color of key to blue
                             SDL_FillRect(screen , &keys[i].rect , 0x0000FF);
+                            // add in the note that was hit to the track
+                            Note *n = malloc(sizeof(Note));
+                            n->key = i;
+                            n->time = currentTime;
+                            n->intensity = 0;
+                            n->next = NULL;
+                            insert_note(currentSong, n);
                         }
                     }
                 }
@@ -169,6 +160,11 @@ int main( int argc, char* args[] )
                 clockspeed++;
                 if(clockspeed > 10000) {
                     clockspeed = 0;
+                }
+                // update song time
+                currentTime++;
+                if(currentTime > SONG_LENGTH) {
+                    currentTime = 0;
                 }
 		    }
 		}
