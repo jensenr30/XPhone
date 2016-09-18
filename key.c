@@ -30,6 +30,8 @@ void play_track(Note *song, SDLKey *keys) {
         keys[cur->key].color = 0xFFFFFF;
         cur = cur->next;
     }
+
+    free(cur);
 }
 
 #endif // SDL_PROGRAM

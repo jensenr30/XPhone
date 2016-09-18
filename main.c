@@ -18,12 +18,14 @@ int main( int argc, char* args[] )
 
     // song variables
     Note *currentSong = malloc(sizeof(Note));
+    // creating a note to insert
     Note *n = malloc(sizeof(Note));
-
     n->key = 1;
     n->time = 0;
     n->intensity = 0;
     insert_note(currentSong, n);
+    // free dat memory
+    free(n);
 
     // clock speed
     int clockspeed = 0;
@@ -161,8 +163,11 @@ int main( int argc, char* args[] )
 		}
 	}
 
+    // free dat memory
+    free(currentSong);
+
 	//Destroy window
-	SDL_DestroyWindow( window );
+	SDL_DestroyWindow(window);
 
 	//Quit SDL subsystems
 	SDL_Quit();
