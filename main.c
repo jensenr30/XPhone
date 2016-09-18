@@ -97,7 +97,7 @@ int main( int argc, char* args[] )
                                 playKeys = 1;
                                 break;
                             case SDLK_d:
-                                play_track(currentSong, keys);
+                                play_song(currentSong, keys);
                                 break;
                             default:
                                 break;

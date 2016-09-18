@@ -36,7 +36,7 @@ typedef struct Note{
 
 /// Functions
 void insert_note(Note *song, Note *note);
-void play_track(Note *song, SDLKey *keys);
+void play_song(Note *song, SDLKey *keys);
 
 
 #endif // KEY_H_INCLUDED

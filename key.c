@@ -43,10 +43,10 @@ void insert_note(Note *song, Note *note) {
 
 #if SDL_PROGRAM
 
-/// play the current track
+/// play the current song
 // Note* song is the address to the song to be played
 // SDLKey *key is the address to the key structure used for rendering a change to the keys
-void play_track(Note *song, SDLKey *keys) {
+void play_song(Note *song, SDLKey *keys) {
     // if the song does not have any elements don't play it
     if(song == NULL)
         return;
