@@ -3,7 +3,10 @@
 
 #include <SDL2/SDL.h>
 
-///Structures
+
+/// Structures
+
+
 
 /// SDLKey structure
 // the key to be rendered
@@ -15,13 +18,14 @@ typedef struct {
     int color;
 } SDLKey;
 
+
 /// Note structure
 // the notes to be played
 typedef struct Note{
     // the key to be played
     uint8_t key;
     // the time between the start of the track and
-    // when the key will be played
+    // when the key will be played (in milliseconds)
     uint16_t time;
     // how hard the key is going to be hit
     uint8_t intensity;
@@ -29,8 +33,8 @@ typedef struct Note{
     struct Note *next;
 } Note;
 
-/// Functions
 
+/// Functions
 void insert_note(Note *song, Note *note);
 void play_track(Note *song, SDLKey *keys);
 
