@@ -1,0 +1,38 @@
+The SDL program should have some way of logging errors to file (see the way Fractile does it in utilities.c and utilities.h)
+
+The microcontroller program should have a similar way of logging errors.
+It would be nice if the functions had the same names on both platforms,
+but maybe use an #ifdef to choose which version of the function to compile with based on your platform.
+The microcontroller should have the ability to do something very simple (toggle / set a pin) and a beep should occur.
+The beep sound should be facillitated by a 555/556 timer circuit.
+This is done so the microcontroller does not have to bother itself with creating the oscillation for the beep sound.
+Maybe the micro just creates the pulse that controls when the beep occurs, and what duration it has.
+In addition to beeping, the microcontroller should support creating text error logs.
+Instead of logging the errors to a file (like in the SDL program case), the micro could transmit the errors out a UART port to a computer.
+Then, a person could watch the debugging messages during program execution if something is going wrong.
+
+The user should be able to switch on the "note-view" mode on the UART port.
+When the xylophone senses that notes are being played by the user, or when playing them back,
+the xylophone should output the notes out the UART port.
+Different formats might be used like, human readable:
+	A4
+	A#4
+	C5
+	B5
+	G#5
+Or the key values:
+	0
+	0
+	5
+	37
+	36
+In general, it would be nice to have a mode that has little messages that shows how the program is executing.
+Something maybe like:
+	key 36, intensity 250, time 10542
+	song loops back to beginning at time 20345
+	user pressed the stop key
+	...
+That might prove useful.
+Something like this might interfere with the normal operation of the xylophone, though.
+But maybe not. If there is a dedicated UART port, maybe it will be fine.
+We must be watchful of interrupts interrupting each other...
