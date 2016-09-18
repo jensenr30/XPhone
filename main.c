@@ -20,6 +20,10 @@ int main(int argc, char* args[])
     Note *currentSong = malloc(sizeof(Note));
     // the 255 key indicates that the track is empty
     currentSong->key = 255;
+    Note *noteToPlay = malloc(sizeof(Note));
+    Note *previousNotePlayed = malloc(sizeof(Note));
+    previousNotePlayed->key = 255;
+    int intensityCounter = 0;
     int currentTime = 0;
 
     // clock speed
@@ -101,7 +105,7 @@ int main(int argc, char* args[])
                     if(playSpeed > PLAY_SPEED) {
                         // set current key back to starting value
                         keys[currentlyPlayedKey].color = 0xFF0000;
-                        // get the next speed
+                        // get the next key
                         currentlyPlayedKey++;
                         // reset timer
                         playSpeed = 0;
@@ -119,7 +123,49 @@ int main(int argc, char* args[])
                     }
                 }
 
-                // render keys as red
+                // check if the song is empty
+                if(currentSong->key != 255) {
+                    // check to see if we need to get the first element
+                    if(currentSong->next == NULL) {
+                        noteToPlay = currentSong;
+                    }
+                    // check if it is the right time to play the note
+                    if(noteToPlay->time == currentTime) {
+                        // play the note
+                        keys[noteToPlay->key].color = 0xFFFFFF;
+                        // save note just played
+                        if(previousNotePlayed->key == 255) {
+                            previousNotePlayed = noteToPlay;
+                        } else {
+                            previousNotePlayed->next = noteToPlay;
+                        }
+                        // get the next note to be played
+                        noteToPlay = currentSong->next;
+                    }
+                }
+
+                // check if the list is empty
+                if(previousNotePlayed->key != 255) {
+                    // check to see how long the key should be played
+                    if(previousNotePlayed->intensity > intensityCounter) {
+                        // reset the timer
+                        intensityCounter = 0;
+                        // set the key back to original color
+                        keys[previousNotePlayed->key].color = 0xFF0000;
+                        // get the next element
+                        previousNotePlayed = previousNotePlayed->next;
+                        // check if the list is now empty
+                        if(previousNotePlayed == NULL) {
+                            // reset the list to have the empty list key
+                            previousNotePlayed = malloc(sizeof(Note));
+                            previousNotePlayed->key = 255;
+                        }
+                    } else {
+                        intensityCounter++;
+                    }
+                }
+
+                // render keys
                 for(i = 0; i < NUM_KEYS; i++) {
                     SDL_FillRect(screen , &keys[i].rect , keys[i].color);
                 }
@@ -147,7 +193,7 @@ int main(int argc, char* args[])
                             Note *n = malloc(sizeof(Note));
                             n->key = i;
                             n->time = currentTime;
-                            n->intensity = 0;
+                            n->intensity = 100;
                             n->next = NULL;
                             insert_note(currentSong, n);
                         }
@@ -172,6 +218,8 @@ int main(int argc, char* args[])
 
     // free dat memory
     free(currentSong);
+    free(noteToPlay);
+    free(previousNotePlayed);
 
 	//Destroy window
 	SDL_DestroyWindow(window);

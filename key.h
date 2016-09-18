@@ -6,8 +6,6 @@
 
 /// Structures
 
-
-
 /// SDLKey structure
 // the key to be rendered
 typedef struct {
@@ -21,7 +19,7 @@ typedef struct {
 
 /// Note structure
 // the notes to be played
-typedef struct Note{
+typedef struct Note {
     // the key to be played
     uint8_t key;
     // the time between the start of the track and

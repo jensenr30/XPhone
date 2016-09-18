@@ -9,7 +9,7 @@
 #define SCREEN_HEIGHT 768	// initial height of the program window.
 #define NUM_KEYS 8			//
 #define PLAY_SPEED 200		//
-#define SONG_LENGTH 5000	//
+#define SONG_LENGTH 1000	//
 
 #define SDL_PROGRAM 1		// this should be 1 if you are compiling for the SDL program on a PC.
 #define MICRO_PROGRAM 0		// this should be 1 if you are compiling for a microcontroller.

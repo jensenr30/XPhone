@@ -24,8 +24,11 @@ void insert_note(Note *song, Note *note) {
         cur = cur->next;
     }
 
+    // check if it is the last element to be added
+    if(after == NULL) {
+        cur->next = note;
     // check if it is the first element to be added
-    if(after->key == 255) {
+    } else if(after->key == 255) {
         // set note as first element
         *song = *note;
     // check if it is the last item to be added
