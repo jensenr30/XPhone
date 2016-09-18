@@ -17,12 +17,12 @@ int main( int argc, char* args[] )
     int playKeys = 0, playSpeed = 0, currentlyPlayedKey = 0;
 
     // song variables
-    Song *currentSong = malloc(sizeof(Song));
-    Note n;
+    Note *currentSong = malloc(sizeof(Note));
+    Note *n = malloc(sizeof(Note));
 
-    n.key = 1;
-    n.duration = 0;
-    n.intensity = 0;
+    n->key = 1;
+    n->time = 0;
+    n->intensity = 0;
     insert_note(currentSong, n);
 
     // clock speed
@@ -84,7 +84,7 @@ int main( int argc, char* args[] )
                                 playKeys = 1;
                                 break;
                             case SDLK_d:
-                                play_track(currentSong, keys, 1000);
+                                play_track(currentSong, keys);
                                 break;
                             default:
                                 break;

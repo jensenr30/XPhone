@@ -16,30 +16,23 @@ typedef struct {
 } SDLKey;
 
 /// Note structure
-// the note to be played
-typedef struct {
+// the notes to be played
+typedef struct Note{
     // the key to be played
-    unsigned char key;
-    // the duration between the start of the track and
+    uint8_t key;
+    // the time between the start of the track and
     // when the key will be played
-    unsigned short duration;
+    uint16_t time;
     // how hard the key is going to be hit
-    unsigned char intensity;
-} Note;
-
-/// Song Linked List structure
-// the song to be played
-typedef struct Song {
-    // the note to be played
-    Note note;
+    uint8_t intensity;
     // pointer to the next element in the list
-    struct Song *next;
-} Song;
+    struct Note *next;
+} Note;
 
 /// Functions
 
-void insert_note(Song *song, Note note);
-void play_track(Song *song, SDLKey keys[], int delay);
+void insert_note(Note *song, Note *note);
+void play_track(Note *song, SDLKey *keys);
 
 
 #endif // KEY_H_INCLUDED
