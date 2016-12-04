@@ -43,6 +43,7 @@ void insert_note(Note *song, Note *note) {
 
     // check if it is the last element to be added
     if(after == NULL) {
+        note->next = cur->next;
         cur->next = note;
     // check if it is the first element to be added
     } else if(after->key == KEY_TRACK_EMPTY) {
