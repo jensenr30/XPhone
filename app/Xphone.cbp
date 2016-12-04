@@ -7,9 +7,9 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="bin/Debug/Xphone" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="bin/Debug/" />
-				<Option object_output="obj/Debug/" />
+				<Option output="bin/XphoneDEBUG" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin/" />
+				<Option object_output="obj/Debug" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -20,10 +20,10 @@
 				</Linker>
 			</Target>
 			<Target title="Release">
-				<Option output="bin/Release/Xphone" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="bin/Release/" />
-				<Option object_output="obj/Release/" />
-				<Option type="1" />
+				<Option output="bin/Xphone" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin/" />
+				<Option object_output="obj/Release" />
+				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
@@ -34,9 +34,9 @@
 				</Linker>
 			</Target>
 			<Target title="DebugLinux">
-				<Option output="bin/Debug/Xphone" prefix_auto="1" extension_auto="1" />
-				<Option working_dir="bin/Debug/" />
-				<Option object_output="obj/Debug/" />
+				<Option output="bin/Xphone" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin/" />
+				<Option object_output="obj/Debug" />
 				<Option type="0" />
 				<Option compiler="gcc" />
 				<Compiler>
