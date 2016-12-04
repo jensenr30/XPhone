@@ -1,0 +1,4 @@
+System Workbench for STM32 (Eclipse)
+File -> Import...
+General -> Existing Projects into Workspace
+Select root directory: Browse: [git repo]/micro/stm/XPhone

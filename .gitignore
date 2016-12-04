@@ -2,3 +2,4 @@
 *.depend
 *.o
 bin/
+micro/stm/XPhone/Debug

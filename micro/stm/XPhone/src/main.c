@@ -168,7 +168,7 @@ int main(void)
 		  clock_bit(GPIOC, CLOCK, DATA, 8, r);
 		  GPIOC->BSRR = LATCH;
 		  GPIOC->BSRR = (uint32_t)LATCH << 16U;
-		  HAL_Delay(300);
+		  HAL_Delay(10);
 	  	  clock++;
 
 	  /*
