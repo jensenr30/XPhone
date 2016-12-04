@@ -2,8 +2,6 @@
 *.depend
 *.o
 micro/stm/XPhone/Debug
-
-app/bin/Debug/Xphone.exe
-app/bin/Debug/Xphone
-app/bin/Release/Xphone.exe
-app/bin/Release/Xphone
+app/bin/XphoneDEBUG.exe
+app/bin/Xphone.exe
+app/bin/Xphone
