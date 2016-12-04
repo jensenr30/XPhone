@@ -5,6 +5,10 @@
 #include "key.h"
 #include "globals.h"
 
+/// initilize a note
+// uint8_t key is the key to be played
+// uint16_t time is the time to be played at
+// uint8_t intensity is the intensity of the key being played
 Note* init_note(uint8_t key, uint16_t time, uint8_t intensity) {
     Note *note = malloc(sizeof(Note));
     note->key = key;
