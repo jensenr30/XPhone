@@ -1,5 +1,5 @@
 // key.h
-// 
+//
 // keys are buttons that the user presses.
 // keys 0,1,2, ... correspond to physical buttons/interfaces that the player interacts with.
 // In the case of Jensen and JP's xylophone, key 0 happens to be Middle C.
@@ -9,13 +9,6 @@
 
 #ifndef KEY_H_INCLUDED
 #define KEY_H_INCLUDED
-
-#include <SDL2/SDL.h>
-
-/// Definitions
-
-#define KEY_TRACK_EMPTY 255
-
 
 /// Structures
 
@@ -46,8 +39,14 @@ typedef struct Note {
 
 
 /// Functions
+Note* init_note(uint8_t key, uint16_t time, uint8_t intensity);
 void insert_note(Note *song, Note *note);
+void clear_song(Note *song);
+
+#if SDL_PROGRAM
+
 void play_song(Note *song, SDLKey *keys);
 
+#endif // SDL_PROGRAM
 
 #endif // KEY_H_INCLUDED

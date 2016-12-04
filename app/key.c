@@ -2,8 +2,8 @@
 //
 //
 
-#include "key.h"
 #include "globals.h"
+#include "key.h"
 
 /// initilize a note
 // uint8_t key is the key to be played
@@ -56,6 +56,60 @@ void insert_note(Note *song, Note *note) {
         after->next = note;
         note->next = cur;
     }
+}
+
+/// clear a song
+// Note *song is the song to be cleared
+void clear_song(Note *song) {
+    // if the song does not have any elements don't clear it
+    if(song->key == KEY_TRACK_EMPTY)
+        return;
+    // iteration variable
+    Note *cur = song;
+    // temporary note variable
+    Note *next = NULL;
+    // iterate through the list
+    while(cur != NULL) {
+        // store the next element in a temporary variable
+        next = cur->next;
+        // remove the current note
+        //free(cur);
+        cur = NULL;
+        // set the current to the next element
+        cur = next;
+    }
+    // set the first element to the empty note
+    *song = *init_note(KEY_TRACK_EMPTY, 0, 100);
+}
+
+/// save song to a text file
+// Note *song is the song to be saved
+// returns 1 if it succeeded or 0 if it failed
+uint8_t save_song(Note* song, char *name) {
+    // iteration variable
+    Note *cur = song;
+    // open file
+    FILE *fp = fopen(name, "w");
+    // check dat pointer
+    if(fp == NULL) {
+        // failed to write
+        return 0;
+    }
+
+    // iterate through the list
+    while(cur != NULL) {
+        //write key data to file
+        fprintf(fp, "key: %i ", cur->key);
+        fprintf(fp, "time: %i ", cur->time);
+        fprintf(fp, "intensity: %i\n", cur->intensity);
+        // store the next element in a temporary variable
+        cur = cur->next;
+    }
+
+    // close dat file
+    fclose(fp);
+    // save successful
+    return 1;
 }
 
 #if SDL_PROGRAM

@@ -13,7 +13,7 @@ int main(int argc, char* args[])
     int i;
 
     // mouse coordinates and structure
-    int x, y, clicked = 0;
+    int x, y, clicked = 0, justClicked = 0;
     SDL_Rect mousePos;
 
     // SDL key variables
@@ -74,6 +74,7 @@ int main(int argc, char* args[])
                     // check mouse state
                     else if(event.type == SDL_MOUSEBUTTONDOWN) {
                         clicked = 1;
+                        justClicked = 1;
                     } else if(event.type == SDL_MOUSEBUTTONUP) {
                         clicked = 0;
                     // check key presses
@@ -87,6 +88,13 @@ int main(int argc, char* args[])
                                 break;
                             case SDLK_s:
                                 playKeys = 1;
+                                break;
+                            case SDLK_r:
+                                clear_song(currentSong);
+                                //currentTime = 0;
+                                break;
+                            case SDLK_t:
+                                save_song(currentSong, "songdata.txt");
                                 break;
                             case SDLK_d:
                                 play_song(currentSong, keys);
@@ -192,11 +200,16 @@ int main(int argc, char* args[])
                     for(i = 0; i < NUM_KEYS; i++) {
                         if(x > keys[i].rect.x && x < keys[i].rect.x + keys[i].rect.w && y > keys[i].rect.y && y < keys[i].rect.y + keys[i].rect.h) {
                             // change color of key to blue
-                            SDL_FillRect(screen , &keys[i].rect , 0x0000FF);
-                            // create note
-                            Note *n = init_note(i, currentTime, 100);
-                            // add in the note that was hit to the track
-                            insert_note(currentSong, n);
+                            SDL_FillRect(screen, &keys[i].rect, 0x0000FF);
+
+                            if(justClicked == 1) {
+                                // create note
+                                Note *n = init_note(i, currentTime, 100);
+                                // add in the note that was hit to the track
+                                insert_note(currentSong, n);
+                                // reset justclicked
+                                justClicked = 0;
+                            }
                         }
                     }
                 }
