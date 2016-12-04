@@ -18,11 +18,11 @@ int main(int argc, char* args[])
 
     // current song to be played
     Note *currentSong = malloc(sizeof(Note));
-    // the 255 key indicates that the track is empty
-    currentSong->key = 255;
+    // the track starts empty
+    currentSong->key = KEY_TRACK_EMPTY;
     Note *noteToPlay = malloc(sizeof(Note));
     Note *previousNotePlayed = malloc(sizeof(Note));
-    previousNotePlayed->key = 255;
+    previousNotePlayed->key = KEY_TRACK_EMPTY;
     int intensityCounter = 0;
     int currentTime = 0;
 
@@ -124,7 +124,7 @@ int main(int argc, char* args[])
                 }
 
                 // check if the song is empty
-                if(currentSong->key != 255) {
+                if(currentSong->key != KEY_TRACK_EMPTY) {
                     // check to see if we need to get the first element
                     if(currentSong->next == NULL) {
                         noteToPlay = currentSong;
@@ -134,7 +134,7 @@ int main(int argc, char* args[])
                         // play the note
                         keys[noteToPlay->key].color = 0xFFFFFF;
                         // save note just played
-                        if(previousNotePlayed->key == 255) {
+                        if(previousNotePlayed->key == KEY_TRACK_EMPTY) {
                             previousNotePlayed = noteToPlay;
                         } else {
                             previousNotePlayed->next = noteToPlay;
@@ -145,7 +145,7 @@ int main(int argc, char* args[])
                 }
 
                 // check if the list is empty
-                if(previousNotePlayed->key != 255) {
+                if(previousNotePlayed->key != KEY_TRACK_EMPTY) {
                     // check to see how long the key should be played
                     if(previousNotePlayed->intensity > intensityCounter) {
                         // reset the timer
@@ -158,7 +158,7 @@ int main(int argc, char* args[])
                         if(previousNotePlayed == NULL) {
                             // reset the list to have the empty list key
                             previousNotePlayed = malloc(sizeof(Note));
-                            previousNotePlayed->key = 255;
+                            previousNotePlayed->key = KEY_TRACK_EMPTY;
                         }
                     } else {
                         intensityCounter++;

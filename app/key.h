@@ -3,6 +3,10 @@
 
 #include <SDL2/SDL.h>
 
+/// Definitions
+
+#define KEY_TRACK_EMPTY 255
+
 
 /// Structures
 
