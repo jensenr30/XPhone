@@ -1,6 +1,15 @@
 #include "key.h"
 #include "globals.h"
 
+Note* init_note(uint8_t key, uint16_t time, uint8_t intensity) {
+    Note *note = malloc(sizeof(Note));
+    note->key = key;
+    note->time = time;
+    note->intensity = intensity;
+    note->next = NULL;
+    return note;
+}
+
 /// insert a note into the song
 // Note *song is the address of the list to be inserted into
 // Note *note is the address of the note to be inserted into the list
