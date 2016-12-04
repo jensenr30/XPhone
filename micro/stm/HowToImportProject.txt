@@ -2,3 +2,11 @@ System Workbench for STM32 (Eclipse)
 File -> Import...
 General -> Existing Projects into Workspace
 Select root directory: Browse: [git repo]/micro/stm/XPhone
+OK
+Finish
+
+Run -> Run Configurations 
+Right click on "Ac6 STM32 Debugging"
+New
+(the new run configuration should be called "XPhone Debug")
+Run
