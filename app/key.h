@@ -30,7 +30,7 @@ typedef struct Note {
     uint8_t key;
     // the time between the start of the track and
     // when the key will be played (in milliseconds)
-    uint16_t time;
+    uint32_t time;
     // how hard the key is going to be hit
     uint8_t intensity;
     // pointer to the next element in the list
@@ -39,7 +39,7 @@ typedef struct Note {
 
 
 /// Functions
-Note* init_note(uint8_t key, uint16_t time, uint8_t intensity);
+Note* init_note(uint8_t key, uint32_t time, uint8_t intensity);
 void insert_note(Note *song, Note *note);
 void clear_song(Note *song);
 
