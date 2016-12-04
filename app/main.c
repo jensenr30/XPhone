@@ -182,6 +182,53 @@ int main(int argc, char* args[])
                     SDL_FillRect(screen , &keys[i].rect , keys[i].color);
                 }
 
+                // render timeline
+                for(i = 0; i < SONG_LENGTH; i += 2) {
+                    SDL_Rect timeline;
+                    timeline.y = 20;
+                    timeline.x = i + 10;
+                    timeline.w = 1;
+                    timeline.h = 6;
+                    SDL_FillRect(screen, &timeline, 0xffffff);
+                }
+
+                // render timeline arrow
+                SDL_Rect timeline_arrow;
+                timeline_arrow.y = 30;
+                timeline_arrow.x = currentTime + 10;
+                timeline_arrow.w = 1;
+                timeline_arrow.h = 1;
+                SDL_FillRect(screen, &timeline_arrow, 0xffffff);
+                timeline_arrow.x = currentTime - 1 + 10;
+                timeline_arrow.y = 31;
+                timeline_arrow.w = 3;
+                timeline_arrow.h = 1;
+                SDL_FillRect(screen, &timeline_arrow, 0xffffff);
+                timeline_arrow.x = currentTime - 2 + 10;
+                timeline_arrow.y = 32;
+                timeline_arrow.w = 5;
+                timeline_arrow.h = 1;
+                SDL_FillRect(screen, &timeline_arrow, 0xffffff);
+
+                // update timeline from current song
+                // if the song does not have any elements don't play it
+                if(currentSong->key != KEY_TRACK_EMPTY) {
+                    // iteration variable
+                    Note *cur = currentSong;
+                    // iterate through the list
+                    while(cur != NULL) {
+                        // create note based on current song
+                        SDL_Rect timeline_note;
+                        timeline_note.x = cur->time;
+                        timeline_note.y = 16;
+                        timeline_note.w = 1;
+                        timeline_note.h = 3;
+                        SDL_FillRect(screen, &timeline_note, 0xffffff);
+                        // get next element
+                        cur = cur->next;
+                    }
+                }
+
                 // check if mouse was clicked
                 if(clicked == 1) {
                     // get current location
@@ -201,7 +248,7 @@ int main(int argc, char* args[])
                         if(x > keys[i].rect.x && x < keys[i].rect.x + keys[i].rect.w && y > keys[i].rect.y && y < keys[i].rect.y + keys[i].rect.h) {
                             // change color of key to blue
                             SDL_FillRect(screen, &keys[i].rect, 0x0000FF);
-
+                            // check if the key was just clicked
                             if(justClicked == 1) {
                                 // create note
                                 Note *n = init_note(i, currentTime, 100);
