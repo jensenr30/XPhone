@@ -23,10 +23,10 @@ int main(int argc, char* args[])
     // current song to be played
     Note *currentSong = malloc(sizeof(Note));
     // the track starts empty
-    currentSong->key = KEY_TRACK_EMPTY;
+    currentSong = init_note(KEY_TRACK_EMPTY, 0, 100);
     Note *noteToPlay = malloc(sizeof(Note));
     Note *previousNotePlayed = malloc(sizeof(Note));
-    previousNotePlayed->key = KEY_TRACK_EMPTY;
+    previousNotePlayed = init_note(KEY_TRACK_EMPTY, 0, 100);
     int intensityCounter = 0;
     int currentTime = 0;
 
@@ -193,12 +193,9 @@ int main(int argc, char* args[])
                         if(x > keys[i].rect.x && x < keys[i].rect.x + keys[i].rect.w && y > keys[i].rect.y && y < keys[i].rect.y + keys[i].rect.h) {
                             // change color of key to blue
                             SDL_FillRect(screen , &keys[i].rect , 0x0000FF);
+                            // create note
+                            Note *n = init_note(i, currentTime, 100);
                             // add in the note that was hit to the track
-                            Note *n = malloc(sizeof(Note));
-                            n->key = i;
-                            n->time = currentTime;
-                            n->intensity = 100;
-                            n->next = NULL;
                             insert_note(currentSong, n);
                         }
                     }
