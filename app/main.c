@@ -24,11 +24,9 @@ int main(int argc, char* args[])
     Note *currentSong = malloc(sizeof(Note));
     // the track starts empty
     currentSong = init_note(KEY_TRACK_EMPTY, 0, 100);
-    Note *noteToPlay = malloc(sizeof(Note));
-    Note *previousNotePlayed = malloc(sizeof(Note));
-    previousNotePlayed = init_note(KEY_TRACK_EMPTY, 0, 100);
-    int intensityCounter = 0;
+    Note *noteToPlay = NULL;
     int currentTime = 0;
+    int previousNotesPlayed[NUM_KEYS];
 
     // clock speed
     int clockspeed = 0;
@@ -42,6 +40,7 @@ int main(int argc, char* args[])
         curKey.rect.h = 600 - (i * 30);
         curKey.color = 0xFF0000;
         keys[i-1] = curKey;
+        previousNotesPlayed[i-1] = -1;
     }
 
 	//The window we'll be rendering to
@@ -138,42 +137,28 @@ int main(int argc, char* args[])
                 // check if the song is empty
                 if(currentSong->key != KEY_TRACK_EMPTY) {
                     // check to see if we need to get the first element
-                    if(currentSong->next == NULL) {
+                    if(noteToPlay == NULL) {
                         noteToPlay = currentSong;
                     }
                     // check if it is the right time to play the note
                     if(noteToPlay->time == currentTime) {
                         // play the note
                         keys[noteToPlay->key].color = 0xFFFFFF;
-                        // save note just played
-                        if(previousNotePlayed->key == KEY_TRACK_EMPTY) {
-                            previousNotePlayed = noteToPlay;
-                        } else {
-                            previousNotePlayed->next = noteToPlay;
-                        }
+                        // save note just played with its play time
+                        previousNotesPlayed[noteToPlay->key] = (currentTime + noteToPlay->intensity) % SONG_LENGTH;
                         // get the next note to be played
-                        noteToPlay = currentSong->next;
+                        noteToPlay = noteToPlay->next;
                     }
                 }
 
-                // check if the list is empty
-                if(previousNotePlayed->key != KEY_TRACK_EMPTY) {
-                    // check to see how long the key should be played
-                    if(previousNotePlayed->intensity > intensityCounter) {
-                        // reset the timer
-                        intensityCounter = 0;
-                        // set the key back to original color
-                        keys[previousNotePlayed->key].color = 0xFF0000;
-                        // get the next element
-                        previousNotePlayed = previousNotePlayed->next;
-                        // check if the list is now empty
-                        if(previousNotePlayed == NULL) {
-                            // reset the list to have the empty list key
-                            previousNotePlayed = malloc(sizeof(Note));
-                            previousNotePlayed->key = KEY_TRACK_EMPTY;
-                        }
-                    } else {
-                        intensityCounter++;
+                // iterate through previously played keys
+                for(i = 0; i < NUM_KEYS; i++) {
+                    // check if it is time to reset the key
+                    if(previousNotesPlayed[i] == currentTime) {
+                        // set key color back to normal
+                        keys[i].color = 0xFF0000;
+                        // reset previously played key time
+                        previousNotesPlayed[i] = -1;
                     }
                 }
 
@@ -280,7 +265,6 @@ int main(int argc, char* args[])
     // free dat memory
     free(currentSong);
     free(noteToPlay);
-    free(previousNotePlayed);
 
 	//Destroy window
 	SDL_DestroyWindow(window);
