@@ -253,7 +253,7 @@ int main(int argc, char* args[])
                                 // create note
                                 Note *n = init_note(i, currentTime, 100);
                                 // add in the note that was hit to the track
-                                insert_note(currentSong, n);
+                                insert_note(&currentSong, n);
                                 // reset justclicked
                                 justClicked = 0;
                             }

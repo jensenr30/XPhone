@@ -21,9 +21,9 @@ Note* init_note(uint8_t key, uint32_t time, uint8_t intensity) {
 /// insert a note into the song
 // Note *song is the address of the list to be inserted into
 // Note *note is the address of the note to be inserted into the list
-void insert_note(Note *song, Note *note) {
+void insert_note(Note **song, Note *note) {
     // iteration variables
-    Note *cur = song;
+    Note *cur = *song;
     Note *after = NULL;
 
     // iterate over all the elements
@@ -41,14 +41,14 @@ void insert_note(Note *song, Note *note) {
         cur = cur->next;
     }
 
-    // check if it is the last element to be added
+    // check if it is the first element of the song to be added onto
     if(after == NULL) {
-        note->next = cur->next;
-        cur->next = note;
-    // check if it is the first element to be added
+        note->next = *song;
+        *song = note;
+    // check if it is the first note to be added to the song
     } else if(after->key == KEY_TRACK_EMPTY) {
         // set note as first element
-        *song = *note;
+        *song = note;
     // check if it is the last item to be added
     } else if(cur == NULL) {
         after->next = note;

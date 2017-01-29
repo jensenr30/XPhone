@@ -40,7 +40,7 @@ typedef struct Note {
 
 /// Functions
 Note* init_note(uint8_t key, uint32_t time, uint8_t intensity);
-void insert_note(Note *song, Note *note);
+void insert_note(Note **song, Note *note);
 void clear_song(Note *song);
 
 #if SDL_PROGRAM
