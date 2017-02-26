@@ -38,7 +38,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx.h"
-#include "stm32f4xx_nucleo_144.h""
+#include "stm32f4xx_nucleo_144.h"
+#include "math.h"
 
 /** @addtogroup STM32F4xx_HAL_Examples
   * @{
@@ -70,6 +71,8 @@ int i, s;
 int song[size] = {
 		  0,1,2,3,4,5,6,7,6,5,4,3,2,1
 };
+
+RNG_HandleTypeDef RngHandle;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -121,6 +124,13 @@ int main(void)
   /* Configure the system clock to 100 MHz */
   SystemClock_Config();
   
+  RngHandle.Instance = RNG;
+
+  __HAL_RCC_RNG_CLK_ENABLE();
+
+  HAL_RNG_DeInit(&RngHandle);
+  HAL_RNG_Init(&RngHandle);
+
   /* -1- Enable GPIO Clock (to be able to program the configuration registers) */
   //LED1_GPIO_CLK_ENABLE();
   //LED2_GPIO_CLK_ENABLE();
@@ -157,20 +167,56 @@ int main(void)
   //HAL_GPIO_Init(LED3_GPIO_PORT, &GPIO_InitStruct);
 
   /* -3- Toggle IO in an infinite loop */
-  int r;
+  uint32_t r;
   int clock = 0;
+  /*
+  int clock2 = 0;
+  uint8_t val = 0;
+  uint32_t i;
+  uint32_t T = 5;
+  uint16_t SamplesPerSymbol = 30;
+  float Period = 2*3.1415926/((float)SamplesPerSymbol);
+  */
   //int mask = 1;
   while (1)
   {
-		  r = rand(clock);
+  	  HAL_RNG_GenerateRandomNumber(&RngHandle, &r);
+	  clock_bit(GPIOC, CLOCK, DATA, 8, r);
+	  GPIOC->BSRR = LATCH;
+	  GPIOC->BSRR = (uint32_t)LATCH << 16U;
+	  HAL_Delay(10);
+  	  clock++;
+
+	  /*
+	  //val = clock;
+	  val = 128 + 127*sin(clock/Period);
+	  clock_bit(GPIOC, CLOCK, DATA, 8, val);
+	  GPIOC->BSRR = LATCH;
+	  GPIOC->BSRR = (uint32_t)LATCH << 16U;
+	  //HAL_Delay(10);
+	  clock += 1;
+	  if(clock >= SamplesPerSymbol)
+		  clock = 0;
+		  */
+	  //for(i=0; i<T; i++)
+	  //  asm("NOP");
+
+	  /*
+	  	  HAL_RNG_GenerateRandomNumber(&RngHandle, &r);
+		  //r = rand(clock);
 		  //r &= 8;
 		  //r = (1 << r);
 		  clock_bit(GPIOC, CLOCK, DATA, 8, r);
 		  GPIOC->BSRR = LATCH;
 		  GPIOC->BSRR = (uint32_t)LATCH << 16U;
-		  HAL_Delay(100);
+		  //HAL_Delay(10);
 	  	  clock++;
-
+	  	  int i;
+	  	  for(i = 0; i < 1000; i++)
+	  		  asm("NOP");
+*/
+	  	  //if(clock > 10000)
+	  	  	  //HAL_Delay(40);
 	  /*
 	  for(i = 0; i < size; i++) {
 		  s = (1 << song[i]);
