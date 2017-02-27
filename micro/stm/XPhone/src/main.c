@@ -39,7 +39,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx.h"
 #include "stm32f4xx_nucleo_144.h"
-#include "math.h"
+//#include "../../../../app/key.h"
+#include <stdlib.h>
+
+// TODO: FIX ME
+// for now comment out SDL_PROGRAM in globals.h
+#define SDL_PROGRAM 0
+
+#include "../../../../app/key.c"
 
 /** @addtogroup STM32F4xx_HAL_Examples
   * @{
@@ -61,28 +68,49 @@ static void SystemClock_Config(void);
 
 
 // shift register pins
+// port C pins
 #define DATA  GPIO_PIN_1
 #define LATCH GPIO_PIN_4
 #define CLOCK GPIO_PIN_5
 
+// input pins
+// port C pins
+#define IN_1 GPIO_PIN_8
+#define IN_2 GPIO_PIN_9
+#define IN_3 GPIO_PIN_10
+#define IN_4 GPIO_PIN_11
+#define IN_5 GPIO_PIN_12
+#define IN_6 GPIO_PIN_2
+#define IN_7 GPIO_PIN_2
+#define IN_8 GPIO_PIN_3
+
+// input variables
+#define INPUT_PINS 8
+GPIO_PinState input_state[INPUT_PINS];
+//GPIO_TypeDef input_pin_port[INPUT_PINS];
+
+#define input_pin_port_1 GPIOC
+#define input_pin_port_2 GPIOC
+#define input_pin_port_3 GPIOC
+#define input_pin_port_4 GPIOC
+#define input_pin_port_5 GPIOC
+#define input_pin_port_6 GPIOD
+#define input_pin_port_7 GPIOG
+#define input_pin_port_8 GPIOG
+
+
+#define SONG_LENGTH 1000
+int currentTime = 0;
+int power = 0;
 
 #define size 14
-int i, s;
+int i, j;
 int song[size] = {
 		  0,1,2,3,4,5,6,7,6,5,4,3,2,1
 };
 
-RNG_HandleTypeDef RngHandle;
 
-/* Private functions ---------------------------------------------------------*/
-
-/**
-  * @brief  Main program
-  * @param  None
-  * @retval None
-  */
-
-void clock_bit(GPIO_TypeDef* GPIOx, uint16_t clockPin, uint16_t dataPin, uint8_t bits, uint32_t data) {
+void clock_out(GPIO_TypeDef* GPIOx, uint16_t clockPin, uint16_t dataPin, uint16_t latchPin, uint8_t bits, uint32_t data) {
 	uint8_t i;
 	uint32_t mask = 1;
 	for(i = 0; i < bits; i++) {
@@ -98,10 +126,9 @@ void clock_bit(GPIO_TypeDef* GPIOx, uint16_t clockPin, uint16_t dataPin, uint8_t
 		// get next bit
 		mask <<= 1;
 	}
-}
-
-int rand(int seed) {
-	return (((seed = seed * 214013L + 2531011L) >> 16) & 0x7fff);
+	// cycle the latch to clock all the bits in
+	GPIOC->BSRR = latchPin;
+	GPIOC->BSRR = (uint32_t)latchPin << 16U;
 }
 
 int main(void)
@@ -123,18 +150,6 @@ int main(void)
 
   /* Configure the system clock to 100 MHz */
   SystemClock_Config();
-  
-  RngHandle.Instance = RNG;
-
-  __HAL_RCC_RNG_CLK_ENABLE();
-
-  HAL_RNG_DeInit(&RngHandle);
-  HAL_RNG_Init(&RngHandle);
-
-  /* -1- Enable GPIO Clock (to be able to program the configuration registers) */
-  //LED1_GPIO_CLK_ENABLE();
-  //LED2_GPIO_CLK_ENABLE();
-  //LED3_GPIO_CLK_ENABLE();
 
   // enable port a
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -151,41 +166,142 @@ int main(void)
   GPIO_Struct.Pin = CLOCK;
   HAL_GPIO_Init(GPIOC, &GPIO_Struct);
 
-  // led test
-  GPIO_Struct.Pin = GPIO_PIN_0;
+  // test led
+  GPIO_Struct.Pin = GPIO_PIN_3;
   HAL_GPIO_Init(GPIOC, &GPIO_Struct);
-  /* -2- Configure IO in output push-pull mode to drive external LEDs */
-  //GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-  //GPIO_InitStruct.Pull  = GPIO_NOPULL;
-  //GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
 
-  //GPIO_InitStruct.Pin = LED1_PIN;
-  //HAL_GPIO_Init(LED1_GPIO_PORT, &GPIO_InitStruct);
-  //GPIO_InitStruct.Pin = LED2_PIN;
-  //HAL_GPIO_Init(LED2_GPIO_PORT, &GPIO_InitStruct);
-  //GPIO_InitStruct.Pin = LED3_PIN;
-  //HAL_GPIO_Init(LED3_GPIO_PORT, &GPIO_InitStruct);
+  // enable port d
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  //enable port g
+  __HAL_RCC_GPIOG_CLK_ENABLE();
+  // setup struct
+  GPIO_Struct.Mode = GPIO_MODE_INPUT;
+  GPIO_Struct.Pull = GPIO_NOPULL;
+  GPIO_Struct.Speed = GPIO_SPEED_HIGH;
 
-  /* -3- Toggle IO in an infinite loop */
-  uint32_t r;
-  int clock = 0;
-  /*
-  int clock2 = 0;
-  uint8_t val = 0;
-  uint32_t i;
-  uint32_t T = 5;
-  uint16_t SamplesPerSymbol = 30;
-  float Period = 2*3.1415926/((float)SamplesPerSymbol);
-  */
-  //int mask = 1;
+  // input pins
+  GPIO_Struct.Pin = IN_1;
+  HAL_GPIO_Init(input_pin_port_1, &GPIO_Struct);
+  GPIO_Struct.Pin = IN_2;
+  HAL_GPIO_Init(input_pin_port_2, &GPIO_Struct);
+  GPIO_Struct.Pin = IN_3;
+  HAL_GPIO_Init(input_pin_port_3, &GPIO_Struct);
+  GPIO_Struct.Pin = IN_4;
+  HAL_GPIO_Init(input_pin_port_4, &GPIO_Struct);
+  GPIO_Struct.Pin = IN_5;
+  HAL_GPIO_Init(input_pin_port_5, &GPIO_Struct);
+  GPIO_Struct.Pin = IN_6;
+  HAL_GPIO_Init(input_pin_port_6, &GPIO_Struct);
+  GPIO_Struct.Pin = IN_7;
+  HAL_GPIO_Init(input_pin_port_7, &GPIO_Struct);
+  GPIO_Struct.Pin = IN_8;
+  HAL_GPIO_Init(input_pin_port_8, &GPIO_Struct);
+
+
+  // current song to be played
+  Note *currentSong = init_note(KEY_TRACK_EMPTY, 0, 100);
+  Note *noteToPlay = NULL;
+  int previousNotesPlayed[INPUT_PINS];
+
+  for(i = 0; i < INPUT_PINS; i++)
+	  previousNotesPlayed[i] = -1;
+
+  // clear the LEDs
+  clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 0);
+
+  // main loop
   while (1)
   {
-  	  HAL_RNG_GenerateRandomNumber(&RngHandle, &r);
-	  clock_bit(GPIOC, CLOCK, DATA, 8, r);
-	  GPIOC->BSRR = LATCH;
-	  GPIOC->BSRR = (uint32_t)LATCH << 16U;
-	  HAL_Delay(10);
-  	  clock++;
+
+	  input_state[0] = HAL_GPIO_ReadPin(input_pin_port_1, IN_1);
+	  input_state[1] = HAL_GPIO_ReadPin(input_pin_port_2, IN_2);
+	  input_state[2] = HAL_GPIO_ReadPin(input_pin_port_3, IN_3);
+	  input_state[3] = HAL_GPIO_ReadPin(input_pin_port_4, IN_4);
+	  input_state[4] = HAL_GPIO_ReadPin(input_pin_port_5, IN_5);
+	  input_state[5] = HAL_GPIO_ReadPin(input_pin_port_6, IN_6);
+	  input_state[6] = HAL_GPIO_ReadPin(input_pin_port_7, IN_7);
+	  input_state[7] = HAL_GPIO_ReadPin(input_pin_port_8, IN_8);
+
+	  if(input_state[0] == GPIO_PIN_SET) {
+		  Note* n = init_note(0, currentTime, 100);
+		  insert_note(&currentSong, n);
+		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 1);
+	  }
+	  if(input_state[1] == GPIO_PIN_SET) {
+		  Note* n = init_note(1, currentTime, 100);
+		  insert_note(&currentSong, n);
+		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 2);
+	  }
+	  if(input_state[2] == GPIO_PIN_SET) {
+		  Note* n = init_note(2, currentTime, 100);
+		  insert_note(&currentSong, n);
+		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 4);
+	  }
+	  if(input_state[3] == GPIO_PIN_SET) {
+		  Note* n = init_note(3, currentTime, 100);
+		  insert_note(&currentSong, n);
+		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 8);
+	  }
+	  if(input_state[4] == GPIO_PIN_SET) {
+		  Note* n = init_note(4, currentTime, 100);
+		  insert_note(&currentSong, n);
+		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 16);
+	  }
+	  if(input_state[5] == GPIO_PIN_SET) {
+		  Note* n = init_note(5, currentTime, 100);
+		  insert_note(&currentSong, n);
+		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 32);
+	  }
+	  if(input_state[6] == GPIO_PIN_SET) {
+		  Note* n = init_note(6, currentTime, 100);
+		  insert_note(&currentSong, n);
+		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 64);
+	  }
+	  if(input_state[7] == GPIO_PIN_SET) {
+		  Note* n = init_note(7, currentTime, 100);
+		  insert_note(&currentSong, n);
+		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 128);
+	  }
+
+	  if(currentSong->key != KEY_TRACK_EMPTY) {
+		  if(noteToPlay == NULL) {
+			  noteToPlay = currentSong;
+		  }
+		  if(noteToPlay->time == currentTime) {
+			  power = 1;
+			  power <<= noteToPlay->key;
+			  clock_out(GPIOC, CLOCK, DATA, LATCH, 8, power);
+
+			  previousNotesPlayed[noteToPlay->key] = (currentTime + noteToPlay->intensity) % SONG_LENGTH;
+			  noteToPlay = noteToPlay->next;
+		  }
+	  }
+
+	  for(i = 0; i < INPUT_PINS; i++) {
+		  if(previousNotesPlayed[i] == currentTime) {
+			  power = 1;
+			  power <<= noteToPlay->key;
+			  clock_out(GPIOC, CLOCK, DATA, LATCH, 8, power);
+
+			  previousNotesPlayed[i] = -1;
+		  }
+	  }
+
+	  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 0);
+
+	  // increment the time
+	  currentTime++;
+	  if(currentTime > SONG_LENGTH)
+		  currentTime = 0;
+	  // delay
+	  HAL_Delay(1);
+
+  	  //HAL_RNG_GenerateRandomNumber(&RngHandle, &r);
+	  //clock_bit(GPIOC, CLOCK, DATA, 8, r);
+	  //GPIOC->BSRR = LATCH;
+	  //GPIOC->BSRR = (uint32_t)LATCH << 16U;
+	  //HAL_Delay(10);
+  	  //clock++;
 
 	  /*
 	  //val = clock;

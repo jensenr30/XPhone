@@ -83,6 +83,8 @@ void clear_song(Note *song) {
     *song = *init_note(KEY_TRACK_EMPTY, 0, 100);
 }
 
+#if SDL_PROGRAM
+
 /// save song to a text file
 // Note *song is the song to be saved
 // returns 1 if it succeeded or 0 if it failed
@@ -112,8 +114,6 @@ uint8_t save_song(Note* song, char *name) {
     // save successful
     return 1;
 }
-
-#if SDL_PROGRAM
 
 /// play the current song
 // Note* song is the address to the song to be played

@@ -7,11 +7,14 @@
 //		MIDI = 60 + XYLOPHONE_KEY;
 // where 60 corresponds to Middle C in the MIDI standard.
 
+#define KEY_TRACK_EMPTY 255
+
 #ifndef KEY_H_INCLUDED
 #define KEY_H_INCLUDED
 
 /// Structures
 
+#if SDL_PROGRAM
 /// SDLKey structure
 // the key to be rendered
 typedef struct {
@@ -21,6 +24,7 @@ typedef struct {
     // the color of the rect or "the key"
     int color;
 } SDLKey;
+#endif
 
 
 /// Note structure
