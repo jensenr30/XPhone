@@ -42,10 +42,6 @@
 //#include "../../../../app/key.h"
 #include <stdlib.h>
 
-// TODO: FIX ME
-// for now comment out SDL_PROGRAM in globals.h
-#define SDL_PROGRAM 0
-
 #include "../../../../app/key.c"
 
 /** @addtogroup STM32F4xx_HAL_Examples
@@ -101,7 +97,7 @@ GPIO_PinState input_state[INPUT_PINS];
 
 #define SONG_LENGTH 1000
 int currentTime = 0;
-int power = 0;
+int output = 0;
 
 #define size 14
 int i, j;
@@ -212,7 +208,6 @@ int main(void)
   // main loop
   while (1)
   {
-
 	  input_state[0] = HAL_GPIO_ReadPin(input_pin_port_1, IN_1);
 	  input_state[1] = HAL_GPIO_ReadPin(input_pin_port_2, IN_2);
 	  input_state[2] = HAL_GPIO_ReadPin(input_pin_port_3, IN_3);
@@ -223,42 +218,42 @@ int main(void)
 	  input_state[7] = HAL_GPIO_ReadPin(input_pin_port_8, IN_8);
 
 	  if(input_state[0] == GPIO_PIN_SET) {
-		  Note* n = init_note(0, currentTime, 100);
+		  Note* n = init_note(0, currentTime, 10);
 		  insert_note(&currentSong, n);
 		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 1);
 	  }
 	  if(input_state[1] == GPIO_PIN_SET) {
-		  Note* n = init_note(1, currentTime, 100);
+		  Note* n = init_note(1, currentTime, 10);
 		  insert_note(&currentSong, n);
 		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 2);
 	  }
 	  if(input_state[2] == GPIO_PIN_SET) {
-		  Note* n = init_note(2, currentTime, 100);
+		  Note* n = init_note(2, currentTime, 10);
 		  insert_note(&currentSong, n);
 		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 4);
 	  }
 	  if(input_state[3] == GPIO_PIN_SET) {
-		  Note* n = init_note(3, currentTime, 100);
+		  Note* n = init_note(3, currentTime, 10);
 		  insert_note(&currentSong, n);
 		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 8);
 	  }
 	  if(input_state[4] == GPIO_PIN_SET) {
-		  Note* n = init_note(4, currentTime, 100);
+		  Note* n = init_note(4, currentTime, 10);
 		  insert_note(&currentSong, n);
 		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 16);
 	  }
 	  if(input_state[5] == GPIO_PIN_SET) {
-		  Note* n = init_note(5, currentTime, 100);
+		  Note* n = init_note(5, currentTime, 10);
 		  insert_note(&currentSong, n);
 		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 32);
 	  }
 	  if(input_state[6] == GPIO_PIN_SET) {
-		  Note* n = init_note(6, currentTime, 100);
+		  Note* n = init_note(6, currentTime, 10);
 		  insert_note(&currentSong, n);
 		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 64);
 	  }
 	  if(input_state[7] == GPIO_PIN_SET) {
-		  Note* n = init_note(7, currentTime, 100);
+		  Note* n = init_note(7, currentTime, 10);
 		  insert_note(&currentSong, n);
 		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 128);
 	  }
@@ -266,12 +261,8 @@ int main(void)
 	  if(currentSong->key != KEY_TRACK_EMPTY) {
 		  if(noteToPlay == NULL) {
 			  noteToPlay = currentSong;
-		  }
-		  if(noteToPlay->time == currentTime) {
-			  power = 1;
-			  power <<= noteToPlay->key;
-			  clock_out(GPIOC, CLOCK, DATA, LATCH, 8, power);
-
+		  } else if(noteToPlay->time == currentTime) {
+			  output |= 1 << noteToPlay->key;
 			  previousNotesPlayed[noteToPlay->key] = (currentTime + noteToPlay->intensity) % SONG_LENGTH;
 			  noteToPlay = noteToPlay->next;
 		  }
@@ -279,22 +270,23 @@ int main(void)
 
 	  for(i = 0; i < INPUT_PINS; i++) {
 		  if(previousNotesPlayed[i] == currentTime) {
-			  power = 1;
-			  power <<= noteToPlay->key;
-			  clock_out(GPIOC, CLOCK, DATA, LATCH, 8, power);
-
+			  output &= ~(1 << i);
 			  previousNotesPlayed[i] = -1;
 		  }
 	  }
-
-	  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 0);
 
 	  // increment the time
 	  currentTime++;
 	  if(currentTime > SONG_LENGTH)
 		  currentTime = 0;
+
+	  clock_out(GPIOC, CLOCK, DATA, LATCH, 8, output);
+
 	  // delay
 	  HAL_Delay(1);
+
+	  // clear the LEDs
+	  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 0);
 
   	  //HAL_RNG_GenerateRandomNumber(&RngHandle, &r);
 	  //clock_bit(GPIOC, CLOCK, DATA, 8, r);
