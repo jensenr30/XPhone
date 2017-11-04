@@ -11,8 +11,9 @@
 #define PLAY_SPEED 200		//
 #define SONG_LENGTH 1000	//
 
-#define SDL_PROGRAM 1		// this should be 1 if you are compiling for the SDL program on a PC.
-#define MICRO_PROGRAM 0		// this should be 1 if you are compiling for a microcontroller.
+#if !__arm__
+#define SDL_PROGRAM 1		// defines SDL_PROGRAM if it should compile for SDL on a PC.
+#endif
 
 #if SDL_PROGRAM
 #include <stdio.h>			//
