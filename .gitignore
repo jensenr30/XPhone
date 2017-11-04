@@ -6,4 +6,4 @@ app/bin/XphoneDEBUG.exe
 app/bin/Xphone.exe
 app/bin/Xphone
 app/bin/songdata.txt
-micro/stm/XPhone/.settings/*
+micro/stm/XPhone/.settings
