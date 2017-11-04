@@ -141,7 +141,7 @@ int main(int argc, char* args[])
                         noteToPlay = currentSong;
                     }
                     // check if it is the right time to play the note
-                    if(noteToPlay->time == currentTime) {
+                    else if(noteToPlay->time == currentTime) {
                         // play the note
                         keys[noteToPlay->key].color = 0xFFFFFF;
                         // save note just played with its play time
