@@ -63,11 +63,17 @@ static GPIO_InitTypeDef  GPIO_Struct;
 static void SystemClock_Config(void);
 
 
-// shift register pins
+// shift register output pins
 // port C pins
-#define DATA  GPIO_PIN_1
-#define LATCH GPIO_PIN_4
-#define CLOCK GPIO_PIN_5
+#define SRO_DATA  GPIO_PIN_1
+#define SRO_LATCH GPIO_PIN_4
+#define SRO_CLOCK GPIO_PIN_5
+
+// shift register input pins
+// port F pins
+#define SRI_DATA  GPIO_PIN_2
+#define SRI_LATCH GPIO_PIN_1
+#define SRI_CLOCK GPIO_PIN_0
 
 // input pins
 // port C pins
@@ -127,6 +133,33 @@ void clock_out(GPIO_TypeDef* GPIOx, uint16_t clockPin, uint16_t dataPin, uint16_
 	GPIOC->BSRR = (uint32_t)latchPin << 16U;
 }
 
+uint32_t clock_in(GPIO_TypeDef* GPIOx, uint16_t clockPin, uint16_t dataPin, uint16_t latchPin, uint8_t bits) {
+	uint8_t i;
+	uint32_t mask = 1;
+	uint32_t data_out = 0;
+	uint8_t inData = 0;
+
+	// cycle the latch to clock all the bits in
+	GPIOx->BSRR = (uint32_t)latchPin << 16U;
+	GPIOx->BSRR = latchPin;
+
+	for(i = 0; i < bits; i++) {
+		// read data from pin
+		inData = HAL_GPIO_ReadPin(GPIOx, dataPin);
+
+		// clock data in to get next bit
+		GPIOx->BSRR = (uint32_t)clockPin << 16U;
+		GPIOx->BSRR = clockPin;
+
+		// collect all the bits into one number
+		data_out |= mask >> inData;
+		// get next bit
+		mask >>= 1;
+	}
+
+	return data_out;
+}
+
 int main(void)
 {
   /* This sample code shows how to use GPIO HAL API to toggle LED1 and LED3 IOs
@@ -147,36 +180,50 @@ int main(void)
   /* Configure the system clock to 100 MHz */
   SystemClock_Config();
 
-  // enable port a
+  // enable port c
   __HAL_RCC_GPIOC_CLK_ENABLE();
+  // enable port f
+  __HAL_RCC_GPIOF_CLK_ENABLE();
+  // enable port d
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  //enable port g
+  __HAL_RCC_GPIOG_CLK_ENABLE();
+
   // setup struct
   GPIO_Struct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_Struct.Pull = GPIO_NOPULL;
   GPIO_Struct.Speed = GPIO_SPEED_HIGH;
 
-  // enable
-  GPIO_Struct.Pin = DATA;
+  // enable output shift register
+  GPIO_Struct.Pin = SRO_DATA;
   HAL_GPIO_Init(GPIOC, &GPIO_Struct);
-  GPIO_Struct.Pin = LATCH;
+  GPIO_Struct.Pin = SRO_LATCH;
   HAL_GPIO_Init(GPIOC, &GPIO_Struct);
-  GPIO_Struct.Pin = CLOCK;
+  GPIO_Struct.Pin = SRO_CLOCK;
   HAL_GPIO_Init(GPIOC, &GPIO_Struct);
+
+  // enable input shift register
+  GPIO_Struct.Pin = SRI_LATCH;
+  HAL_GPIO_Init(GPIOF, &GPIO_Struct);
+  GPIO_Struct.Pin = SRI_CLOCK;
+  HAL_GPIO_Init(GPIOF, &GPIO_Struct);
+  GPIO_Struct.Mode = GPIO_MODE_INPUT;
+  GPIO_Struct.Pin = SRI_DATA;
+  HAL_GPIO_Init(GPIOF, &GPIO_Struct);
+  // set latch pin to high
+  GPIOF->BSRR = SRI_LATCH;
 
   // test led
   GPIO_Struct.Pin = GPIO_PIN_3;
   HAL_GPIO_Init(GPIOC, &GPIO_Struct);
 
-  // enable port d
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  //enable port g
-  __HAL_RCC_GPIOG_CLK_ENABLE();
   // setup struct
   GPIO_Struct.Mode = GPIO_MODE_INPUT;
   GPIO_Struct.Pull = GPIO_NOPULL;
   GPIO_Struct.Speed = GPIO_SPEED_HIGH;
 
   // input pins
-  GPIO_Struct.Pin = IN_1;
+  /*GPIO_Struct.Pin = IN_1;
   HAL_GPIO_Init(input_pin_port_1, &GPIO_Struct);
   GPIO_Struct.Pin = IN_2;
   HAL_GPIO_Init(input_pin_port_2, &GPIO_Struct);
@@ -192,22 +239,26 @@ int main(void)
   HAL_GPIO_Init(input_pin_port_7, &GPIO_Struct);
   GPIO_Struct.Pin = IN_8;
   HAL_GPIO_Init(input_pin_port_8, &GPIO_Struct);
-
+   */
 
   // current song to be played
   Note *currentSong = init_note(KEY_TRACK_EMPTY, 0, 100);
   Note *noteToPlay = NULL;
   int previousNotesPlayed[INPUT_PINS];
+  uint32_t data_out = 0;
 
   for(i = 0; i < INPUT_PINS; i++)
 	  previousNotesPlayed[i] = -1;
 
   // clear the LEDs
-  clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 0);
+  clock_out(GPIOC, SRO_CLOCK, SRO_DATA, SRO_LATCH, 8, 0);
 
   // main loop
   while (1)
   {
+	  data_out = clock_in(GPIOF, SRI_CLOCK, SRI_DATA, SRI_LATCH, 8);
+
+	  /*
 	  input_state[0] = HAL_GPIO_ReadPin(input_pin_port_1, IN_1);
 	  input_state[1] = HAL_GPIO_ReadPin(input_pin_port_2, IN_2);
 	  input_state[2] = HAL_GPIO_ReadPin(input_pin_port_3, IN_3);
@@ -257,6 +308,7 @@ int main(void)
 		  insert_note(&currentSong, n);
 		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 128);
 	  }
+	  */
 
 	  if(currentSong->key != KEY_TRACK_EMPTY) {
 		  if(noteToPlay == NULL) {
@@ -280,7 +332,7 @@ int main(void)
 	  if(currentTime > SONG_LENGTH)
 		  currentTime = 0;
 
-	  clock_out(GPIOC, CLOCK, DATA, LATCH, 8, output);
+	  clock_out(GPIOC, SRO_CLOCK, SRO_DATA, SRO_LATCH, 8, output);
 
 	  // delay
 	  HAL_Delay(1);
