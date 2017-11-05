@@ -86,9 +86,7 @@ static void SystemClock_Config(void);
 #define IN_7 GPIO_PIN_2
 #define IN_8 GPIO_PIN_3
 
-// input variables
-#define INPUT_PINS 8
-GPIO_PinState input_state[INPUT_PINS];
+//GPIO_PinState input_state[INPUT_PINS];
 //GPIO_TypeDef input_pin_port[INPUT_PINS];
 
 #define input_pin_port_1 GPIOC
@@ -100,10 +98,14 @@ GPIO_PinState input_state[INPUT_PINS];
 #define input_pin_port_7 GPIOG
 #define input_pin_port_8 GPIOG
 
+#define KEYS 8
+#define KEY_BYTE_SIZE 1
+
+uint8_t keyInput[KEY_BYTE_SIZE];
+uint8_t keyOutput[KEY_BYTE_SIZE];
 
 #define SONG_LENGTH 1000
 int currentTime = 0;
-int output = 0;
 
 #define size 14
 int i, j;
@@ -112,52 +114,69 @@ int song[size] = {
 };
 
 
-void clock_out(GPIO_TypeDef* GPIOx, uint16_t clockPin, uint16_t dataPin, uint16_t latchPin, uint8_t bits, uint32_t data) {
-	uint8_t i;
-	uint32_t mask = 1;
-	for(i = 0; i < bits; i++) {
-		// set data
-		if((mask & data) != 0) {
-			GPIOx->BSRR = dataPin;
-		} else {
-			GPIOx->BSRR = (uint32_t)dataPin << 16U;
+void clock_out(GPIO_TypeDef* GPIOx, uint16_t clockPin, uint16_t dataPin, uint16_t latchPin, uint8_t outputSize, uint8_t *data) {
+	uint8_t i, j;
+
+	for(i = 0; i < outputSize; i++) {
+		// set mask for each iteration
+		uint32_t mask = 1;
+
+		for(j = 0; j < 8; j++) {
+			// set data
+			if((mask & data[i]) != 0) {
+				GPIOx->BSRR = dataPin;
+			} else {
+				GPIOx->BSRR = (uint32_t)dataPin << 16U;
+			}
+			// clock data in
+			GPIOx->BSRR = clockPin;
+			GPIOx->BSRR = (uint32_t)clockPin << 16U;
+			// get next bit
+			mask <<= 1;
 		}
-		// clock data in
-		GPIOx->BSRR = clockPin;
-		GPIOx->BSRR = (uint32_t)clockPin << 16U;
-		// get next bit
-		mask <<= 1;
 	}
+
 	// cycle the latch to clock all the bits in
 	GPIOC->BSRR = latchPin;
 	GPIOC->BSRR = (uint32_t)latchPin << 16U;
 }
 
-uint32_t clock_in(GPIO_TypeDef* GPIOx, uint16_t clockPin, uint16_t dataPin, uint16_t latchPin, uint8_t bits) {
-	uint8_t i;
-	uint32_t mask = 1;
-	uint32_t data_out = 0;
+void clock_in(GPIO_TypeDef* GPIOx, uint16_t clockPin, uint16_t dataPin, uint16_t latchPin, uint8_t outputSize, uint8_t *data) {
+	uint8_t i, j;
 	uint8_t inData = 0;
 
 	// cycle the latch to clock all the bits in
 	GPIOx->BSRR = (uint32_t)latchPin << 16U;
 	GPIOx->BSRR = latchPin;
 
-	for(i = 0; i < bits; i++) {
-		// read data from pin
-		inData = HAL_GPIO_ReadPin(GPIOx, dataPin);
+	for(i = 0; i < outputSize; i++) {
+		for(j = 0; j < 8; j++) {
+			// read data from pin
+			inData = HAL_GPIO_ReadPin(GPIOx, dataPin);
 
-		// clock data in to get next bit
-		GPIOx->BSRR = (uint32_t)clockPin << 16U;
-		GPIOx->BSRR = clockPin;
+			// clock data in to get next bit
+			GPIOx->BSRR = (uint32_t)clockPin << 16U;
+			GPIOx->BSRR = clockPin;
 
-		// collect all the bits into one number
-		data_out |= mask >> inData;
-		// get next bit
-		mask >>= 1;
+			// insert bits into the output data
+			if(inData != 0)
+				data[i] |= (1 << j);
+		}
 	}
+}
 
-	return data_out;
+void setKeyOutput(uint8_t key, uint32_t *data) {
+	// divide by 8 to get the base index
+	uint8_t index = key / 8;
+	// set the data to the proper index
+	data[index] |= 1 << key;
+}
+
+void removeKeyOutput(uint8_t key, uint32_t *data) {
+	// divide by 8 to get the base index
+	uint8_t index = key / 8;
+	// set the data to the proper index
+	data[index] &= ~(1 << key);
 }
 
 int main(void)
@@ -213,116 +232,57 @@ int main(void)
   // set latch pin to high
   GPIOF->BSRR = SRI_LATCH;
 
-  // test led
-  GPIO_Struct.Pin = GPIO_PIN_3;
-  HAL_GPIO_Init(GPIOC, &GPIO_Struct);
-
-  // setup struct
-  GPIO_Struct.Mode = GPIO_MODE_INPUT;
-  GPIO_Struct.Pull = GPIO_NOPULL;
-  GPIO_Struct.Speed = GPIO_SPEED_HIGH;
-
-  // input pins
-  /*GPIO_Struct.Pin = IN_1;
-  HAL_GPIO_Init(input_pin_port_1, &GPIO_Struct);
-  GPIO_Struct.Pin = IN_2;
-  HAL_GPIO_Init(input_pin_port_2, &GPIO_Struct);
-  GPIO_Struct.Pin = IN_3;
-  HAL_GPIO_Init(input_pin_port_3, &GPIO_Struct);
-  GPIO_Struct.Pin = IN_4;
-  HAL_GPIO_Init(input_pin_port_4, &GPIO_Struct);
-  GPIO_Struct.Pin = IN_5;
-  HAL_GPIO_Init(input_pin_port_5, &GPIO_Struct);
-  GPIO_Struct.Pin = IN_6;
-  HAL_GPIO_Init(input_pin_port_6, &GPIO_Struct);
-  GPIO_Struct.Pin = IN_7;
-  HAL_GPIO_Init(input_pin_port_7, &GPIO_Struct);
-  GPIO_Struct.Pin = IN_8;
-  HAL_GPIO_Init(input_pin_port_8, &GPIO_Struct);
-   */
-
   // current song to be played
   Note *currentSong = init_note(KEY_TRACK_EMPTY, 0, 100);
   Note *noteToPlay = NULL;
-  int previousNotesPlayed[INPUT_PINS];
-  uint32_t data_out = 0;
+  int previousNotesPlayed[KEYS];
 
-  for(i = 0; i < INPUT_PINS; i++)
-	  previousNotesPlayed[i] = -1;
+  // reset key output
+  for(i = 0; i < KEY_BYTE_SIZE; i++)
+	  keyOutput[i] = 0;
 
   // clear the LEDs
-  clock_out(GPIOC, SRO_CLOCK, SRO_DATA, SRO_LATCH, 8, 0);
+  clock_out(GPIOC, SRO_CLOCK, SRO_DATA, SRO_LATCH, 8, keyOutput);
 
   // main loop
   while (1)
   {
-	  data_out = clock_in(GPIOF, SRI_CLOCK, SRI_DATA, SRI_LATCH, 8);
+	  // reset key input
+	  for(i = 0; i < KEY_BYTE_SIZE; i++)
+		  keyInput[i] = 0;
 
-	  /*
-	  input_state[0] = HAL_GPIO_ReadPin(input_pin_port_1, IN_1);
-	  input_state[1] = HAL_GPIO_ReadPin(input_pin_port_2, IN_2);
-	  input_state[2] = HAL_GPIO_ReadPin(input_pin_port_3, IN_3);
-	  input_state[3] = HAL_GPIO_ReadPin(input_pin_port_4, IN_4);
-	  input_state[4] = HAL_GPIO_ReadPin(input_pin_port_5, IN_5);
-	  input_state[5] = HAL_GPIO_ReadPin(input_pin_port_6, IN_6);
-	  input_state[6] = HAL_GPIO_ReadPin(input_pin_port_7, IN_7);
-	  input_state[7] = HAL_GPIO_ReadPin(input_pin_port_8, IN_8);
+	  // get all of the key inputs
+	  clock_in(GPIOF, SRI_CLOCK, SRI_DATA, SRI_LATCH, KEY_BYTE_SIZE, keyInput);
 
-	  if(input_state[0] == GPIO_PIN_SET) {
-		  Note* n = init_note(0, currentTime, 10);
-		  insert_note(&currentSong, n);
-		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 1);
+	  uint8_t curKey = 0;
+	  for(i = 0; i < KEY_BYTE_SIZE; i++) {
+		  uint8_t mask = 1;
+
+		  for(j = 0; j < 8; j++) {
+			  if((mask & keyInput[i]) != 0) {
+				  Note* n = init_note(curKey, currentTime, 10);
+				  insert_note(&currentSong, n);
+			  }
+			  // get next bit
+			  mask <<= 1;
+			  // increment current key
+			  curKey++;
+		  }
 	  }
-	  if(input_state[1] == GPIO_PIN_SET) {
-		  Note* n = init_note(1, currentTime, 10);
-		  insert_note(&currentSong, n);
-		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 2);
-	  }
-	  if(input_state[2] == GPIO_PIN_SET) {
-		  Note* n = init_note(2, currentTime, 10);
-		  insert_note(&currentSong, n);
-		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 4);
-	  }
-	  if(input_state[3] == GPIO_PIN_SET) {
-		  Note* n = init_note(3, currentTime, 10);
-		  insert_note(&currentSong, n);
-		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 8);
-	  }
-	  if(input_state[4] == GPIO_PIN_SET) {
-		  Note* n = init_note(4, currentTime, 10);
-		  insert_note(&currentSong, n);
-		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 16);
-	  }
-	  if(input_state[5] == GPIO_PIN_SET) {
-		  Note* n = init_note(5, currentTime, 10);
-		  insert_note(&currentSong, n);
-		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 32);
-	  }
-	  if(input_state[6] == GPIO_PIN_SET) {
-		  Note* n = init_note(6, currentTime, 10);
-		  insert_note(&currentSong, n);
-		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 64);
-	  }
-	  if(input_state[7] == GPIO_PIN_SET) {
-		  Note* n = init_note(7, currentTime, 10);
-		  insert_note(&currentSong, n);
-		  //clock_out(GPIOC, CLOCK, DATA, LATCH, 8, 128);
-	  }
-	  */
 
 	  if(currentSong->key != KEY_TRACK_EMPTY) {
 		  if(noteToPlay == NULL) {
 			  noteToPlay = currentSong;
 		  } else if(noteToPlay->time == currentTime) {
-			  output |= 1 << noteToPlay->key;
+			  setKeyOutput(noteToPlay->key, keyOutput);
 			  previousNotesPlayed[noteToPlay->key] = (currentTime + noteToPlay->intensity) % SONG_LENGTH;
 			  noteToPlay = noteToPlay->next;
 		  }
 	  }
 
-	  for(i = 0; i < INPUT_PINS; i++) {
+	  for(i = 0; i < KEYS; i++) {
 		  if(previousNotesPlayed[i] == currentTime) {
-			  output &= ~(1 << i);
+			  removeKeyOutput(i, keyOutput);
 			  previousNotesPlayed[i] = -1;
 		  }
 	  }
@@ -332,7 +292,7 @@ int main(void)
 	  if(currentTime > SONG_LENGTH)
 		  currentTime = 0;
 
-	  clock_out(GPIOC, SRO_CLOCK, SRO_DATA, SRO_LATCH, 8, output);
+	  clock_out(GPIOC, SRO_CLOCK, SRO_DATA, SRO_LATCH, KEY_BYTE_SIZE, keyOutput);
 
 	  // delay
 	  HAL_Delay(1);
