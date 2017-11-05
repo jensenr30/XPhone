@@ -56,7 +56,6 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-static GPIO_InitTypeDef  GPIO_InitStruct;
 static GPIO_InitTypeDef  GPIO_Struct;
 
 /* Private function prototypes -----------------------------------------------*/
@@ -100,12 +99,15 @@ static void SystemClock_Config(void);
 
 #define KEYS 8
 #define KEY_BYTE_SIZE 1
+#define KEY_COOLDOWN 10
 
 uint8_t keyInput[KEY_BYTE_SIZE];
+int8_t keyInputCoolDown[KEYS];
 uint8_t keyOutput[KEY_BYTE_SIZE];
 
 #define SONG_LENGTH 1000
 int currentTime = 0;
+int totalNotes = 0;
 
 #define size 14
 int i, j;
@@ -241,6 +243,10 @@ int main(void)
   for(i = 0; i < KEY_BYTE_SIZE; i++)
 	  keyOutput[i] = 0;
 
+  // set key cool down
+    for(i = 0; i < KEY_BYTE_SIZE; i++)
+  	  keyInputCoolDown[i] = -1;
+
   // clear the LEDs
   clock_out(GPIOC, SRO_CLOCK, SRO_DATA, SRO_LATCH, 8, keyOutput);
 
@@ -259,9 +265,11 @@ int main(void)
 		  uint8_t mask = 1;
 
 		  for(j = 0; j < 8; j++) {
-			  if((mask & keyInput[i]) != 0) {
+			  if((mask & keyInput[i]) != 0 && keyInputCoolDown[curKey] == -1) {
 				  Note* n = init_note(curKey, currentTime, 10);
 				  insert_note(&currentSong, n);
+				  totalNotes++;
+				  keyInputCoolDown[curKey] = (currentTime + KEY_COOLDOWN) % SONG_LENGTH;
 			  }
 			  // get next bit
 			  mask <<= 1;
@@ -291,6 +299,12 @@ int main(void)
 	  currentTime++;
 	  if(currentTime > SONG_LENGTH)
 		  currentTime = 0;
+
+	  // reset key cool down if it is time too
+	  for(i = 0; i < KEYS; i++) {
+		  if(keyInputCoolDown[i] == currentTime)
+			  keyInputCoolDown[i] = -1;
+	  }
 
 	  clock_out(GPIOC, SRO_CLOCK, SRO_DATA, SRO_LATCH, KEY_BYTE_SIZE, keyOutput);
 
