@@ -139,7 +139,6 @@ volatile uint8_t solenoid_all_are_off;							// if all the solenoids are off, th
 #define input_pin_port_7 GPIOG
 #define input_pin_port_8 GPIOG
 
-#define KEYS 8
 #define KEY_BYTE_SIZE 1
 #define KEY_COOLDOWN 10
 
@@ -337,7 +336,7 @@ void solenoid_play(uint8_t key, uint32_t length)
 	// record that you are turning on this solenoid.
 	solenoid_states[key] = 1;
 	// turn on the solenoid.
-	shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,solenoid_states,SOL_SR_DIR);
+	shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,(uint8_t *)solenoid_states,SOL_SR_DIR);
 	// record when we need to turn off this key.
 	solenoid_timing_array[key] = SOL_TIM->CNT + length;
 	// at least one solenoid is now on, so make this 0.
@@ -489,7 +488,7 @@ int main(void)
 //		HAL_Delay(8);
 		if(i>=KEYS) { i = 0; state = !state; }
 		solenoid_states[i] = state;
-		shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,(uint32_t *)solenoid_states,SOL_SR_DIR);
+		shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,(uint8_t *)solenoid_states,SOL_SR_DIR);
 		HAL_Delay(100);
 		i++;
 	}
