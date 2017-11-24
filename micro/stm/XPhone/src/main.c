@@ -81,6 +81,102 @@ static void SystemClock_Config(void);
 // main CPU frequency
 #define CPU_FREQ ((uint32_t)100000000)			// 100 MHz (10 ns timebase)
 
+
+//==============================================================================
+// All GPIO pin definitions
+//==============================================================================
+// solenoid control shift register
+#define SOL_SR_GPIO			GPIOC				// the register that is used to shift out data to control the shift registers
+#define SOL_SR_DATA			GPIO_PIN_1			// SER (74hc595 pin 14)	data in
+#define SOL_SR_LATCH		GPIO_PIN_4			// RCK (74hc595 pin 12) register clock (update output)
+#define SOL_SR_CLOCK		GPIO_PIN_5			// SCK (74hc595 pin 11) data clock in
+#define SOL_SR_DIR 1						// direction that the solenoid shift register shifts out key data
+// debug pins
+#define DEBUG_GPIO 			GPIOG				// register used for debug pins
+#define DEBUG_0 			GPIO_PIN_0			// pin used for programmer to debug code
+#define DEBUG_1 			GPIO_PIN_1			// pin used for programmer to debug code
+#define DEBUG_WARNING_LED	GPIO_PIN_2			// pin used to turn on an LED to indicate a	warning happened.
+#define DEBUG_ERROR_LED		GPIO_PIN_3			// pin used to turn on an LED to indicate an error	 happened.
+
+
+//// JP's inputs
+//// shift register input pins
+//// port F pins
+//#define SRI_DATA	GPIO_PIN_2
+//#define SRI_LATCH GPIO_PIN_1
+//#define SRI_CLOCK GPIO_PIN_0
+//
+//
+//// input pins
+//// port C pins
+//#define IN_1 GPIO_PIN_8
+//#define IN_2 GPIO_PIN_9
+//#define IN_3 GPIO_PIN_10
+//#define IN_4 GPIO_PIN_11
+//#define IN_5 GPIO_PIN_12
+//#define IN_6 GPIO_PIN_2
+//#define IN_7 GPIO_PIN_2
+//#define IN_8 GPIO_PIN_3
+////GPIO_PinState input_state[INPUT_PINS];
+////GPIO_TypeDef input_pin_port[INPUT_PINS];
+//#define input_pin_port_1 GPIOC
+//#define input_pin_port_2 GPIOC
+//#define input_pin_port_3 GPIOC
+//#define input_pin_port_4 GPIOC
+//#define input_pin_port_5 GPIOC
+//#define input_pin_port_6 GPIOD
+//#define input_pin_port_7 GPIOG
+//#define input_pin_port_8 GPIOG
+
+
+void GPIO_Init()
+{
+	// enable port c
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	// enable port f
+	__HAL_RCC_GPIOF_CLK_ENABLE();
+	// enable port d
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	//enable port g
+	__HAL_RCC_GPIOG_CLK_ENABLE();
+	
+	// enable solenoid output shift register pins
+	GPIO_Struct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_Struct.Pull = GPIO_NOPULL;
+	GPIO_Struct.Speed = GPIO_SPEED_HIGH;
+	GPIO_Struct.Pin = SOL_SR_DATA;	HAL_GPIO_Init(SOL_SR_GPIO, &GPIO_Struct);
+	GPIO_Struct.Pin = SOL_SR_LATCH;	HAL_GPIO_Init(SOL_SR_GPIO, &GPIO_Struct);
+	GPIO_Struct.Pin = SOL_SR_CLOCK;	HAL_GPIO_Init(SOL_SR_GPIO, &GPIO_Struct);
+	
+	// enable debug pins
+	GPIO_Struct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_Struct.Pull = GPIO_NOPULL;
+	GPIO_Struct.Speed = GPIO_SPEED_HIGH;
+	GPIO_Struct.Pin = DEBUG_0;				HAL_GPIO_Init(DEBUG_GPIO, &GPIO_Struct);
+	GPIO_Struct.Pin = DEBUG_1;				HAL_GPIO_Init(DEBUG_GPIO, &GPIO_Struct);
+	GPIO_Struct.Pin = DEBUG_WARNING_LED;	HAL_GPIO_Init(DEBUG_GPIO, &GPIO_Struct);
+	GPIO_Struct.Pin = DEBUG_ERROR_LED;		HAL_GPIO_Init(DEBUG_GPIO, &GPIO_Struct);
+	// initialize debug pins
+	pin_off(DEBUG_GPIO,DEBUG_0);
+	pin_off(DEBUG_GPIO,DEBUG_1);
+	pin_off(DEBUG_GPIO,DEBUG_WARNING_LED);
+	pin_off(DEBUG_GPIO,DEBUG_ERROR_LED);
+	
+//	// enable input shift register
+//	GPIO_Struct.Pin = SRI_LATCH; HAL_GPIO_Init(GPIOF, &GPIO_Struct);
+//	GPIO_Struct.Pin = SRI_CLOCK; HAL_GPIO_Init(GPIOF, &GPIO_Struct);
+//	GPIO_Struct.Mode = GPIO_MODE_INPUT;
+//	GPIO_Struct.Pin = SRI_DATA; HAL_GPIO_Init(GPIOF, &GPIO_Struct);
+//	// set latch pin to high
+//	GPIOF->BSRR = SRI_LATCH;
+		
+	// test led
+	GPIO_Struct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_Struct.Pull = GPIO_NOPULL;
+	GPIO_Struct.Speed = GPIO_SPEED_HIGH;
+	GPIO_Struct.Pin = GPIO_PIN_3;	HAL_GPIO_Init(GPIOC, &GPIO_Struct);
+}
+
 //==============================================================================
 // solenoid system
 //==============================================================================
@@ -91,104 +187,73 @@ static void SystemClock_Config(void);
 #define SOL_TIM_PSC		(CPU_FREQ/SOL_TIM_FREQ - 1)		// the prescaler setting for the solenoid timer
 #define SOL_TIM_ARR 0xFFFFFFFF							// this is where the solenoid timer rolls over (automatic reload register). At 1-us ticks, this is 1.2 hours. The timer will NEVER reach this, because the timer will automatically get reset to 0 when there are no notes to play
 #define SOL_TIM_OFF 0xFFFFFFFF							// this is a flag that tells us that the solenoid is off.
-#define SOL_TIME_TOO_LONG (SOL_TIM_FREQ/100)			// maximum time a solenoid should be on is 10  ms. Anything longer  than this indicates an error in the program because 10  ms is fucking ridiculously long.
+#define SOL_TIME_TOO_LONG (SOL_TIM_FREQ/100)			// maximum time a solenoid should be on is 10	ms. Anything longer	than this indicates an error in the program because 10	ms is fucking ridiculously long.
 #define SOL_TIME_TOO_SHORT (SOL_TIM_FREQ/2000)			// minimum time a solenoid should be on is 0.5 ms. Anything shorter than this indicates an error in the program because 0.5 ms is fucking ridiculously short.
 volatile uint32_t solenoid_timing_array[KEYS];					// records when you need to shut off each solenoids.
-volatile uint8_t solenoid_states[KEYS];							// records the state of each solenoids. 0 = off, 1 means on.
+volatile uint8_t solenoid_states[KEYS];							// records the state of each solenoids. 0 = off, 1 means on. After modifying this array, you must run solenoid_update() for the solenoids to actually be turned on/off.
 volatile uint8_t solenoid_all_are_off;							// if all the solenoids are off, this is a 1. otherwise, it is a 0
-// solenoid control shift register
-#define SOL_SR_GPIO GPIOC			// the register that is used to shift out data to control the shift registers
-#define SOL_SR_DATA	GPIO_PIN_1		// SER (74hc595 pin 14)	data in
-#define SOL_SR_LATCH GPIO_PIN_4		// RCK (74hc595 pin 12) register clock (update output)
-#define SOL_SR_CLOCK GPIO_PIN_5		// SCK (74hc595 pin 11) data clock in
-#define SOL_SR_DIR 1				// direction that the solenoid shift register shifts out key data
+
+// this function will update the sates of the solenoid drivers.
+#define solenoid_update() shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,(uint8_t *)solenoid_states,SOL_SR_DIR)
+
 
 #if(SOL_TIM_OFF < SOL_TIM_MOD)
 #error "You cannot make your solenoid OFF flag be a value less than the solenoid modulo value."
 #endif
 
+//// JP's key input/output definitions
+//#define KEY_BYTE_SIZE 1
+//#define KEY_COOLDOWN 10
+//
+//uint8_t keyInput[KEY_BYTE_SIZE];
+//int8_t keyInputCoolDown[KEYS];
+//uint8_t keyOutput[KEY_BYTE_SIZE];
+//
+//#define SONG_LENGTH 1000
+//int currentTime = 0;
+//int totalNotes = 0;
+//
+//#define size 14
+//int i, j;
+//int song[size] = {
+//			0,1,2,3,4,5,6,7,6,5,4,3,2,1
+//};
 
 
-
-// shift register input pins
-// port F pins
-#define SRI_DATA  GPIO_PIN_2
-#define SRI_LATCH GPIO_PIN_1
-#define SRI_CLOCK GPIO_PIN_0
-
-// input pins
-// port C pins
-#define IN_1 GPIO_PIN_8
-#define IN_2 GPIO_PIN_9
-#define IN_3 GPIO_PIN_10
-#define IN_4 GPIO_PIN_11
-#define IN_5 GPIO_PIN_12
-#define IN_6 GPIO_PIN_2
-#define IN_7 GPIO_PIN_2
-#define IN_8 GPIO_PIN_3
-
-//GPIO_PinState input_state[INPUT_PINS];
-//GPIO_TypeDef input_pin_port[INPUT_PINS];
-
-#define input_pin_port_1 GPIOC
-#define input_pin_port_2 GPIOC
-#define input_pin_port_3 GPIOC
-#define input_pin_port_4 GPIOC
-#define input_pin_port_5 GPIOC
-#define input_pin_port_6 GPIOD
-#define input_pin_port_7 GPIOG
-#define input_pin_port_8 GPIOG
-
-#define KEY_BYTE_SIZE 1
-#define KEY_COOLDOWN 10
-
-uint8_t keyInput[KEY_BYTE_SIZE];
-int8_t keyInputCoolDown[KEYS];
-uint8_t keyOutput[KEY_BYTE_SIZE];
-
-#define SONG_LENGTH 1000
-int currentTime = 0;
-int totalNotes = 0;
-
-#define size 14
-int i, j;
-int song[size] = {
-		  0,1,2,3,4,5,6,7,6,5,4,3,2,1
-};
-
-
+//=============================================================================
 // this function happens when something FATAL happens. The program cannot continue, and it will freeze here indefinitely.
 // this can be used as a breakpoint when you are debugging to see WHY the error happened.
+//=============================================================================
 void error(char *message)
 {
-	// TODO: turn on the ERROR light
-	while(1)
-	{
-		; // freeze program
-	}
+	pin_on(DEBUG_GPIO,DEBUG_ERROR_LED);
+	while(1){;} // freeze program
 }
 
 
+//=============================================================================
 // this function is called when something bad happens, but it isn't the end of the world, and the xylophone will keep on playing.
 // it is intended to be used as a breakpoint when you are debugging WHY the warning happened.
+//=============================================================================
 void warning(char *message)
 {
-	// TODO: turn on the WARNING light
+	pin_on(DEBUG_GPIO,DEBUG_WARNING_LED);
+	return;
 }
 
 
 //=============================================================================
 // clock data out of the STM32 into a shift register (serial-in parallel-out shift register such as 74hc595)
 //
-// GPIOx  		the port that must be used for all three shift register pins
+// GPIOx			the port that must be used for all three shift register pins
 // clockPin 	the pin that clocks data into the shift register
 // dataPin		the data pin that the shift register will be inputting.
 // latchPin		the pin that updates the register's output pins when all the data has been shifted into it.
 // bits			the number of bits you want to shift into the register.
 // *data		a pointer to the array (of uint8_t type). The array is treated like a bool (0 or 1). those values are shifted out.
 // dir			the direction of data to be shifted out.
-//				dir=0  =>  data[0],      data[1],      data[2],      ...
-//				else   =>  data[bits-1], data[bits-2], data[bits-3], ...
+//				dir=0	=>	data[0],			data[1],			data[2],			...
+//				else	 =>	data[bits-1], data[bits-2], data[bits-3], ...
 //=============================================================================
 void shift_out(GPIO_TypeDef* GPIO, uint8_t clockPin, uint8_t dataPin, uint8_t latchPin, uint32_t bits, uint8_t *data, uint8_t dir)
 {
@@ -276,7 +341,7 @@ void solenoid_init()
 	NVIC_EnableIRQ(TIM2_IRQn);
 	SOL_TIM->CCR1 = SOL_TIM_OFF;		// init the compare register to a value it will never reach.
 	SOL_TIM->CNT = 0;				// init the counter at 0.
-	SOL_TIM->EGR |= TIM_EGR_UG;		// generate a timer update (this updates all the timer settings that were just configured). See RM0402.pdf section 17.4.6  "TIMx event generation register (TIMx_EGR)"
+	SOL_TIM->EGR |= TIM_EGR_UG;		// generate a timer update (this updates all the timer settings that were just configured). See RM0402.pdf section 17.4.6	"TIMx event generation register (TIMx_EGR)"
 }
 
 
@@ -286,7 +351,29 @@ void solenoid_init()
 void solenoid_interrupt_recalculate()
 {
 	// TODO: write this function
+	
+	
+	
+	
 }
+
+
+
+void solenoid_shut_off_the_right_ones()
+{
+	uint32_t T_off = SOL_TIM->CCR1;			// grab the time that we are supposed to shut off 
+	uint16_t k;								// index into key arrays
+	
+	for(k=0; k<KEYS; k++)					// go thru all the keys...
+	{
+		if(solenoid_timing_array[k] == T_off)	// if any of them are supposed to be shut off now,
+		{
+			solenoid_states[k] = 0;					// put that information in the states array. You will need to run solenoid_update() to actually change the states of the solenoids.
+			solenoid_timing_array[k] = SOL_TIM_OFF;	// flag this key as being off in the timing array.
+		}
+	}
+}
+
 
 
 //=============================================================================
@@ -294,18 +381,21 @@ void solenoid_interrupt_recalculate()
 //=============================================================================
 void TIM2_IRQHandler(void)
 {
+	
 	/*
+	// this is for catching the interrupt that is generated when the value gets updated (rollover, auto-reload, modify, etc.)
 	if (TIM2->SR & TIM_SR_UIF) // if UIF flag is set
 	{
 		TIM2->SR &= ~TIM_SR_UIF; // clear UIF flag
 	}
 	*/
-	if(TIM2->SR & TIM_SR_CC1IF) // if the counter compare flag is set,
+	if(TIM2->SR & TIM_SR_CC1IF) 			// if the counter compare flag is set,
 	{
-		TIM2->SR &= ~TIM_SR_CC1IF;	// clear it.
-		SOL_SR_GPIO->ODR &= ~SOL_SR_CLOCK; // clear pin state to show that it was done
-		// TODO: implement determining which keys to turn off.
-		solenoid_interrupt_recalculate();
+		TIM2->SR &= ~TIM_SR_CC1IF;				// clear it.
+		SOL_SR_GPIO->ODR &= ~SOL_SR_CLOCK;		// clear pin state to show that it was done.
+		solenoid_shut_off_the_right_ones();		// shut off the right solenoids.
+		solenoid_interrupt_recalculate();		// calculate when the next interrupt should be.
+		solenoid_update();						// update the states of the solenoids
 	}
 }
 
@@ -335,8 +425,8 @@ void solenoid_play(uint8_t key, uint32_t length)
 	
 	// record that you are turning on this solenoid.
 	solenoid_states[key] = 1;
-	// turn on the solenoid.
-	shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,(uint8_t *)solenoid_states,SOL_SR_DIR);
+	// update the states of the solenoids
+	solenoid_update();
 	// record when we need to turn off this key.
 	solenoid_timing_array[key] = SOL_TIM->CNT + length;
 	// at least one solenoid is now on, so make this 0.
@@ -350,131 +440,17 @@ void solenoid_play(uint8_t key, uint32_t length)
 
 int main(void)
 {
-    // Initialize the hardware access library
+	// Initialize the hardware access library
 	HAL_Init();
 	// Configure the system clock to 100 MHz
 	SystemClock_Config();
 	
-  // enable port c
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  // enable port f
-  __HAL_RCC_GPIOF_CLK_ENABLE();
-  // enable port d
-  __HAL_RCC_GPIOD_CLK_ENABLE();
-  //enable port g
-  __HAL_RCC_GPIOG_CLK_ENABLE();
-  
-	// setup struct
-	GPIO_Struct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_Struct.Pull = GPIO_NOPULL;
-	GPIO_Struct.Speed = GPIO_SPEED_HIGH;
+	GPIO_Init();
 	
-	// enable solenoid output shift register pins
-	GPIO_Struct.Pin = SOL_SR_DATA;
-	HAL_GPIO_Init(GPIOC, &GPIO_Struct);
-	GPIO_Struct.Pin = SOL_SR_LATCH;
-	HAL_GPIO_Init(GPIOC, &GPIO_Struct);
-	GPIO_Struct.Pin = SOL_SR_CLOCK;
-	HAL_GPIO_Init(GPIOC, &GPIO_Struct);
-	
-     // enable input shift register
-  GPIO_Struct.Pin = SRI_LATCH;
-  HAL_GPIO_Init(GPIOF, &GPIO_Struct);
-  GPIO_Struct.Pin = SRI_CLOCK;
-  HAL_GPIO_Init(GPIOF, &GPIO_Struct);
-  GPIO_Struct.Mode = GPIO_MODE_INPUT;
-  GPIO_Struct.Pin = SRI_DATA;
-  HAL_GPIO_Init(GPIOF, &GPIO_Struct);
-  // set latch pin to high
-  GPIOF->BSRR = SRI_LATCH;
-    
-	// test led
-	GPIO_Struct.Pin = GPIO_PIN_3;
-	HAL_GPIO_Init(GPIOC, &GPIO_Struct);
-	
- /*
- // JP's code for the song
-    uint32_t i;
-  // current song to be played
-  Note *currentSong = init_note(KEY_TRACK_EMPTY, 0, 100);
-  Note *noteToPlay = NULL;
-  int previousNotesPlayed[KEYS];
-
-  // reset key output
-  for(i = 0; i < KEY_BYTE_SIZE; i++)
-	  keyOutput[i] = 0;
-
-  // set key cool down
-    for(i = 0; i < KEY_BYTE_SIZE; i++)
-  	  keyInputCoolDown[i] = -1;
-
-  // clear the LEDs
-  clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, 8, keyOutput);
-
-  // main loop
-  while (1)
-  {
-	  // reset key input
-	  for(i = 0; i < KEY_BYTE_SIZE; i++)
-		  keyInput[i] = 0;
-
-	  // get all of the key inputs
-	  clock_in(GPIOF, SRI_CLOCK, SRI_DATA, SRI_LATCH, KEY_BYTE_SIZE, keyInput);
-
-	  uint8_t curKey = 0;
-	  for(i = 0; i < KEY_BYTE_SIZE; i++) {
-		  uint8_t mask = 1;
-
-		  for(j = 0; j < 8; j++) {
-			  if((mask & keyInput[i]) != 0 && keyInputCoolDown[curKey] == -1) {
-				  Note* n = init_note(curKey, currentTime, 10);
-				  insert_note(&currentSong, n);
-				  totalNotes++;
-				  keyInputCoolDown[curKey] = (currentTime + KEY_COOLDOWN) % SONG_LENGTH;
-			  }
-			  // get next bit
-			  mask <<= 1;
-			  // increment current key
-			  curKey++;
-		  }
-	  }
-
-	  if(currentSong->key != KEY_TRACK_EMPTY) {
-		  if(noteToPlay == NULL) {
-			  noteToPlay = currentSong;
-		  } else if(noteToPlay->time == currentTime) {
-			  setKeyOutput(noteToPlay->key, keyOutput);
-			  previousNotesPlayed[noteToPlay->key] = (currentTime + noteToPlay->intensity) % SONG_LENGTH;
-			  noteToPlay = noteToPlay->next;
-		  }
-	  }
-
-	  for(i = 0; i < KEYS; i++) {
-		  if(previousNotesPlayed[i] == currentTime) {
-			  removeKeyOutput(i, keyOutput);
-			  previousNotesPlayed[i] = -1;
-		  }
-	  }
-
-	  // increment the time
-	  currentTime++;
-	  if(currentTime > SONG_LENGTH)
-		  currentTime = 0;
-
-	  // reset key cool down if it is time too
-	  for(i = 0; i < KEYS; i++) {
-		  if(keyInputCoolDown[i] == currentTime)
-			  keyInputCoolDown[i] = -1;
-	  }
-
-	  clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, KEY_BYTE_SIZE, keyOutput);
-
-	  // delay
-	  HAL_Delay(1);
-    */
-
 	// initialize solenoid stuff.
 	solenoid_init();
+	
+	// setup solenoid counter (TODO: this should be in solenoid_init())
 	SOL_TIM->CNT = 0;
 	uint8_t i = 0;
 	uint8_t state = 1;
@@ -590,3 +566,83 @@ void assert_failed(uint8_t *file, uint32_t line)
  */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
+
+// // JP's code for the song
+//		uint32_t i;
+//	// current song to be played
+//	Note *currentSong = init_note(KEY_TRACK_EMPTY, 0, 100);
+//	Note *noteToPlay = NULL;
+//	int previousNotesPlayed[KEYS];
+//
+//	// reset key output
+//	for(i = 0; i < KEY_BYTE_SIZE; i++)
+//		keyOutput[i] = 0;
+//
+//	// set key cool down
+//		for(i = 0; i < KEY_BYTE_SIZE; i++)
+//			keyInputCoolDown[i] = -1;
+//
+//	// clear the LEDs
+//	clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, 8, keyOutput);
+//
+//	// main loop
+//	while (1)
+//	{
+//		// reset key input
+//		for(i = 0; i < KEY_BYTE_SIZE; i++)
+//			keyInput[i] = 0;
+//
+//		// get all of the key inputs
+//		clock_in(GPIOF, SRI_CLOCK, SRI_DATA, SRI_LATCH, KEY_BYTE_SIZE, keyInput);
+//
+//		uint8_t curKey = 0;
+//		for(i = 0; i < KEY_BYTE_SIZE; i++) {
+//			uint8_t mask = 1;
+//
+//			for(j = 0; j < 8; j++) {
+//				if((mask & keyInput[i]) != 0 && keyInputCoolDown[curKey] == -1) {
+//					Note* n = init_note(curKey, currentTime, 10);
+//					insert_note(&currentSong, n);
+//					totalNotes++;
+//					keyInputCoolDown[curKey] = (currentTime + KEY_COOLDOWN) % SONG_LENGTH;
+//				}
+//				// get next bit
+//				mask <<= 1;
+//				// increment current key
+//				curKey++;
+//			}
+//		}
+//
+//		if(currentSong->key != KEY_TRACK_EMPTY) {
+//			if(noteToPlay == NULL) {
+//				noteToPlay = currentSong;
+//			} else if(noteToPlay->time == currentTime) {
+//				setKeyOutput(noteToPlay->key, keyOutput);
+//				previousNotesPlayed[noteToPlay->key] = (currentTime + noteToPlay->intensity) % SONG_LENGTH;
+//				noteToPlay = noteToPlay->next;
+//			}
+//		}
+//
+//		for(i = 0; i < KEYS; i++) {
+//			if(previousNotesPlayed[i] == currentTime) {
+//				removeKeyOutput(i, keyOutput);
+//				previousNotesPlayed[i] = -1;
+//			}
+//		}
+//
+//		// increment the time
+//		currentTime++;
+//		if(currentTime > SONG_LENGTH)
+//			currentTime = 0;
+//
+//		// reset key cool down if it is time too
+//		for(i = 0; i < KEYS; i++) {
+//			if(keyInputCoolDown[i] == currentTime)
+//				keyInputCoolDown[i] = -1;
+//		}
+//
+//		clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, KEY_BYTE_SIZE, keyOutput);
+//
+//		// delay
+//		HAL_Delay(1);
