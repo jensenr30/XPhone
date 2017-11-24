@@ -124,18 +124,11 @@ static void SystemClock_Config(void);
 
 void GPIO_Init()
 {
-	// enable port c
-	__HAL_RCC_GPIOC_CLK_ENABLE()
-	;
-	// enable port f
-	__HAL_RCC_GPIOF_CLK_ENABLE()
-	;
-	// enable port d
-	__HAL_RCC_GPIOD_CLK_ENABLE()
-	;
-	//enable port g
-	__HAL_RCC_GPIOG_CLK_ENABLE()
-	;
+	// enable the clocks for the ports we want to use
+	__HAL_RCC_GPIOC_CLK_ENABLE();
+	__HAL_RCC_GPIOF_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	__HAL_RCC_GPIOG_CLK_ENABLE();
 	
 	// enable solenoid output shift register pins
 	GPIO_Struct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -174,12 +167,6 @@ void GPIO_Init()
 //	// set latch pin to high
 //	GPIOF->BSRR = SRI_LATCH;
 	
-// test led
-	GPIO_Struct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_Struct.Pull = GPIO_NOPULL;
-	GPIO_Struct.Speed = GPIO_SPEED_HIGH;
-	GPIO_Struct.Pin = GPIO_PIN_3;
-	HAL_GPIO_Init(GPIOC, &GPIO_Struct);
 }
 
 //==============================================================================
@@ -187,16 +174,16 @@ void GPIO_Init()
 //==============================================================================
 // timer used for solenoid timebase and control
 #define SOL_TIM			TIM2							// the timer used for the solenoid system.
-// if you change this, you need to change solenoid_init(), and look at TIM2_IRQHandler() to update them to the new timer you are using.
+														// if you change this, you need to change solenoid_init(), and look at TIM2_IRQHandler() to update them to the new timer you are using.
 #define SOL_TIM_FREQ	((uint32_t)1000000)				// 1 MHz (1 us timebase) for controlling solenoids
 #define SOL_TIM_PSC		(CPU_FREQ/SOL_TIM_FREQ - 1)		// the prescaler setting for the solenoid timer
 #define SOL_TIM_ARR 0xFFFFFFFF							// this is where the solenoid timer rolls over (automatic reload register). At 1-us ticks, this is 1.2 hours. The timer will NEVER reach this, because the timer will automatically get reset to 0 when there are no notes to play
 #define SOL_TIM_OFF 0xFFFFFFFF							// this is a flag that tells us that the solenoid is off.
 #define SOL_TIME_TOO_LONG (SOL_TIM_FREQ/100)			// maximum time a solenoid should be on is 10	ms. Anything longer	than this indicates an error in the program because 10	ms is fucking ridiculously long.
 #define SOL_TIME_TOO_SHORT (SOL_TIM_FREQ/2000)			// minimum time a solenoid should be on is 0.5 ms. Anything shorter than this indicates an error in the program because 0.5 ms is fucking ridiculously short.
-volatile uint32_t solenoid_timing_array[KEYS]; // records when you need to shut off each solenoids.
-volatile uint8_t solenoid_states[KEYS];	// records the state of each solenoids. 0 = off, 1 means on. After modifying this array, you must run solenoid_update() for the solenoids to actually be turned on/off.
-volatile uint8_t solenoid_all_are_off;// if all the solenoids are off, this is a 1. otherwise, it is a 0
+volatile uint32_t solenoid_timing_array[KEYS];			// records when you need to shut off each solenoids.
+volatile uint8_t solenoid_states[KEYS];					// records the state of each solenoids. 0 = off, 1 means on. After modifying this array, you must run solenoid_update() for the solenoids to actually be turned on/off.
+volatile uint8_t solenoid_all_are_off;					// if all the solenoids are off, this is a 1. otherwise, it is a 0
 
 // this function will update the sates of the solenoid drivers.
 #define solenoid_update() shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,(uint8_t *)solenoid_states,SOL_SR_DIR)
@@ -249,7 +236,7 @@ void warning(char *message)
 //=============================================================================
 // clock data out of the STM32 into a shift register (serial-in parallel-out shift register such as 74hc595)
 //
-// GPIOx			the port that must be used for all three shift register pins
+// GPIOx		the port that must be used for all three shift register pins
 // clockPin 	the pin that clocks data into the shift register
 // dataPin		the data pin that the shift register will be inputting.
 // latchPin		the pin that updates the register's output pins when all the data has been shifted into it.
@@ -340,20 +327,17 @@ void solenoid_init()
 	// configure timer 2 
 	//--------------------------------------------------------------------------
 	// enable the solenoid timer (start counting)
-	__HAL_RCC_TIM2_CLK_ENABLE()
-	;
-	// configure solenoid timer
-	SOL_TIM->PSC = SOL_TIM_PSC;	 // Set prescaler. Division factor = (PSC + 1)
-	SOL_TIM->ARR = SOL_TIM_ARR;		// Auto reload value. period = (ARR + 1)
-	//SOL_TIM->DIER = TIM_DIER_UIE;	// Enable update interrupt (timer level)
-	SOL_TIM->DIER = TIM_DIER_CC1IE;	// Enable counter compare interrupt.
-	// SOL_TIM->CCR1 = [value to create interrupt at]; 
-	SOL_TIM->CR1 = TIM_CR1_CEN;		// Enable timer
-	// enable solenoid timer interrupt handler
-	NVIC_EnableIRQ(TIM2_IRQn);
-	SOL_TIM->CCR1 = SOL_TIM_OFF;// init the compare register to a value it will never reach.
-	SOL_TIM->CNT = 0;				// init the counter at 0.
-	SOL_TIM->EGR |= TIM_EGR_UG;	// generate a timer update (this updates all the timer settings that were just configured). See RM0402.pdf section 17.4.6	"TIMx event generation register (TIMx_EGR)"
+	__HAL_RCC_TIM2_CLK_ENABLE();
+	SOL_TIM->PSC = SOL_TIM_PSC;	 				// Set prescaler. Division factor = (PSC + 1)
+	SOL_TIM->ARR = SOL_TIM_ARR;					// Auto reload value. period = (ARR + 1)
+	//SOL_TIM->DIER = TIM_DIER_UIE;				// Enable update interrupt (timer level)
+	SOL_TIM->DIER = TIM_DIER_CC1IE;				// Enable counter compare interrupt.
+	SOL_TIM->CCR1 = SOL_TIM_OFF;				// initialize the counter compare interrupt to happen when the timer reaches the max. 
+	SOL_TIM->CR1 = TIM_CR1_CEN;					// Enable timer
+	NVIC_EnableIRQ(TIM2_IRQn);					// enable solenoid timer interrupt handler
+	SOL_TIM->CCR1 = SOL_TIM_OFF;				// init the compare register to a value it will never reach.
+	SOL_TIM->CNT = 0;							// init the counter at 0.
+	SOL_TIM->EGR |= TIM_EGR_UG;					// generate a timer update (this updates all the timer settings that were just configured). See RM0402.pdf section 17.4.6	"TIMx event generation register (TIMx_EGR)"
 }
 
 //=============================================================================
