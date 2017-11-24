@@ -62,7 +62,7 @@ static void SystemClock_Config(void);
 
 #define pin_set(gpio, pin, state)	if(state) gpio->ODR |= (pin); else gpio->ODR &= ~(pin)
 #define pin_on(gpio, pin)			gpio->ODR |= (pin)
-#define pin_off(gpio, pin)			gpio->ODR &= ~(pin) 
+#define pin_off(gpio, pin)			gpio->ODR &= ~(pin)
 
 //==============================================================================
 // keys
@@ -86,18 +86,19 @@ static void SystemClock_Config(void);
 														// if you change this, you need to change solenoid_init(), and look at TIM2_IRQHandler() to update them to the new timer you are using.
 #define SOL_TIM_FREQ	((uint32_t)1000000)				// 1 MHz (1 us timebase) for controlling solenoids
 #define SOL_TIM_PSC		(CPU_FREQ/SOL_TIM_FREQ - 1)		// the prescaler setting for the solenoid timer
-#define SOL_TIM_MOD 0x80000000							// this is the value that you should do modulo by when calculating the time to shut off the key. 
-#define SOL_TIM_ARR (SOL_TIM_MOD - 1)					// this is where the solenoid timer rolls over (automatic reload register)
-#define SOL_TIM_OFF 0xFFFFFFFF								// this is a flag that tells us that the solenoid is off.
-#define SOL_TIME_TOO_LONG (SOL_TIM_FREQ/200)			// limit the max time a solenoid can be powered.
-uint32_t solenoid_timing_array[KEYS];					// records when you need to shut off each solenoids.
-uint8_t solenoid_states[KEYS];							// records the state of each solenoids. 0 = off, 1 means on.
+#define SOL_TIM_ARR 0xFFFFFFFF							// this is where the solenoid timer rolls over (automatic reload register). At 1-us ticks, this is 1.2 hours. The timer will NEVER reach this, because the timer will automatically get reset to 0 when there are no notes to play
+#define SOL_TIM_OFF 0xFFFFFFFF							// this is a flag that tells us that the solenoid is off.
+#define SOL_TIME_TOO_LONG (SOL_TIM_FREQ/100)			// maximum time a solenoid should be on is 10  ms. Anything longer  than this indicates an error in the program because 10  ms is fucking ridiculously long.
+#define SOL_TIME_TOO_SHORT (SOL_TIM_FREQ/2000)			// minimum time a solenoid should be on is 0.5 ms. Anything shorter than this indicates an error in the program because 0.5 ms is fucking ridiculously short.
+volatile uint32_t solenoid_timing_array[KEYS];					// records when you need to shut off each solenoids.
+volatile uint8_t solenoid_states[KEYS];							// records the state of each solenoids. 0 = off, 1 means on.
+volatile uint8_t solenoid_all_are_off;							// if all the solenoids are off, this is a 1. otherwise, it is a 0
 // solenoid control shift register
-#define SOL_SR_GPIO GPIOC		// the register that is used to shift out data to control the shift registers
-#define SOL_SR_DATA	GPIO_PIN_1	// SER (74hc595 pin 14)	data in
-#define SOL_SR_LATCH GPIO_PIN_4	// RCK (74hc595 pin 12) register clock (update output)
-#define SOL_SR_CLOCK GPIO_PIN_5	// SCK (74hc595 pin 11) data clock in
-
+#define SOL_SR_GPIO GPIOC			// the register that is used to shift out data to control the shift registers
+#define SOL_SR_DATA	GPIO_PIN_1		// SER (74hc595 pin 14)	data in
+#define SOL_SR_LATCH GPIO_PIN_4		// RCK (74hc595 pin 12) register clock (update output)
+#define SOL_SR_CLOCK GPIO_PIN_5		// SCK (74hc595 pin 11) data clock in
+#define SOL_SR_DIR 1				// direction that the solenoid shift register shifts out key data
 
 #if(SOL_TIM_OFF < SOL_TIM_MOD)
 #error "You cannot make your solenoid OFF flag be a value less than the solenoid modulo value."
@@ -141,24 +142,20 @@ void shift_out(GPIO_TypeDef* GPIO, uint8_t clockPin, uint8_t dataPin, uint8_t la
 {
 	uint32_t b;
 	uint32_t i;
-	
-	
 	for(i=0; i < bits; i++)
 	{
-		if(dir)
-			b = (bits-1) -i;
-		else
-			b = i;
+		if(dir) {b = (bits-1) - i;} else {b = i;}
 		// output the right data
 		pin_set(GPIO,dataPin,data[b]);
 		// clock data in
+		pin_off(GPIO,clockPin);
 		pin_on(GPIO,clockPin);
 		pin_off(GPIO,clockPin);
 	}
+	// update the shift register
+	pin_off(GPIO,latchPin);
 	pin_on(GPIO,latchPin);
 	pin_off(GPIO,latchPin);
-	
-	
 }
 
 
@@ -167,6 +164,13 @@ void shift_out(GPIO_TypeDef* GPIO, uint8_t clockPin, uint8_t dataPin, uint8_t la
 //==============================================================================
 void solenoid_init()
 {
+	//--------------------------------------------------------------------------
+	// set initial states of the solenoid shift-register pins
+	//--------------------------------------------------------------------------
+	pin_off(SOL_SR_GPIO,SOL_SR_CLOCK);
+	pin_off(SOL_SR_GPIO,SOL_SR_DATA);
+	pin_off(SOL_SR_GPIO,SOL_SR_LATCH);
+	
 	//--------------------------------------------------------------------------
 	// setup solenoid variables
 	//--------------------------------------------------------------------------
@@ -177,6 +181,7 @@ void solenoid_init()
 		solenoid_timing_array[i] = SOL_TIM_OFF;
 		solenoid_states[i] = 0;
 	}
+	solenoid_all_are_off = 1;
 	
 	//--------------------------------------------------------------------------
 	// configure timer 2 
@@ -194,9 +199,18 @@ void solenoid_init()
 	NVIC_EnableIRQ(TIM2_IRQn);
 	SOL_TIM->CCR1 = SOL_TIM_OFF;		// init the compare register to a value it will never reach.
 	SOL_TIM->CNT = 0;				// init the counter at 0.
-	SOL_TIM->EGR |= TIM_EGR_UG;		// generate a timer update (this updates all the timer settings that were just configured).
-									// See RM0402.pdf section 17.4.6  "TIMx event generation register (TIMx_EGR)"
+	SOL_TIM->EGR |= TIM_EGR_UG;		// generate a timer update (this updates all the timer settings that were just configured). See RM0402.pdf section 17.4.6  "TIMx event generation register (TIMx_EGR)"
 }
+
+
+//=============================================================================
+// figure out how long to wait before turning off the next solenoid.
+//=============================================================================
+void solenoid_interrupt_recalculate()
+{
+	
+}
+
 
 //=============================================================================
 // timer 2 Interrupt Handler
@@ -213,6 +227,8 @@ void TIM2_IRQHandler(void)
 	{
 		TIM2->SR &= ~TIM_SR_CC1IF;	// clear it.
 		SOL_SR_GPIO->ODR &= ~SOL_SR_CLOCK; // clear pin state to show that it was done
+		// TODO: implement determining which keys to turn off.
+		solenoid_interrupt_recalculate();
 	}
 }
 
@@ -226,91 +242,31 @@ void solenoid_play(uint8_t key, uint32_t length)
 {
 	if(key >= KEYS)
 	{
-		warning("you tried to play a key out of the valid range!");
-		return;
+		warning("you tried to play a key out of the valid range! I'm going to play the highest key to let you know you suck and your program is broken.");
+		key = KEYS-1;
 	}
 	if(length >= SOL_TIME_TOO_LONG)
 	{
-		warning("you are trying to play a key for too long. I'm limiting the time of the key, but still playing it");
+		warning("you are trying to play a key for too long. I'll still play the key, but there is probably an error in the code that is making it so long...");
 		length = SOL_TIME_TOO_LONG;
 	}
-	// record that you are turning on this solenoid
+	if(length <= SOL_TIME_TOO_SHORT)
+	{
+		warning("you are trying to play a key for too short. I'll still play the key, but there is probably an error in the code that is making it so short...");
+		length = SOL_TIME_TOO_SHORT;
+	}
+	
+	// record that you are turning on this solenoid.
 	solenoid_states[key] = 1;
-	// turn on the solenoid
-	shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,solenoid_states,0);
-	// record when we need to 
-	solenoid_timing_array[key] = (SOL_TIM->CNT + length) % SOL_TIM_MOD;
+	// turn on the solenoid.
+	shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,solenoid_states,SOL_SR_DIR);
+	// record when we need to turn off this key.
+	solenoid_timing_array[key] = SOL_TIM->CNT + length;;
+	// figure out when the next interrupt will have to be to shut off the solenoid at the right time. 
+	solenoid_interrupt_recalculate();
+	// at least one solenoid is now on, so make this 0.
+	solenoid_all_are_off = 0;
 }
-
-
-
-//// input pins
-//// port C pins
-//#define IN_1 GPIO_PIN_8
-//#define IN_2 GPIO_PIN_9
-//#define IN_3 GPIO_PIN_10
-//#define IN_4 GPIO_PIN_11
-//#define IN_5 GPIO_PIN_12
-//#define IN_6 GPIO_PIN_2
-//#define IN_7 GPIO_PIN_2
-//#define IN_8 GPIO_PIN_3
-//
-//// input variables
-//#define INPUT_PINS 8
-//GPIO_PinState input_state[INPUT_PINS];
-////GPIO_TypeDef input_pin_port[INPUT_PINS];
-//
-//#define input_pin_port_1 GPIOC
-//#define input_pin_port_2 GPIOC
-//#define input_pin_port_3 GPIOC
-//#define input_pin_port_4 GPIOC
-//#define input_pin_port_5 GPIOC
-//#define input_pin_port_6 GPIOD
-//#define input_pin_port_7 GPIOG
-//#define input_pin_port_8 GPIOG
-//
-//#define song_period ((uint16_t)512)
-//#define hit_time ((uint16_t)1)
-//#define note_quarter note_hit(4)
-//#define note_sixteenth note_hit(16)
-//#define note_sixty_fourth note_hit(64)
-//
-//void note_hit(uint32_t n)
-//{
-//	clock_out(GPIOC, SR_CLOCK, SR_DATA, SR_LATCH, 8, 0xff);
-//	HAL_Delay(hit_time);
-//	clock_out(GPIOC, SR_CLOCK, SR_DATA, SR_LATCH, 8, 0x00);
-//	HAL_Delay((song_period / (uint16_t) n) - hit_time);
-//}
-
-
-
-//void clock_out(GPIO_TypeDef* GPIOx, uint16_t clockPin, uint16_t dataPin,
-//		uint16_t latchPin, uint8_t bits, uint32_t data)
-//{
-//	uint8_t i;
-//	uint32_t mask = 1;
-//	for (i = 0; i < bits; i++)
-//	{
-//		// set data
-//		if ((mask & data) != 0)
-//		{
-//			GPIOx->BSRR = dataPin;
-//		}
-//		else
-//		{
-//			GPIOx->BSRR = (uint32_t) dataPin << 16U;
-//		}
-//		// clock data in
-//		GPIOx->BSRR = clockPin;
-//		GPIOx->BSRR = (uint32_t) clockPin << 16U;
-//		// get next bit
-//		mask <<= 1;
-//	}
-//	// cycle the latch to clock all the bits in
-//	GPIOC->BSRR = latchPin;
-//	GPIOC->BSRR = (uint32_t) latchPin << 16U;
-//}
 
 
 
@@ -385,16 +341,21 @@ int main(void)
 	// initialize solenoid stuff.
 	solenoid_init();
 	SOL_TIM->CNT = 0;
-	
+	uint8_t i = 0;
+	uint8_t state = 1;
 	// uint16_t T = 512;
 	// main loop
 	while(1)
 	{
 		
-		SOL_SR_GPIO->ODR |= SOL_SR_CLOCK; // turn on SOL_SR_CLOCK pin
-		SOL_TIM->CCR1 = SOL_TIM->CNT + 10000;
-		HAL_Delay(8);
-		
+//		SOL_SR_GPIO->ODR |= SOL_SR_CLOCK; // turn on SOL_SR_CLOCK pin
+//		SOL_TIM->CCR1 = SOL_TIM->CNT + 10000;
+//		HAL_Delay(8);
+		if(i>=KEYS) { i = 0; state = !state; }
+		solenoid_states[i] = state;
+		shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,(uint32_t *)solenoid_states,SOL_SR_DIR);
+		HAL_Delay(100);
+		i++;
 	}
 }
 
