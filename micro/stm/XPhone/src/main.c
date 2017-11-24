@@ -60,8 +60,9 @@ static GPIO_InitTypeDef GPIO_Struct;
 static void SystemClock_Config(void);
 
 
-#define pin_set(gpio, pin, state) if(state) gpio->ODR |= (pin); else gpio->ODR &= ~(pin)
-
+#define pin_set(gpio, pin, state)	if(state) gpio->ODR |= (pin); else gpio->ODR &= ~(pin)
+#define pin_on(gpio, pin)			gpio->ODR |= (pin)
+#define pin_off(gpio, pin)			gpio->ODR &= ~(pin) 
 
 //==============================================================================
 // keys
@@ -108,6 +109,10 @@ uint8_t solenoid_states[KEYS];							// records the state of each solenoids. 0 =
 void error(char *message)
 {
 	// TODO: turn on the ERROR light
+	while(1)
+	{
+		; // freeze program
+	}
 }
 
 
@@ -144,9 +149,15 @@ void shift_out(GPIO_TypeDef* GPIO, uint8_t clockPin, uint8_t dataPin, uint8_t la
 			b = (bits-1) -i;
 		else
 			b = i;
+		// output the right data
 		pin_set(GPIO,dataPin,data[b]);
-		
+		// clock data in
+		pin_on(GPIO,clockPin);
+		pin_off(GPIO,clockPin);
 	}
+	pin_on(GPIO,latchPin);
+	pin_off(GPIO,latchPin);
+	
 	
 }
 
@@ -377,7 +388,7 @@ int main(void)
 	
 	// uint16_t T = 512;
 	// main loop
-	while (1)
+	while(1)
 	{
 		
 		SOL_SR_GPIO->ODR |= SOL_SR_CLOCK; // turn on SOL_SR_CLOCK pin
@@ -437,10 +448,7 @@ static void SystemClock_Config(void)
 	
 	if (ret != HAL_OK)
 	{
-		while (1)
-		{
-			;
-		}
+		error("Could not HAL_RCC_OscConfig()");
 	}
 	
 	/* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
@@ -454,10 +462,7 @@ static void SystemClock_Config(void)
 	ret = HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3);
 	if (ret != HAL_OK)
 	{
-		while (1)
-		{
-			;
-		}
+		error("Could not HAL_RCC_ClockConfig()");
 	}
 }
 
@@ -476,9 +481,7 @@ void assert_failed(uint8_t *file, uint32_t line)
 	 ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 
 	/* Infinite loop */
-	while (1)
-	{	
-	}
+	error("assert failed");
 }
 #endif
 
