@@ -1,0 +1,10 @@
+Help > Install New Software
+put
+http://www.ac6-tools.com/Eclipse-updates/org.openstm32.system-workbench.update-site-v2/
+into Work With box
+check all the boxes aka External Tools OpenSTM32 Tools
+Next > Finish
+Wait for install and restart
+import project
+Project > Build All
+setup run configuration

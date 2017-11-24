@@ -54,10 +54,13 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+
 static GPIO_InitTypeDef GPIO_Struct;
+
 
 /* Private function prototypes -----------------------------------------------*/
 static void SystemClock_Config(void);
+
 
 
 #define pin_set(gpio, pin, state)	if(state) gpio->ODR |= (pin); else gpio->ODR &= ~(pin)
@@ -103,6 +106,56 @@ volatile uint8_t solenoid_all_are_off;							// if all the solenoids are off, th
 #if(SOL_TIM_OFF < SOL_TIM_MOD)
 #error "You cannot make your solenoid OFF flag be a value less than the solenoid modulo value."
 #endif
+
+
+
+
+// shift register input pins
+// port F pins
+#define SRI_DATA  GPIO_PIN_2
+#define SRI_LATCH GPIO_PIN_1
+#define SRI_CLOCK GPIO_PIN_0
+
+// input pins
+// port C pins
+#define IN_1 GPIO_PIN_8
+#define IN_2 GPIO_PIN_9
+#define IN_3 GPIO_PIN_10
+#define IN_4 GPIO_PIN_11
+#define IN_5 GPIO_PIN_12
+#define IN_6 GPIO_PIN_2
+#define IN_7 GPIO_PIN_2
+#define IN_8 GPIO_PIN_3
+
+//GPIO_PinState input_state[INPUT_PINS];
+//GPIO_TypeDef input_pin_port[INPUT_PINS];
+
+#define input_pin_port_1 GPIOC
+#define input_pin_port_2 GPIOC
+#define input_pin_port_3 GPIOC
+#define input_pin_port_4 GPIOC
+#define input_pin_port_5 GPIOC
+#define input_pin_port_6 GPIOD
+#define input_pin_port_7 GPIOG
+#define input_pin_port_8 GPIOG
+
+#define KEYS 8
+#define KEY_BYTE_SIZE 1
+#define KEY_COOLDOWN 10
+
+uint8_t keyInput[KEY_BYTE_SIZE];
+int8_t keyInputCoolDown[KEYS];
+uint8_t keyOutput[KEY_BYTE_SIZE];
+
+#define SONG_LENGTH 1000
+int currentTime = 0;
+int totalNotes = 0;
+
+#define size 14
+int i, j;
+int song[size] = {
+		  0,1,2,3,4,5,6,7,6,5,4,3,2,1
+};
 
 
 // this function happens when something FATAL happens. The program cannot continue, and it will freeze here indefinitely.
@@ -156,6 +209,31 @@ void shift_out(GPIO_TypeDef* GPIO, uint8_t clockPin, uint8_t dataPin, uint8_t la
 	pin_off(GPIO,latchPin);
 	pin_on(GPIO,latchPin);
 	pin_off(GPIO,latchPin);
+}
+
+
+void clock_in(GPIO_TypeDef* GPIOx, uint16_t clockPin, uint16_t dataPin, uint16_t latchPin, uint8_t outputSize, uint8_t *data) {
+	uint8_t i, j;
+	uint8_t inData = 0;
+
+	// cycle the latch to clock all the bits in
+	GPIOx->BSRR = (uint32_t)latchPin << 16U;
+	GPIOx->BSRR = latchPin;
+
+	for(i = 0; i < outputSize; i++) {
+		for(j = 0; j < 8; j++) {
+			// read data from pin
+			inData = HAL_GPIO_ReadPin(GPIOx, dataPin);
+
+			// clock data in to get next bit
+			GPIOx->BSRR = (uint32_t)clockPin << 16U;
+			GPIOx->BSRR = clockPin;
+
+			// insert bits into the output data
+			if(inData != 0)
+				data[i] |= (1 << j);
+		}
+	}
 }
 
 
@@ -273,28 +351,26 @@ void solenoid_play(uint8_t key, uint32_t length)
 
 int main(void)
 {
-	/* STM32F4xx HAL library initialization:
-	 - Configure the Flash prefetch
-	 - Systick timer is configured by default as source of time base, but user 
-	 can eventually implement his proper time base source (a general purpose 
-	 timer for example or other time source), keeping in mind that Time base 
-	 duration should be kept 1ms since PPP_TIMEOUT_VALUEs are defined and 
-	 handled in milliseconds basis.
-	 - Set NVIC Group Priority to 4
-	 - Low Level Initialization
-	 */
+    // Initialize the hardware access library
 	HAL_Init();
-	/* Configure the system clock to 100 MHz */
+	// Configure the system clock to 100 MHz
 	SystemClock_Config();
 	
-	// enable port C
-	__HAL_RCC_GPIOC_CLK_ENABLE();
+  // enable port c
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  // enable port f
+  __HAL_RCC_GPIOF_CLK_ENABLE();
+  // enable port d
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  //enable port g
+  __HAL_RCC_GPIOG_CLK_ENABLE();
+  
 	// setup struct
 	GPIO_Struct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_Struct.Pull = GPIO_NOPULL;
 	GPIO_Struct.Speed = GPIO_SPEED_HIGH;
 	
-	// enable
+	// enable solenoid output shift register pins
 	GPIO_Struct.Pin = SOL_SR_DATA;
 	HAL_GPIO_Init(GPIOC, &GPIO_Struct);
 	GPIO_Struct.Pin = SOL_SR_LATCH;
@@ -302,41 +378,101 @@ int main(void)
 	GPIO_Struct.Pin = SOL_SR_CLOCK;
 	HAL_GPIO_Init(GPIOC, &GPIO_Struct);
 	
+     // enable input shift register
+  GPIO_Struct.Pin = SRI_LATCH;
+  HAL_GPIO_Init(GPIOF, &GPIO_Struct);
+  GPIO_Struct.Pin = SRI_CLOCK;
+  HAL_GPIO_Init(GPIOF, &GPIO_Struct);
+  GPIO_Struct.Mode = GPIO_MODE_INPUT;
+  GPIO_Struct.Pin = SRI_DATA;
+  HAL_GPIO_Init(GPIOF, &GPIO_Struct);
+  // set latch pin to high
+  GPIOF->BSRR = SRI_LATCH;
+    
 	// test led
 	GPIO_Struct.Pin = GPIO_PIN_3;
 	HAL_GPIO_Init(GPIOC, &GPIO_Struct);
 	
-	// enable port d
-	__HAL_RCC_GPIOD_CLK_ENABLE();
-	//enable port g
-	__HAL_RCC_GPIOG_CLK_ENABLE();
-	// setup struct
-	GPIO_Struct.Mode = GPIO_MODE_INPUT;
-	GPIO_Struct.Pull = GPIO_NOPULL;
-	GPIO_Struct.Speed = GPIO_SPEED_HIGH;
-	
-	/*
-	// input pins
-	GPIO_Struct.Pin = IN_1;
-	HAL_GPIO_Init(input_pin_port_1, &GPIO_Struct);
-	GPIO_Struct.Pin = IN_2;
-	HAL_GPIO_Init(input_pin_port_2, &GPIO_Struct);
-	GPIO_Struct.Pin = IN_3;
-	HAL_GPIO_Init(input_pin_port_3, &GPIO_Struct);
-	GPIO_Struct.Pin = IN_4;
-	HAL_GPIO_Init(input_pin_port_4, &GPIO_Struct);
-	GPIO_Struct.Pin = IN_5;
-	HAL_GPIO_Init(input_pin_port_5, &GPIO_Struct);
-	GPIO_Struct.Pin = IN_6;
-	HAL_GPIO_Init(input_pin_port_6, &GPIO_Struct);
-	GPIO_Struct.Pin = IN_7;
-	HAL_GPIO_Init(input_pin_port_7, &GPIO_Struct);
-	GPIO_Struct.Pin = IN_8;
-	HAL_GPIO_Init(input_pin_port_8, &GPIO_Struct);
-	*/
-	// clear the LEDs
-	//clock_out(GPIOC, SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, 8, 0);
-	
+ /*
+ // JP's code for the song
+    uint32_t i;
+  // current song to be played
+  Note *currentSong = init_note(KEY_TRACK_EMPTY, 0, 100);
+  Note *noteToPlay = NULL;
+  int previousNotesPlayed[KEYS];
+
+  // reset key output
+  for(i = 0; i < KEY_BYTE_SIZE; i++)
+	  keyOutput[i] = 0;
+
+  // set key cool down
+    for(i = 0; i < KEY_BYTE_SIZE; i++)
+  	  keyInputCoolDown[i] = -1;
+
+  // clear the LEDs
+  clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, 8, keyOutput);
+
+  // main loop
+  while (1)
+  {
+	  // reset key input
+	  for(i = 0; i < KEY_BYTE_SIZE; i++)
+		  keyInput[i] = 0;
+
+	  // get all of the key inputs
+	  clock_in(GPIOF, SRI_CLOCK, SRI_DATA, SRI_LATCH, KEY_BYTE_SIZE, keyInput);
+
+	  uint8_t curKey = 0;
+	  for(i = 0; i < KEY_BYTE_SIZE; i++) {
+		  uint8_t mask = 1;
+
+		  for(j = 0; j < 8; j++) {
+			  if((mask & keyInput[i]) != 0 && keyInputCoolDown[curKey] == -1) {
+				  Note* n = init_note(curKey, currentTime, 10);
+				  insert_note(&currentSong, n);
+				  totalNotes++;
+				  keyInputCoolDown[curKey] = (currentTime + KEY_COOLDOWN) % SONG_LENGTH;
+			  }
+			  // get next bit
+			  mask <<= 1;
+			  // increment current key
+			  curKey++;
+		  }
+	  }
+
+	  if(currentSong->key != KEY_TRACK_EMPTY) {
+		  if(noteToPlay == NULL) {
+			  noteToPlay = currentSong;
+		  } else if(noteToPlay->time == currentTime) {
+			  setKeyOutput(noteToPlay->key, keyOutput);
+			  previousNotesPlayed[noteToPlay->key] = (currentTime + noteToPlay->intensity) % SONG_LENGTH;
+			  noteToPlay = noteToPlay->next;
+		  }
+	  }
+
+	  for(i = 0; i < KEYS; i++) {
+		  if(previousNotesPlayed[i] == currentTime) {
+			  removeKeyOutput(i, keyOutput);
+			  previousNotesPlayed[i] = -1;
+		  }
+	  }
+
+	  // increment the time
+	  currentTime++;
+	  if(currentTime > SONG_LENGTH)
+		  currentTime = 0;
+
+	  // reset key cool down if it is time too
+	  for(i = 0; i < KEYS; i++) {
+		  if(keyInputCoolDown[i] == currentTime)
+			  keyInputCoolDown[i] = -1;
+	  }
+
+	  clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, KEY_BYTE_SIZE, keyOutput);
+
+	  // delay
+	  HAL_Delay(1);
+    */
 
 	// initialize solenoid stuff.
 	solenoid_init();
