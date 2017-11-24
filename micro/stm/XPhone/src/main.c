@@ -208,7 +208,7 @@ void solenoid_init()
 //=============================================================================
 void solenoid_interrupt_recalculate()
 {
-	
+	// TODO: write this function
 }
 
 
@@ -261,11 +261,11 @@ void solenoid_play(uint8_t key, uint32_t length)
 	// turn on the solenoid.
 	shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,solenoid_states,SOL_SR_DIR);
 	// record when we need to turn off this key.
-	solenoid_timing_array[key] = SOL_TIM->CNT + length;;
-	// figure out when the next interrupt will have to be to shut off the solenoid at the right time. 
-	solenoid_interrupt_recalculate();
+	solenoid_timing_array[key] = SOL_TIM->CNT + length;
 	// at least one solenoid is now on, so make this 0.
 	solenoid_all_are_off = 0;
+	// figure out when the next interrupt will have to be to shut off the solenoid at the right time. 
+	solenoid_interrupt_recalculate();
 }
 
 
