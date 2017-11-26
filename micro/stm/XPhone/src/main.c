@@ -85,7 +85,7 @@ static void SystemClock_Config(void);
 #define SOL_SR_DATA			GPIO_PIN_1			// SER (74hc595 pin 14)	data in
 #define SOL_SR_LATCH		GPIO_PIN_4			// RCK (74hc595 pin 12) register clock (update output)
 #define SOL_SR_CLOCK		GPIO_PIN_5			// SCK (74hc595 pin 11) data clock in
-#define SOL_SR_DIR 1						// direction that the solenoid shift register shifts out key data
+#define SOL_SR_DIR 1							// direction that the solenoid shift register shifts out key data
 // debug pins
 #define DEBUG_GPIO 			GPIOG				// register used for debug pins
 #define DEBUG_0 			GPIO_PIN_0			// pin used for programmer to debug code
@@ -183,7 +183,6 @@ void GPIO_Init()
 #define SOL_TIME_TOO_SHORT (SOL_TIM_FREQ/2000)			// minimum time a solenoid should be on is 0.5 ms. Anything shorter than this indicates an error in the program because 0.5 ms is fucking ridiculously short.
 volatile uint32_t solenoid_timing_array[KEYS];			// records when you need to shut off each solenoids.
 volatile uint8_t solenoid_states[KEYS];					// records the state of each solenoids. 0 = off, 1 means on. After modifying this array, you must run solenoid_update() for the solenoids to actually be turned on/off.
-volatile uint8_t solenoid_all_are_off;					// if all the solenoids are off, this is a 1. otherwise, it is a 0
 
 // this function will update the sates of the solenoid drivers.
 #define solenoid_update() shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,(uint8_t *)solenoid_states,SOL_SR_DIR)
@@ -217,10 +216,7 @@ volatile uint8_t solenoid_all_are_off;					// if all the solenoids are off, this
 void error(char *message)
 {
 	pin_on(DEBUG_GPIO, DEBUG_ERROR_LED);
-	while (1)
-	{
-		;
-	} // freeze program
+	while (1) {;} // freeze program
 }
 
 //=============================================================================
@@ -321,7 +317,6 @@ void solenoid_init()
 		solenoid_timing_array[i] = SOL_TIM_OFF;
 		solenoid_states[i] = 0;
 	}
-	solenoid_all_are_off = 1;
 	
 	//--------------------------------------------------------------------------
 	// configure timer 2 
@@ -340,6 +335,7 @@ void solenoid_init()
 	SOL_TIM->EGR |= TIM_EGR_UG;					// generate a timer update (this updates all the timer settings that were just configured). See RM0402.pdf section 17.4.6	"TIMx event generation register (TIMx_EGR)"
 }
 
+
 //=============================================================================
 // figure out how long to wait before turning off the next solenoid.
 //=============================================================================
@@ -349,43 +345,56 @@ void solenoid_interrupt_recalculate()
 	
 }
 
+
+
+//=============================================================================
+// This will shut off all the right solenoids. If they are all shut off, it
+// will reset the solenoid timer counter as well to avoid overflow issue.
+//=============================================================================
 void solenoid_shut_off_the_right_ones()
 {
-	uint32_t T_off = SOL_TIM->CCR1;	// grab the time that we are supposed to shut off 
-	uint16_t k;								// index into key arrays
+	uint32_t T_off = SOL_TIM->CCR1;					// grab the time that we are supposed to shut off 
+	uint16_t k;										// index into key arrays
+	uint8_t keys_all_off = 1;						// this keeps track of whether or not all the keys are off. We start assuming they are, and try to disprove it in the for() loop.
 	
-	for (k = 0; k < KEYS; k++)					// go thru all the keys...
+	for (k = 0; k < KEYS; k++)						// go thru all the keys...
 	{
-		if (solenoid_timing_array[k] == T_off)// if any of them are supposed to be shut off now,
+		if (solenoid_timing_array[k] == T_off)			// if any of them are supposed to be shut off now,
 		{
-			solenoid_states[k] = 0;	// put that information in the states array. You will need to run solenoid_update() to actually change the states of the solenoids.
-			solenoid_timing_array[k] = SOL_TIM_OFF;	// flag this key as being off in the timing array.
+			solenoid_states[k] = 0;							// put that information in the states array. You will need to run solenoid_update() to actually change the states of the solenoids.
+			solenoid_timing_array[k] = SOL_TIM_OFF;			// flag this key as being off in the timing array.
 		}
+		if (solenoid_states[k])	keys_all_off = 0;			// if any key is currently on, then [all keys off] is false.
 	}
+	if(keys_all_off) SOL_TIM->CNT = 0;				// if all the keys are off now, it is a goot time to reset the timer to 0. This is done to avoid the overflow problem. The timer will always be reset long before we run out of time.
+	
 }
+
 
 //=============================================================================
 // timer 2 Interrupt Handler
 //=============================================================================
 void TIM2_IRQHandler(void)
 {
+	pin_on(DEBUG_GPIO,DEBUG_0);						// turn on debug_0 pin to allow someone to see when the TIM2_IRQHandler starts
+//	// this is for catching the interrupt that is generated when the value gets updated (rollover, auto-reload, modify, etc.)
+//	// this is unnecessary for the time being because I only need to interrupt on the CCR1 register (below)
+//	if (TIM2->SR & TIM_SR_UIF) // if UIF flag is set
+//	{
+//	TIM2->SR &= ~TIM_SR_UIF; // clear UIF flag
+//	}
 	
-	/*
-	 // this is for catching the interrupt that is generated when the value gets updated (rollover, auto-reload, modify, etc.)
-	 if (TIM2->SR & TIM_SR_UIF) // if UIF flag is set
-	 {
-	 TIM2->SR &= ~TIM_SR_UIF; // clear UIF flag
-	 }
-	 */
-	if (TIM2->SR & TIM_SR_CC1IF) 		// if the counter compare flag is set,
+	if (TIM2->SR & TIM_SR_CC1IF) 					// if the counter compare flag is set,
 	{
-		TIM2->SR &= ~TIM_SR_CC1IF;				// clear it.
-		SOL_SR_GPIO->ODR &= ~SOL_SR_CLOCK;// clear pin state to show that it was done.
-		solenoid_shut_off_the_right_ones();		// shut off the right solenoids.
-		solenoid_interrupt_recalculate();// calculate when the next interrupt should be.
-		solenoid_update();				// update the states of the solenoids
+		TIM2->SR &= ~TIM_SR_CC1IF;						// clear it.
+		SOL_SR_GPIO->ODR &= ~SOL_SR_CLOCK;				// clear pin state to show that it was done.
+		solenoid_shut_off_the_right_ones();				// shut off the right solenoids.
+		solenoid_interrupt_recalculate();				// calculate when the next interrupt should be.
+		solenoid_update();								// update the states of the solenoids
 	}
+	pin_off(DEBUG_GPIO,DEBUG_0);					// turn off the debug_1 pin. This allows someone to see how long it took to run through the TIM2_IRQHandler() function.
 }
+
 
 //=============================================================================
 // play a solenoid
@@ -416,12 +425,14 @@ void solenoid_play(uint8_t key, uint32_t length)
 	solenoid_update();
 	// record when we need to turn off this key.
 	solenoid_timing_array[key] = SOL_TIM->CNT + length;
-	// at least one solenoid is now on, so make this 0.
-	solenoid_all_are_off = 0;
 	// figure out when the next interrupt will have to be to shut off the solenoid at the right time. 
 	solenoid_interrupt_recalculate();
 }
 
+
+//=============================================================================
+// where the program starts
+//=============================================================================
 int main(void)
 {
 	HAL_Init();						// Initialize the hardware access library
