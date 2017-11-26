@@ -184,7 +184,9 @@ void GPIO_Init()
 #define SOL_TIM_OFF (0xFFFFFFFF)						// this is a flag that tells us that the solenoid is off.
 #define SOL_TIME_TOO_LONG (SOL_TIM_FREQ/100)			// [us] maximum time a solenoid should be on is 10  ms. Anything longer  than this indicates an error in the program because 10	ms is fucking ridiculously long.
 #define SOL_TIME_TOO_SHORT (SOL_TIM_FREQ/2000)			// [us] minimum time a solenoid should be on is 0.5 ms. Anything shorter than this indicates an error in the program because 0.5 ms is fucking ridiculously short.
-#define SOL_TIM_TURN_OFF_WINDOW ((SolTimType)70)		// [us] if two keys end within this period of time, they will be shut off simultaneously. This is in place because the interrupt handling functions cannot run instantaneously. They take a few 10's of microseconds to run, and we need to accommodate that. 
+#define SOL_TIM_TURN_OFF_NOMINAL ((SolTimType)50)		// [us] the typical time it takes to run through the solenoid timer interrupt handling routine. 
+#define SOL_TIM_TURN_OFF_WINDOW ((SolTimType)70)		// [us] if two keys end within this period of time, they will be shut off simultaneously. This is in place because the interrupt handling functions cannot run instantaneously. They take a few 10's of microseconds to run, and we need to accommodate that.
+
 volatile SolTimType solenoid_timing_array[KEYS];		// records when you need to shut off each solenoids.
 volatile KeyStateType solenoid_states[KEYS];			// records the state of each solenoids. 0 = off, 1 means on. After modifying this array, you must run solenoid_update() for the solenoids to actually be turned on/off.
 
@@ -195,23 +197,23 @@ volatile KeyStateType solenoid_states[KEYS];			// records the state of each sole
 #error "You cannot make your solenoid OFF flag be a value less than the solenoid modulo value."
 #endif
 
-//// JP's key input/output definitions
-//#define KEY_BYTE_SIZE 1
-//#define KEY_COOLDOWN 10
-//
-//uint8_t keyInput[KEY_BYTE_SIZE];
-//int8_t keyInputCoolDown[KEYS];
-//uint8_t keyOutput[KEY_BYTE_SIZE];
-//
-//#define SONG_LENGTH 1000
-//int currentTime = 0;
-//int totalNotes = 0;
-//
-//#define size 14
-//int i, j;
-//int song[size] = {
-//			0,1,2,3,4,5,6,7,6,5,4,3,2,1
-//};
+// JP's key input/output definitions
+#define KEY_BYTE_SIZE 1
+#define KEY_COOLDOWN 10
+
+uint8_t keyInput[KEY_BYTE_SIZE];
+int8_t keyInputCoolDown[KEYS];
+uint8_t keyOutput[KEY_BYTE_SIZE];
+
+#define SONG_LENGTH 1000
+int currentTime = 0;
+int totalNotes = 0;
+
+#define size 14
+int i, j;
+int song[size] = {
+			0,1,2,3,4,5,6,7,6,5,4,3,2,1
+};
 
 //=============================================================================
 // this function happens when something FATAL happens. The program cannot continue, and it will freeze here indefinitely.
@@ -442,7 +444,7 @@ void solenoid_play(KeyType key, SolTimType length)
 //	}
 	if (length <= SOL_TIME_TOO_SHORT)
 	{
-		warning("you are trying to play a key for too short. I'll still play the key, but there is probably an error in the code that is making it so short...");
+		warning("you are trying to play a key for too short. I'll still play the key (at the minimum length), but there is probably an error in the code (or calibration data) that is making it so short...");
 		length = SOL_TIME_TOO_SHORT;
 	}
 	
@@ -450,8 +452,8 @@ void solenoid_play(KeyType key, SolTimType length)
 	solenoid_states[key] = 1;
 	// update the states of the solenoids
 	solenoid_update();
-	// record when we need to turn off this key.
-	solenoid_timing_array[key] = SOL_TIM->CNT + length;
+	// record when we need to turn off this key. Compensate for the time it will take to execute the interrupt handling routine.
+	solenoid_timing_array[key] = SOL_TIM->CNT + length - SOL_TIM_TURN_OFF_NOMINAL;
 	// figure out when the next interrupt will have to be to shut off the solenoid at the right time. 
 	solenoid_interrupt_recalculate();
 }
@@ -467,6 +469,7 @@ int main(void)
 	GPIO_Init();						// set up all GPIO pins for everything.
 	solenoid_init();					// initialize all solenoid stuff.
 	
+	// Jensen's little loop for testing the solenoid_play() function.
 	KeyStateType i = 0;					// index
 	SolTimType ms2us = 1000;			// milliseconds to microseconds conversion
 	while (1)							// main program loop
@@ -475,6 +478,92 @@ int main(void)
 		solenoid_play(i++,4*ms2us);	// play a key, and increment the index
 		HAL_Delay(1);					// wait a bit
 	}
+	
+//	// JP's code for the song
+//	uint32_t i;
+//	// current song to be played
+//	Note *currentSong = init_note(KEY_TRACK_EMPTY, 0, 100);
+//	Note *noteToPlay = NULL;
+//	int previousNotesPlayed[KEYS];
+//	
+//	// reset key output
+//	for(i = 0; i < KEY_BYTE_SIZE; i++)
+//		keyOutput[i] = 0;
+//	
+//	// set key cool down
+//	for(i = 0; i < KEY_BYTE_SIZE; i++)
+//		keyInputCoolDown[i] = -1;
+//	
+//	// clear the LEDs
+//	clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, 8, keyOutput);
+//	
+//	// main loop
+//	while (1)
+//	{
+//		// TODO: implement a sort of watchdog for the solenoid timer.
+//		// If the value gets too big, you need to restore it to 0, and offset
+//		// every element in the solenoid_timing_array[] as well so that it
+//		// seamlessly restores the array to a safe small value to avoid hitting the data type limit (overflow).
+//		// reset key input
+//		for(i = 0; i < KEY_BYTE_SIZE; i++)
+//			keyInput[i] = 0;
+//		
+//		// get all of the key inputs
+//		clock_in(GPIOF, SRI_CLOCK, SRI_DATA, SRI_LATCH, KEY_BYTE_SIZE, keyInput);
+//		
+//		uint8_t curKey = 0;
+//		for(i = 0; i < KEY_BYTE_SIZE; i++) {
+//			uint8_t mask = 1;
+//			
+//			for(j = 0; j < 8; j++) {
+//				if((mask & keyInput[i]) != 0 && keyInputCoolDown[curKey] == -1) {
+//					Note* n = init_note(curKey, currentTime, 10);
+//					insert_note(&currentSong, n);
+//					totalNotes++;
+//					keyInputCoolDown[curKey] = (currentTime + KEY_COOLDOWN) % SONG_LENGTH;
+//				}
+//				// get next bit
+//				mask <<= 1;
+//				// increment current key
+//				curKey++;
+//			}
+//		}
+//		
+//		if(currentSong->key != KEY_TRACK_EMPTY) {
+//			if(noteToPlay == NULL) {
+//				noteToPlay = currentSong;
+//			} else if(noteToPlay->time == currentTime) {
+//				setKeyOutput(noteToPlay->key, keyOutput);
+//				previousNotesPlayed[noteToPlay->key] = (currentTime + noteToPlay->intensity) % SONG_LENGTH;
+//				noteToPlay = noteToPlay->next;
+//			}
+//		}
+//		
+//		for(i = 0; i < KEYS; i++) {
+//			if(previousNotesPlayed[i] == currentTime) {
+//				removeKeyOutput(i, keyOutput);
+//				previousNotesPlayed[i] = -1;
+//			}
+//		}
+//		
+//		// increment the time
+//		currentTime++;
+//		if(currentTime > SONG_LENGTH)
+//			currentTime = 0;
+//		
+//		// reset key cool down if it is time too
+//		for(i = 0; i < KEYS; i++) {
+//			if(keyInputCoolDown[i] == currentTime)
+//				keyInputCoolDown[i] = -1;
+//		}
+//		
+//		// TODO: replace with solenoid_play
+//		//clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, KEY_BYTE_SIZE, keyOutput);
+//		
+//		// TODO: replace this with a reliable 1-second tick (implemented by a timer)
+//		// delay
+//		HAL_Delay(1);
+//	}
 }
 
 /**
@@ -573,81 +662,3 @@ void assert_failed(uint8_t *file, uint32_t line)
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 
-// // JP's code for the song
-//		uint32_t i;
-//	// current song to be played
-//	Note *currentSong = init_note(KEY_TRACK_EMPTY, 0, 100);
-//	Note *noteToPlay = NULL;
-//	int previousNotesPlayed[KEYS];
-//
-//	// reset key output
-//	for(i = 0; i < KEY_BYTE_SIZE; i++)
-//		keyOutput[i] = 0;
-//
-//	// set key cool down
-//		for(i = 0; i < KEY_BYTE_SIZE; i++)
-//			keyInputCoolDown[i] = -1;
-//
-//	// clear the LEDs
-//	clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, 8, keyOutput);
-//
-//	// main loop
-//	while (1)
-//	{
-//		// reset key input
-//		for(i = 0; i < KEY_BYTE_SIZE; i++)
-//			keyInput[i] = 0;
-//
-//		// get all of the key inputs
-//		clock_in(GPIOF, SRI_CLOCK, SRI_DATA, SRI_LATCH, KEY_BYTE_SIZE, keyInput);
-//
-//		uint8_t curKey = 0;
-//		for(i = 0; i < KEY_BYTE_SIZE; i++) {
-//			uint8_t mask = 1;
-//
-//			for(j = 0; j < 8; j++) {
-//				if((mask & keyInput[i]) != 0 && keyInputCoolDown[curKey] == -1) {
-//					Note* n = init_note(curKey, currentTime, 10);
-//					insert_note(&currentSong, n);
-//					totalNotes++;
-//					keyInputCoolDown[curKey] = (currentTime + KEY_COOLDOWN) % SONG_LENGTH;
-//				}
-//				// get next bit
-//				mask <<= 1;
-//				// increment current key
-//				curKey++;
-//			}
-//		}
-//
-//		if(currentSong->key != KEY_TRACK_EMPTY) {
-//			if(noteToPlay == NULL) {
-//				noteToPlay = currentSong;
-//			} else if(noteToPlay->time == currentTime) {
-//				setKeyOutput(noteToPlay->key, keyOutput);
-//				previousNotesPlayed[noteToPlay->key] = (currentTime + noteToPlay->intensity) % SONG_LENGTH;
-//				noteToPlay = noteToPlay->next;
-//			}
-//		}
-//
-//		for(i = 0; i < KEYS; i++) {
-//			if(previousNotesPlayed[i] == currentTime) {
-//				removeKeyOutput(i, keyOutput);
-//				previousNotesPlayed[i] = -1;
-//			}
-//		}
-//
-//		// increment the time
-//		currentTime++;
-//		if(currentTime > SONG_LENGTH)
-//			currentTime = 0;
-//
-//		// reset key cool down if it is time too
-//		for(i = 0; i < KEYS; i++) {
-//			if(keyInputCoolDown[i] == currentTime)
-//				keyInputCoolDown[i] = -1;
-//		}
-//
-//		clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, KEY_BYTE_SIZE, keyOutput);
-//
-//		// delay
-//		HAL_Delay(1);
