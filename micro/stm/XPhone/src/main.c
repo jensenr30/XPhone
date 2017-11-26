@@ -39,7 +39,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx.h"
 #include "stm32f4xx_nucleo_144.h"
-#include "../../../../app/key.h"
+#include "key.h"
 #include <stdlib.h>
 
 /** @addtogroup STM32F4xx_HAL_Examples
@@ -95,34 +95,14 @@ static void SystemClock_Config(void);
 #define DEBUG_WARNING_LED	GPIO_PIN_2			// pin used to turn on an LED to indicate a	warning happened.
 #define DEBUG_ERROR_LED		GPIO_PIN_3			// pin used to turn on an LED to indicate an error	 happened.
 
-//// JP's inputs
-//// shift register input pins
-//// port F pins
-//#define SRI_DATA	GPIO_PIN_2
-//#define SRI_LATCH GPIO_PIN_1
-//#define SRI_CLOCK GPIO_PIN_0
-//
-//
-//// input pins
-//// port C pins
-//#define IN_1 GPIO_PIN_8
-//#define IN_2 GPIO_PIN_9
-//#define IN_3 GPIO_PIN_10
-//#define IN_4 GPIO_PIN_11
-//#define IN_5 GPIO_PIN_12
-//#define IN_6 GPIO_PIN_2
-//#define IN_7 GPIO_PIN_2
-//#define IN_8 GPIO_PIN_3
-////GPIO_PinState input_state[INPUT_PINS];
-////GPIO_TypeDef input_pin_port[INPUT_PINS];
-//#define input_pin_port_1 GPIOC
-//#define input_pin_port_2 GPIOC
-//#define input_pin_port_3 GPIOC
-//#define input_pin_port_4 GPIOC
-//#define input_pin_port_5 GPIOC
-//#define input_pin_port_6 GPIOD
-//#define input_pin_port_7 GPIOG
-//#define input_pin_port_8 GPIOG
+// JP's inputs
+// these pins control an input shift-register.
+// The input-shift register is connected to all the digital key input signals.
+// These tells us which key of the xylophone has just been played.
+#define KEY_INPUT_GPIO		GPIOF				// register used for digital key inputs
+#define KEY_INPUT_DATA		GPIO_PIN_2			// pin used to input data from shift registers
+#define KEY_INPUT_LATCH		GPIO_PIN_1			// pin used to latch (shift all bits into register) for input shift-register on input keys
+#define KEY_INPUT_CLOCK		GPIO_PIN_0			// pin used to clock data in bit-by-bit from the input shift-register.
 
 void GPIO_Init()
 {
@@ -162,12 +142,12 @@ void GPIO_Init()
 	pin_off(DEBUG_GPIO, DEBUG_ERROR_LED);
 	
 //	// enable input shift register
-//	GPIO_Struct.Pin = SRI_LATCH; HAL_GPIO_Init(GPIOF, &GPIO_Struct);
-//	GPIO_Struct.Pin = SRI_CLOCK; HAL_GPIO_Init(GPIOF, &GPIO_Struct);
+//	GPIO_Struct.Pin = KEY_INPUT_LATCH; HAL_GPIO_Init(GPIOF, &GPIO_Struct);
+//	GPIO_Struct.Pin = KEY_INPUT_CLOCK; HAL_GPIO_Init(GPIOF, &GPIO_Struct);
 //	GPIO_Struct.Mode = GPIO_MODE_INPUT;
-//	GPIO_Struct.Pin = SRI_DATA; HAL_GPIO_Init(GPIOF, &GPIO_Struct);
+//	GPIO_Struct.Pin = KEY_INPUT_DATA; HAL_GPIO_Init(GPIOF, &GPIO_Struct);
 //	// set latch pin to high
-//	GPIOF->BSRR = SRI_LATCH;
+//	GPIOF->BSRR = KEY_INPUT_LATCH;
 	
 }
 
@@ -469,101 +449,98 @@ int main(void)
 	GPIO_Init();						// set up all GPIO pins for everything.
 	solenoid_init();					// initialize all solenoid stuff.
 	
-	// Jensen's little loop for testing the solenoid_play() function.
-	KeyStateType i = 0;					// index
-	SolTimType ms2us = 1000;			// milliseconds to microseconds conversion
-	while (1)							// main program loop
-	{
-		if(i >= KEYS) i = 0;			// reset the index if it gets greater than the number of keys we have.
-		solenoid_play(i++,4*ms2us);	// play a key, and increment the index
-		HAL_Delay(1);					// wait a bit
-	}
-	
-//	// JP's code for the song
-//	uint32_t i;
-//	// current song to be played
-//	Note *currentSong = init_note(KEY_TRACK_EMPTY, 0, 100);
-//	Note *noteToPlay = NULL;
-//	int previousNotesPlayed[KEYS];
-//	
-//	// reset key output
-//	for(i = 0; i < KEY_BYTE_SIZE; i++)
-//		keyOutput[i] = 0;
-//	
-//	// set key cool down
-//	for(i = 0; i < KEY_BYTE_SIZE; i++)
-//		keyInputCoolDown[i] = -1;
-//	
-//	// clear the LEDs
-//	clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, 8, keyOutput);
-//	
-//	// main loop
-//	while (1)
+//	// Jensen's little loop for testing the solenoid_play() function.
+//	KeyStateType i = 0;					// index
+//	SolTimType ms2us = 1000;			// milliseconds to microseconds conversion
+//	while (1)							// main program loop
 //	{
-//		// TODO: implement a sort of watchdog for the solenoid timer.
-//		// If the value gets too big, you need to restore it to 0, and offset
-//		// every element in the solenoid_timing_array[] as well so that it
-//		// seamlessly restores the array to a safe small value to avoid hitting the data type limit (overflow).
-//		// reset key input
-//		for(i = 0; i < KEY_BYTE_SIZE; i++)
-//			keyInput[i] = 0;
-//		
-//		// get all of the key inputs
-//		clock_in(GPIOF, SRI_CLOCK, SRI_DATA, SRI_LATCH, KEY_BYTE_SIZE, keyInput);
-//		
-//		uint8_t curKey = 0;
-//		for(i = 0; i < KEY_BYTE_SIZE; i++) {
-//			uint8_t mask = 1;
-//			
-//			for(j = 0; j < 8; j++) {
-//				if((mask & keyInput[i]) != 0 && keyInputCoolDown[curKey] == -1) {
-//					Note* n = init_note(curKey, currentTime, 10);
-//					insert_note(&currentSong, n);
-//					totalNotes++;
-//					keyInputCoolDown[curKey] = (currentTime + KEY_COOLDOWN) % SONG_LENGTH;
-//				}
-//				// get next bit
-//				mask <<= 1;
-//				// increment current key
-//				curKey++;
-//			}
-//		}
-//		
-//		if(currentSong->key != KEY_TRACK_EMPTY) {
-//			if(noteToPlay == NULL) {
-//				noteToPlay = currentSong;
-//			} else if(noteToPlay->time == currentTime) {
-//				setKeyOutput(noteToPlay->key, keyOutput);
-//				previousNotesPlayed[noteToPlay->key] = (currentTime + noteToPlay->intensity) % SONG_LENGTH;
-//				noteToPlay = noteToPlay->next;
-//			}
-//		}
-//		
-//		for(i = 0; i < KEYS; i++) {
-//			if(previousNotesPlayed[i] == currentTime) {
-//				removeKeyOutput(i, keyOutput);
-//				previousNotesPlayed[i] = -1;
-//			}
-//		}
-//		
-//		// increment the time
-//		currentTime++;
-//		if(currentTime > SONG_LENGTH)
-//			currentTime = 0;
-//		
-//		// reset key cool down if it is time too
-//		for(i = 0; i < KEYS; i++) {
-//			if(keyInputCoolDown[i] == currentTime)
-//				keyInputCoolDown[i] = -1;
-//		}
-//		
-//		// TODO: replace with solenoid_play
-//		//clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, KEY_BYTE_SIZE, keyOutput);
-//		
-//		// TODO: replace this with a reliable 1-second tick (implemented by a timer)
-//		// delay
-//		HAL_Delay(1);
+//		if(i >= KEYS) i = 0;			// reset the index if it gets greater than the number of keys we have.
+//		solenoid_play(i++,4*ms2us);	// play a key, and increment the index
+//		HAL_Delay(1);					// wait a bit
 //	}
+	
+	// JP's code for the song
+	uint32_t i;
+	// current song to be played
+	Note *currentSong = init_note(KEY_TRACK_EMPTY, 0, 100);
+	Note *noteToPlay = NULL;
+	int previousNotesPlayed[KEYS];
+	
+	// reset key output
+	for(i = 0; i < KEY_BYTE_SIZE; i++)
+		keyOutput[i] = 0;
+	
+	// set key cool down
+	for(i = 0; i < KEY_BYTE_SIZE; i++)
+		keyInputCoolDown[i] = -1;
+	
+	// main loop
+	while (1)
+	{
+		// TODO: implement a sort of watchdog for the solenoid timer.
+		// If the value gets too big, you need to restore it to 0, and offset
+		// every element in the solenoid_timing_array[] as well so that it
+		// seamlessly restores the array to a safe small value to avoid hitting the data type limit (overflow).
+		// reset key input
+		for(i = 0; i < KEY_BYTE_SIZE; i++)
+			keyInput[i] = 0;
+		
+		// get all of the key inputs
+		clock_in(KEY_INPUT_GPIO, KEY_INPUT_CLOCK, KEY_INPUT_DATA, KEY_INPUT_LATCH, KEY_BYTE_SIZE, keyInput);
+		
+		uint8_t curKey = 0;
+		for(i = 0; i < KEY_BYTE_SIZE; i++) {
+			uint8_t mask = 1;
+			
+			for(j = 0; j < 8; j++) {
+				if((mask & keyInput[i]) != 0 && keyInputCoolDown[curKey] == -1) {
+					Note* n = init_note(curKey, currentTime, 10);
+					insert_note(&currentSong, n);
+					totalNotes++;
+					keyInputCoolDown[curKey] = (currentTime + KEY_COOLDOWN) % SONG_LENGTH;
+				}
+				// get next bit
+				mask <<= 1;
+				// increment current key
+				curKey++;
+			}
+		}
+		
+		if(currentSong->key != KEY_TRACK_EMPTY) {
+			if(noteToPlay == NULL) {
+				noteToPlay = currentSong;
+			} else if(noteToPlay->time == currentTime) {
+				setKeyOutput(noteToPlay->key, keyOutput);
+				previousNotesPlayed[noteToPlay->key] = (currentTime + noteToPlay->intensity) % SONG_LENGTH;
+				noteToPlay = noteToPlay->next;
+			}
+		}
+		
+		for(i = 0; i < KEYS; i++) {
+			if(previousNotesPlayed[i] == currentTime) {
+				removeKeyOutput(i, keyOutput);
+				previousNotesPlayed[i] = -1;
+			}
+		}
+		
+		// increment the time
+		currentTime++;
+		if(currentTime > SONG_LENGTH)
+			currentTime = 0;
+		
+		// reset key cool down if it is time too
+		for(i = 0; i < KEYS; i++) {
+			if(keyInputCoolDown[i] == currentTime)
+				keyInputCoolDown[i] = -1;
+		}
+		
+		// TODO: replace with solenoid_play
+		//clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, KEY_BYTE_SIZE, keyOutput);
+		
+		// TODO: replace this with a reliable 1-second tick (implemented by a timer)
+		// delay
+		HAL_Delay(1);
+	}
 }
 
 /**
