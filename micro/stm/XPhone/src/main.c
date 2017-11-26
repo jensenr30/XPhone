@@ -67,9 +67,11 @@ static void SystemClock_Config(void);
 //==============================================================================
 // keys
 //==============================================================================
-#define KEYS ((uint16_t)37)				// 37 total keys on the xylophone.
+#define KeyType uint16_t				// this is the data type used to index into the keys (for XPhone, this goes from 0 to 36).
+#define KeyStateType uint8_t			// this is the data type used to record the state of a key (boolean: 0 or 1)
+#define KEYS ((KeyType)37)				// 37 total keys on the xylophone.
 // halfsteps from [middle C (261.6 Hz)] thru [double-high C (2093.0 Hz)]
-#define MIDI_OFFSET ((uint16_t)60)		// the xylophone starts on middle C, and goes up from there.
+#define MIDI_OFFSET ((KeyType)60)		// the xylophone starts on middle C, and goes up from there.
 
 //==============================================================================
 // clock system
@@ -175,17 +177,18 @@ void GPIO_Init()
 // timer used for solenoid timebase and control
 #define SOL_TIM			TIM2							// the timer used for the solenoid system.
 														// if you change this, you need to change solenoid_init(), and look at TIM2_IRQHandler() to update them to the new timer you are using.
-#define SOL_TIM_FREQ	((uint32_t)1000000)				// 1 MHz (1 us timebase) for controlling solenoids
+#define SolTimType uint32_t								// this is the data type for solenoid timing
+#define SOL_TIM_FREQ	((SolTimType)1000000)			// 1 MHz (1 us timebase) for controlling solenoids
 #define SOL_TIM_PSC		(CPU_FREQ/SOL_TIM_FREQ - 1)		// the prescaler setting for the solenoid timer
-#define SOL_TIM_ARR 0xFFFFFFFF							// this is where the solenoid timer rolls over (automatic reload register). At 1-us ticks, this is 1.2 hours. The timer will NEVER reach this, because the timer will automatically get reset to 0 when there are no notes to play
-#define SOL_TIM_OFF 0xFFFFFFFF							// this is a flag that tells us that the solenoid is off.
+#define SOL_TIM_ARR (0xFFFFFFFF)						// this is where the solenoid timer rolls over (automatic reload register). At 1-us ticks, this is 1.2 hours. The timer will NEVER reach this, because the timer will automatically get reset to 0 when there are no notes to play
+#define SOL_TIM_OFF (0xFFFFFFFF)						// this is a flag that tells us that the solenoid is off.
 #define SOL_TIME_TOO_LONG (SOL_TIM_FREQ/100)			// maximum time a solenoid should be on is 10	ms. Anything longer	than this indicates an error in the program because 10	ms is fucking ridiculously long.
 #define SOL_TIME_TOO_SHORT (SOL_TIM_FREQ/2000)			// minimum time a solenoid should be on is 0.5 ms. Anything shorter than this indicates an error in the program because 0.5 ms is fucking ridiculously short.
-volatile uint32_t solenoid_timing_array[KEYS];			// records when you need to shut off each solenoids.
-volatile uint8_t solenoid_states[KEYS];					// records the state of each solenoids. 0 = off, 1 means on. After modifying this array, you must run solenoid_update() for the solenoids to actually be turned on/off.
+volatile SolTimType solenoid_timing_array[KEYS];		// records when you need to shut off each solenoids.
+volatile KeyStateType solenoid_states[KEYS];			// records the state of each solenoids. 0 = off, 1 means on. After modifying this array, you must run solenoid_update() for the solenoids to actually be turned on/off.
 
 // this function will update the sates of the solenoid drivers.
-#define solenoid_update() shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,(uint8_t *)solenoid_states,SOL_SR_DIR)
+#define solenoid_update() shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,(KeyStateType *)solenoid_states,SOL_SR_DIR)
 
 #if(SOL_TIM_OFF < SOL_TIM_MOD)
 #error "You cannot make your solenoid OFF flag be a value less than the solenoid modulo value."
@@ -311,7 +314,7 @@ void solenoid_init()
 	// setup solenoid variables
 	//--------------------------------------------------------------------------
 	// turn off all of the solenoids
-	uint16_t i;
+	KeyType i;
 	for (i = 0; i < KEYS; i++)
 	{
 		solenoid_timing_array[i] = SOL_TIM_OFF;
@@ -341,10 +344,28 @@ void solenoid_init()
 //=============================================================================
 void solenoid_interrupt_recalculate()
 {
-	// TODO: write this function
-	
+	SolTimType min_time = SOL_TIM_OFF;			// keep track of the soonest time that any of the solenoids need to be turned off. Start at the maximum unsigned 32-bit value (SOL_TIM_OFF). 
+	KeyType k;									// an index to go through all the keys
+	//-------------------------------------------------------------------------
+	// find the soonest time that the next key will need to be turned off.
+	//-------------------------------------------------------------------------
+	for(k=0; k<KEYS; k++)						// for each key...
+	{
+		if(solenoid_timing_array[k] < min_time)		// if [the time at which this keys must be turned off] is sooner than [all the other keys],
+			min_time = solenoid_timing_array[k];		// record this as the soonest one
+	}
+	//-------------------------------------------------------------------------
+	// do a check to make sure you didn't miss something
+	//-------------------------------------------------------------------------
+	if(min_time < SOL_TIM->CNT)						// make a warning if you missed a key
+	{
+		warning("You missed a key someone! Your minimum time is less than your solenoid timer count value, so you must have missed something...");
+	}
+	else											// otherwise,
+	{
+		SOL_TIM->CCR1 = min_time;						// set the next interrupt time.
+	}
 }
-
 
 
 //=============================================================================
@@ -353,9 +374,9 @@ void solenoid_interrupt_recalculate()
 //=============================================================================
 void solenoid_shut_off_the_right_ones()
 {
-	uint32_t T_off = SOL_TIM->CCR1;					// grab the time that we are supposed to shut off 
-	uint16_t k;										// index into key arrays
-	uint8_t keys_all_off = 1;						// this keeps track of whether or not all the keys are off. We start assuming they are, and try to disprove it in the for() loop.
+	SolTimType T_off = SOL_TIM->CCR1;				// grab the time that we are supposed to shut off 
+	KeyType k;										// index into key arrays
+	KeyStateType keys_all_off = 1;					// this keeps track of whether or not all the keys are off. We start assuming they are, and try to disprove it in the for() loop.
 	
 	for (k = 0; k < KEYS; k++)						// go thru all the keys...
 	{
@@ -367,7 +388,6 @@ void solenoid_shut_off_the_right_ones()
 		if (solenoid_states[k])	keys_all_off = 0;			// if any key is currently on, then [all keys off] is false.
 	}
 	if(keys_all_off) SOL_TIM->CNT = 0;				// if all the keys are off now, it is a goot time to reset the timer to 0. This is done to avoid the overflow problem. The timer will always be reset long before we run out of time.
-	
 }
 
 
@@ -384,9 +404,9 @@ void TIM2_IRQHandler(void)
 //	TIM2->SR &= ~TIM_SR_UIF; // clear UIF flag
 //	}
 	
-	if (TIM2->SR & TIM_SR_CC1IF) 					// if the counter compare flag is set,
+	if (SOL_TIM->SR & TIM_SR_CC1IF) 				// if the counter compare flag is set,
 	{
-		TIM2->SR &= ~TIM_SR_CC1IF;						// clear it.
+		SOL_TIM->SR &= ~TIM_SR_CC1IF;					// clear it.
 		SOL_SR_GPIO->ODR &= ~SOL_SR_CLOCK;				// clear pin state to show that it was done.
 		solenoid_shut_off_the_right_ones();				// shut off the right solenoids.
 		solenoid_interrupt_recalculate();				// calculate when the next interrupt should be.
@@ -401,18 +421,19 @@ void TIM2_IRQHandler(void)
 // key		the key you want to play
 // length	the amount of time the solenoid will be on for in units of microseconds.
 //=============================================================================
-void solenoid_play(uint8_t key, uint32_t length)
+void solenoid_play(KeyType key, SolTimType length)
 {
 	if (key >= KEYS)
 	{
 		warning("you tried to play a key out of the valid range! I'm going to play the highest key to let you know you suck and your program is broken.");
 		key = KEYS - 1;
 	}
-	if (length >= SOL_TIME_TOO_LONG)
-	{
-		warning("you are trying to play a key for too long. I'll still play the key, but there is probably an error in the code that is making it so long...");
-		length = SOL_TIME_TOO_LONG;
-	}
+//	// TODO: uncomment this
+//	if (length >= SOL_TIME_TOO_LONG)
+//	{
+//		warning("you are trying to play a key for too long. I'll still play the key, but there is probably an error in the code that is making it so long...");
+//		length = SOL_TIME_TOO_LONG;
+//	}
 	if (length <= SOL_TIME_TOO_SHORT)
 	{
 		warning("you are trying to play a key for too short. I'll still play the key, but there is probably an error in the code that is making it so short...");
@@ -435,28 +456,18 @@ void solenoid_play(uint8_t key, uint32_t length)
 //=============================================================================
 int main(void)
 {
-	HAL_Init();						// Initialize the hardware access library
-	SystemClock_Config();			// Configure the system clock to 100 MHz
-	GPIO_Init();					// set up all GPIO pins for everything.
-	solenoid_init();				// initialize all solenoid stuff.
+	HAL_Init();							// Initialize the hardware access library
+	SystemClock_Config();				// Configure the system clock to 100 MHz
+	GPIO_Init();						// set up all GPIO pins for everything.
+	solenoid_init();					// initialize all solenoid stuff.
 	
-	uint8_t i = 0;
-	uint8_t state = 1;
-	while (1)						// main program loop
+	KeyStateType i = 0;					// index
+	SolTimType ms2us = 1000;			// milliseconds to microseconds conversion
+	while (1)							// main program loop
 	{
-		
-//		SOL_SR_GPIO->ODR |= SOL_SR_CLOCK; // turn on SOL_SR_CLOCK pin
-//		SOL_TIM->CCR1 = SOL_TIM->CNT + 10000;
-//		HAL_Delay(8);
-		if (i >= KEYS)
-		{
-			i = 0;
-			state = !state;
-		}
-		solenoid_states[i] = state;
-		solenoid_update();
-		HAL_Delay(100);
-		i++;
+		if(i >= 10) i = 0;			// reset the index if it gets greater than the number of keys we have.
+		solenoid_play(i++,700*ms2us);	// play a key, and increment the index
+		HAL_Delay(100);					// wait a bit
 	}
 }
 
