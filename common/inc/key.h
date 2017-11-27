@@ -10,8 +10,7 @@
 #ifndef KEY_H_INCLUDED
 	#define KEY_H_INCLUDED
 	
-	#define KEY_TRACK_EMPTY 255
-	
+	#include "main.h"
 	#include <inttypes.h>
 	#include <stdlib.h>
 	#define KeyType uint8_t					// this is the data type used to index into the keys (for XPhone, this goes from 0 to 36).
@@ -19,11 +18,7 @@
 	#define KeyStateType uint8_t			// this is the data type used to record the state of a key (boolean: 0 or 1)
 	#define KeyTimeType uint32_t			// this is the data type used to record the time at which the key was played (ms)
 	
-	#if STM_PROGRAM
-		#define KEYS 			((KeyType)37)	// this is the total number of keys on the XPhone hardware operated by the stm32
-		#define MIDI_OFFSET 	((KeyType)60)	// the xylophone starts on middle C, and goes up from there.
-	#endif
-	
+	#define KEY_TRACK_EMPTY 255	
 	/// Note structure
 	// the notes to be played
 	typedef struct Note {

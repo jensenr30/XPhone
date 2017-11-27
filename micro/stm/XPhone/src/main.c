@@ -2,7 +2,6 @@
 #include "stm32f4xx.h"
 #include "stm32f4xx_nucleo_144.h"
 #include <stdlib.h>
-#define STM_PROGRAM 1			// define STM_PROGRAM if it should compile for an stm32 microprocessor for the actual XPhone hardware.
 #include "main.h"
 #include "GPIO.h"
 #include "key.h"
@@ -118,7 +117,7 @@ void shift_out(GPIO_TypeDef* GPIO, GPIO_Pin_Type clockPin, GPIO_Pin_Type dataPin
 	pin_off(GPIO, latchPin);
 }
 
-void clock_in(GPIO_TypeDef* GPIOx, uint16_t clockPin, uint16_t dataPin, uint16_t latchPin, uint8_t outputSize, uint8_t *data)
+void clock_in(GPIO_TypeDef* GPIOx, GPIO_Pin_Type clockPin, GPIO_Pin_Type dataPin, GPIO_Pin_Type latchPin, uint8_t outputSize, uint8_t *data)
 {
 	uint8_t i, j;
 	uint8_t inData = 0;
