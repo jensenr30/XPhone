@@ -1,6 +1,7 @@
 #ifndef GPIO_H_INCLUDED
 	#define GPIO_H_INCLUDED
-	
+	#include "stm32f4xx.h"
+	#include "stm32f4xx_nucleo_144.h"
 	static GPIO_InitTypeDef GPIO_Struct;
 	#define GPIO_Pin_Type uint16_t
 	
