@@ -84,6 +84,15 @@ void clear_song(Note *song) {
     *song = *init_note(KEY_TRACK_EMPTY, 0, 100);
 }
 
+#if STM_PROGRAM
+	void key_init()
+	{
+		KeyType i;
+		for(i = 0; i < KEYS; i++) KeyCooldownActive[i] = 0; // initialize the cooldown periods to 0.
+	}
+#endif
+
+
 #if SDL_PROGRAM
 
 /// save song to a text file

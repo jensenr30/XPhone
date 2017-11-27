@@ -11,7 +11,7 @@
 	#define pin_set(gpio, pin, state)	if(state) gpio->ODR |= (pin); else gpio->ODR &= ~(pin)
 	#define pin_on(gpio, pin)			gpio->ODR |= (pin)
 	#define pin_off(gpio, pin)			gpio->ODR &= ~(pin)
-	
+	#define pin_tog(gpio, pin)			gpio->ODR ^= (pin)
 	
 	//==============================================================================
 	// GPIO pin definitions
@@ -44,7 +44,7 @@
 	
 	
 	// set a pin to an output
-	void GPIO_Set_Output(GPIO_TypeDef *GPIO,uint16_t Pin)
+	void GPIO_set_output(GPIO_TypeDef *GPIO,uint16_t Pin)
 	{
 		GPIO_Struct.Mode = GPIO_MODE_OUTPUT_PP;
 		GPIO_Struct.Pull = GPIO_NOPULL;
@@ -54,7 +54,7 @@
 	}
 	
 	// set a pin to an input
-	void GPIO_Set_Input(GPIO_TypeDef *GPIO, uint16_t Pin)
+	void GPIO_set_input(GPIO_TypeDef *GPIO, uint16_t Pin)
 	{
 		GPIO_Struct.Mode = GPIO_MODE_INPUT;
 		GPIO_Struct.Pull = GPIO_NOPULL;
@@ -64,7 +64,7 @@
 	}
 	
 	// init all the pins the STM32 will use.
-	void GPIO_Init()
+	void GPIO_init()
 	{
 		// enable the clocks for the ports we want to use
 		__HAL_RCC_GPIOC_CLK_ENABLE();
@@ -73,15 +73,15 @@
 		__HAL_RCC_GPIOG_CLK_ENABLE();
 		
 		// enable solenoid output shift register pins
-		GPIO_Set_Output(SOL_SR_GPIO,SOL_SR_DATA);
-		GPIO_Set_Output(SOL_SR_GPIO,SOL_SR_CLOCK);
-		GPIO_Set_Output(SOL_SR_GPIO,SOL_SR_LATCH);
+		GPIO_set_output(SOL_SR_GPIO,SOL_SR_DATA);
+		GPIO_set_output(SOL_SR_GPIO,SOL_SR_CLOCK);
+		GPIO_set_output(SOL_SR_GPIO,SOL_SR_LATCH);
 		
 		// enable debug pins
-		GPIO_Set_Output(DEBUG_GPIO,DEBUG_0);
-		GPIO_Set_Output(DEBUG_GPIO,DEBUG_1);
-		GPIO_Set_Output(DEBUG_GPIO,DEBUG_WARNING_LED);
-		GPIO_Set_Output(DEBUG_GPIO,DEBUG_ERROR_LED);
+		GPIO_set_output(DEBUG_GPIO,DEBUG_0);
+		GPIO_set_output(DEBUG_GPIO,DEBUG_1);
+		GPIO_set_output(DEBUG_GPIO,DEBUG_WARNING_LED);
+		GPIO_set_output(DEBUG_GPIO,DEBUG_ERROR_LED);
 		// initialize debug pins
 		pin_off(DEBUG_GPIO, DEBUG_0);
 		pin_off(DEBUG_GPIO, DEBUG_1);
