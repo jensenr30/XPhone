@@ -9,29 +9,29 @@
 #include "key.h"
 #include "debug.h"
 #include "solenoid.h"
+#include "song.h"
 
 // clock config. function def
 static void SystemClock_Config(void);	
 
 
-// JP's key input/output definitions
-#define KEY_BYTE_SIZE 1
-#define KEY_COOLDOWN 10
-
-uint8_t keyInput[KEY_BYTE_SIZE];
-int8_t keyInputCoolDown[KEYS];
-uint8_t keyOutput[KEY_BYTE_SIZE];
-
-#define SONG_LENGTH 1000
-int currentTime = 0;
-int totalNotes = 0;
-
-#define size 14
-int i, j;
-int song[size] = {
-			0,1,2,3,4,5,6,7,6,5,4,3,2,1
-};
-
+//// JP's key input/output definitions
+//#define KEY_BYTE_SIZE 1
+//#define KEY_COOLDOWN 10
+//
+//uint8_t keyInput[KEY_BYTE_SIZE];
+//int8_t keyInputCoolDown[KEYS];
+//uint8_t keyOutput[KEY_BYTE_SIZE];
+//
+//#define SONG_LENGTH 1000
+//int currentTime = 0;
+//int totalNotes = 0;
+//
+//#define size 14
+//int i, j;
+//int song[size] = {
+//			0,1,2,3,4,5,6,7,6,5,4,3,2,1
+//};
 
 
 //=============================================================================
@@ -50,19 +50,24 @@ int main(void)
 	SystemClock_Config();				// Configure the system clock to 100 MHz
 	GPIO_Init();						// set up all GPIO pins for everything.
 	solenoid_init();					// initialize all solenoid stuff.
-	
+	SongInit();							// set up song stuff
 	//-------------------------------------------------------------------------
 	// Main Program Loop
 	//-------------------------------------------------------------------------
-	// Jensen's little loop for testing the solenoid_play() function.
-	KeyStateType i = 0;					// index
-	SolTimType ms2us = 1000;			// milliseconds to microseconds conversion
-	while (1)							// main program loop
+	
+	while(1)
 	{
-		if(i >= KEYS) i = 0;			// reset the index if it gets greater than the number of keys we have.
-		solenoid_play(i++,4*ms2us);	// play a key, and increment the index
-		HAL_Delay(1);					// wait a bit
+		pin_set(DEBUG_GPIO,DEBUG_0,SongTime%2);
 	}
+//	// Jensen's little loop for testing the solenoid_play() function.
+//	KeyStateType i = 0;					// index
+//	SolTimType ms2us = 1000;			// milliseconds to microseconds conversion
+//	while (1)							// main program loop
+//	{
+//		if(i >= KEYS) i = 0;			// reset the index if it gets greater than the number of keys we have.
+//		solenoid_play(i++,4*ms2us);	// play a key, and increment the index
+//		HAL_Delay(1);					// wait a bit
+//	}
 	
 //	 // JP's code for the song
 //	uint32_t i;

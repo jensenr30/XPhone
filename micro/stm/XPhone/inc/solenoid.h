@@ -131,12 +131,12 @@
 	void TIM2_IRQHandler(void)
 	{
 		pin_on(DEBUG_GPIO,DEBUG_0);						// turn on debug_0 pin to allow someone to see when the TIM2_IRQHandler starts
-	//	// this is for catching the interrupt that is generated when the value gets updated (rollover, auto-reload, modify, etc.)
-	//	// this is unnecessary for the time being because I only need to interrupt on the CCR1 register (below)
-	//	if (TIM2->SR & TIM_SR_UIF) // if UIF flag is set
-	//	{
-	//	TIM2->SR &= ~TIM_SR_UIF; // clear UIF flag
-	//	}
+//		// this is for catching the interrupt that is generated when the value gets updated (rollover, auto-reload, modify, etc.)
+//		// this is unnecessary for the time being because I only need to interrupt on the CCR1 register (below)
+//		if (TIM2->SR & TIM_SR_UIF) // if UIF flag is set
+//		{
+//		TIM2->SR &= ~TIM_SR_UIF; // clear UIF flag
+//		}
 		
 		if (SOL_TIM->SR & TIM_SR_CC1IF) 				// if the counter compare flag is set,
 		{
