@@ -14,6 +14,10 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add directory="../common/inc/" />
+					<Add directory="." />
+					<Add directory="../common/src" />
+					<Add directory="../common" />
 				</Compiler>
 				<Linker>
 					<Add option="-lmingw32 -lSDL2main -lSDL2" />
@@ -27,6 +31,10 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add directory="../common/inc" />
+					<Add directory="../common/src" />
+					<Add directory="../common" />
+					<Add directory="." />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -50,11 +58,11 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
-		<Unit filename="globals.h" />
-		<Unit filename="key.c">
+		<Unit filename="../common/inc/key.h" />
+		<Unit filename="../common/src/key.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="key.h" />
+		<Unit filename="globals.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>

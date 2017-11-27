@@ -3,6 +3,7 @@
 //
 
 #include "globals.h"
+#include "key.h"
 
 int main(int argc, char* args[])
 {

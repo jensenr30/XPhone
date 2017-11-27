@@ -12,18 +12,29 @@
 	
 	#define KEY_TRACK_EMPTY 255
 	
+	#include <inttypes.h>
+	#include <stdlib.h>
+	#define KeyType uint16_t				// this is the data type used to index into the keys (for XPhone, this goes from 0 to 36).
+	#define KeyStateType uint8_t			// this is the data type used to record the state of a key (boolean: 0 or 1)
+	
+	#if STM_PROGRAM
+		#define KEYS 			((KeyType)37)	// this is the total number of keys on the XPhone hardware operated by the stm32
+		#define MIDI_OFFSET 	((KeyType)60)	// the xylophone starts on middle C, and goes up from there.
+	#endif
+	
+	
 	/// Structures
 	
 	#if SDL_PROGRAM
-	/// SDLKey structure
-	// the key to be rendered
-	typedef struct {
-		// holds a rectangle for the rendering
-		// a rectangle or "a key"
-		SDL_Rect rect;
-		// the color of the rect or "the key"
-		int color;
-	} SDLKey;
+		/// SDLKey structure
+		// the key to be rendered
+		typedef struct {
+			// holds a rectangle for the rendering
+			// a rectangle or "a key"
+			SDL_Rect rect;
+			// the color of the rect or "the key"
+			int color;
+		} SDLKey;
 	#endif
 	
 	
@@ -48,9 +59,9 @@
 	void clear_song(Note *song);
 	
 	#if SDL_PROGRAM
-	
-	void play_song(Note *song, SDLKey *keys);
-	
+		
+		void play_song(Note *song, SDLKey *keys);
+		
 	#endif // SDL_PROGRAM
-	
+
 #endif // KEY_H_INCLUDED

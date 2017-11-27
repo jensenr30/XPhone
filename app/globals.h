@@ -20,6 +20,8 @@
 		#include <SDL2/SDL.h>		// used for graphics, user interface, and sound.
 	#endif
 	
+	
+	
 	#include "key.h"			//
 	
 #endif // GLOBALS_H_INCLUDED
