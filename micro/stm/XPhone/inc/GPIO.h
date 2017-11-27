@@ -98,4 +98,69 @@
 		
 	}
 	
+	//=============================================================================
+	// clock data out of the STM32 into a shift register (serial-in parallel-out shift register such as 74hc595)
+	//
+	// GPIOx		the port that must be used for all three shift register pins
+	// clockPin 	the pin that clocks data into the shift register
+	// dataPin		the data pin that the shift register will be inputting.
+	// latchPin		the pin that updates the register's output pins when all the data has been shifted into it.
+	// bits			the number of bits you want to shift into the register.
+	// *data		a pointer to the array (of uint8_t type). The array is treated like a bool (0 or 1). those values are shifted out.
+	// dir			the direction of data to be shifted out.
+	//				dir=0	=>	data[0],			data[1],			data[2],			...
+	//				else	 =>	data[bits-1], data[bits-2], data[bits-3], ...
+	//=============================================================================
+	void shift_out(GPIO_TypeDef* GPIO, GPIO_Pin_Type clockPin, GPIO_Pin_Type dataPin, GPIO_Pin_Type latchPin, uint32_t bits, uint8_t *data, uint8_t dir)
+	{
+		uint32_t b;
+		uint32_t i;
+		for (i = 0; i < bits; i++)
+		{
+			if (dir)
+			{
+				b = (bits - 1) - i;
+			}
+			else
+			{
+				b = i;
+			}
+			// output the right data
+			pin_set(GPIO, dataPin, data[b]);
+			// clock data in
+			pin_off(GPIO, clockPin);
+			pin_on(GPIO, clockPin);
+		}
+		// update the shift register
+		pin_off(GPIO, latchPin);
+		pin_on(GPIO, latchPin);
+		pin_off(GPIO, latchPin);
+	}
+	
+	void clock_in(GPIO_TypeDef* GPIOx, GPIO_Pin_Type clockPin, GPIO_Pin_Type dataPin, GPIO_Pin_Type latchPin, uint8_t outputSize, uint8_t *data)
+	{
+		uint8_t i, j;
+		uint8_t inData = 0;
+		
+		// cycle the latch to clock all the bits in
+		GPIOx->BSRR = (uint32_t) latchPin << 16U;
+		GPIOx->BSRR = latchPin;
+		
+		for (i = 0; i < outputSize; i++)
+		{
+			for (j = 0; j < 8; j++)
+			{
+				// read data from pin
+				inData = HAL_GPIO_ReadPin(GPIOx, dataPin);
+				
+				// clock data in to get next bit
+				GPIOx->BSRR = (uint32_t) clockPin << 16U;
+				GPIOx->BSRR = clockPin;
+				
+				// insert bits into the output data
+				if (inData != 0) data[i] |= (1 << j);
+			}
+		}
+	}
+	
 #endif // GPIO_H_INCLUDED

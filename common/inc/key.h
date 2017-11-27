@@ -1,12 +1,3 @@
-// key.h
-//
-// keys are buttons that the user presses.
-// keys 0,1,2, ... correspond to physical buttons/interfaces that the player interacts with.
-// In the case of Jensen and JP's xylophone, key 0 happens to be Middle C.
-// To conform to the MIDI standard, we would say that the MIDI note is given as:
-//		MIDI = 60 + XYLOPHONE_KEY;
-// where 60 corresponds to Middle C in the MIDI standard.
-
 #ifndef KEY_H_INCLUDED
 	#define KEY_H_INCLUDED
 	
