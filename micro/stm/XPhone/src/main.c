@@ -40,6 +40,7 @@
 #include "stm32f4xx.h"
 #include "stm32f4xx_nucleo_144.h"
 #include "key.h"
+#include "key.c"
 #include <stdlib.h>
 
 /** @addtogroup STM32F4xx_HAL_Examples
