@@ -7,8 +7,9 @@
 	#define SONG_TIM TIM3									// The song timer is driven by timer 3 (16-bit timer)
 	#define SONG_TIM_FREQ	((uint16_t)10000)				// 10 kHz input freq
 	#define SONG_TIM_PSC	(CPU_FREQ/SONG_TIM_FREQ - 1)	// calculate the prescaler
-	#define SONG_TIM_ARR	(9)								// reset to 0 on the 10th value (this will give a period of 1 ms)
-	KeyTimeType SongTime;
+	#define SONG_TIM_ARR	(10 - 1)						// reset to 0 on the 10th value (this will give a period of 1 ms)
+	volatile KeyTimeType SongTime;							// this is our current position in the song (ms)
+	volatile KeyTimeType SongLength = KeyTimeMax;			// this is how long the song is (ms). Defaults to maximum time (4294967295 milliseconds, or about 1.2 hours)
 	
 	void SongInit()
 	{

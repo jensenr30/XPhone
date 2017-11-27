@@ -8,7 +8,8 @@
 	#define KeyIntensityType uint8_t		// this is the data type used to store the intensity of the key hit. 
 	#define KeyStateType uint8_t			// this is the data type used to record the state of a key (boolean: 0 or 1)
 	#define KeyTimeType uint32_t			// this is the data type used to record the time at which the key was played (ms)
-	
+	#define KeyTimeMax UINT32_MAX			// the is the max key time.
+
 	#define KEY_TRACK_EMPTY 255	
 	/// Note structure
 	// the notes to be played

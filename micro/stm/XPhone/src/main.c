@@ -15,23 +15,23 @@
 static void SystemClock_Config(void);	
 
 
-//// JP's key input/output definitions
-//#define KEY_BYTE_SIZE 1
-//#define KEY_COOLDOWN 10
-//
-//uint8_t keyInput[KEY_BYTE_SIZE];
-//int8_t keyInputCoolDown[KEYS];
-//uint8_t keyOutput[KEY_BYTE_SIZE];
-//
-//#define SONG_LENGTH 1000
-//int currentTime = 0;
-//int totalNotes = 0;
-//
-//#define size 14
-//int i, j;
-//int song[size] = {
-//			0,1,2,3,4,5,6,7,6,5,4,3,2,1
-//};
+// JP's key input/output definitions
+#define KEY_BYTE_SIZE 1
+#define KEY_COOLDOWN 10
+
+uint8_t keyInput[KEY_BYTE_SIZE];
+int8_t keyInputCoolDown[KEYS];
+uint8_t keyOutput[KEY_BYTE_SIZE];
+
+#define SONG_LENGTH 1000
+int currentTime = 0;
+int totalNotes = 0;
+
+#define size 14
+int i, j;
+int song[size] = {
+			0,1,2,3,4,5,6,7,6,5,4,3,2,1
+};
 
 
 //=============================================================================
@@ -55,10 +55,12 @@ int main(void)
 	// Main Program Loop
 	//-------------------------------------------------------------------------
 	
-	while(1)
-	{
-		pin_set(DEBUG_GPIO,DEBUG_0,SongTime%2);
-	}
+//	// Code to test the 1-ms tick
+//	while(1)
+//	{
+//		pin_set(DEBUG_GPIO,DEBUG_0,SongTime%2);
+//	}
+	
 //	// Jensen's little loop for testing the solenoid_play() function.
 //	KeyStateType i = 0;					// index
 //	SolTimType ms2us = 1000;			// milliseconds to microseconds conversion
@@ -69,80 +71,77 @@ int main(void)
 //		HAL_Delay(1);					// wait a bit
 //	}
 	
-//	 // JP's code for the song
-//	uint32_t i;
-//	// current song to be played
-//	Note *currentSong = init_note(KEY_TRACK_EMPTY, 0, 100);
-//	Note *noteToPlay = NULL;
-//	int previousNotesPlayed[KEYS];
-//	
-//	// reset key output
-//	for(i = 0; i < KEY_BYTE_SIZE; i++)
-//		keyOutput[i] = 0;
-//	
-//	// set key cool down
-//	for(i = 0; i < KEY_BYTE_SIZE; i++)
-//		keyInputCoolDown[i] = -1;
-//	
-//	// main loop
-//	while (1)
-//	{
-//		// TODO: why the fuck is this here? clock_in() should overwrite the array...
-//		// reset key input
-//		for(i = 0; i < KEY_BYTE_SIZE; i++)
-//			keyInput[i] = 0;
-//		
-//		// get all of the key inputs
-//		clock_in(KEY_INPUT_GPIO, KEY_INPUT_CLOCK, KEY_INPUT_DATA, KEY_INPUT_LATCH, KEY_BYTE_SIZE, keyInput);
-//		
-//		uint8_t curKey = 0;
-//		for(i = 0; i < KEY_BYTE_SIZE; i++) {
-//			uint8_t mask = 1;
-//			
-//			for(j = 0; j < 8; j++) {
-//				if((mask & keyInput[i]) != 0 && keyInputCoolDown[curKey] == -1) {
-//					Note* n = init_note(curKey, currentTime, 10);
-//					insert_note(&currentSong, n);
-//					totalNotes++;
-//					keyInputCoolDown[curKey] = (currentTime + KEY_COOLDOWN) % SONG_LENGTH;
-//				}
-//				// get next bit
-//				mask <<= 1;
-//				// increment current key
-//				curKey++;
-//			}
-//		}
-//		
-//		if(currentSong->key != KEY_TRACK_EMPTY) {
-//			if(noteToPlay == NULL) {
-//				noteToPlay = currentSong;
-//			} else if(noteToPlay->time == currentTime) {
-//				// TODO: replace this with an edit to the solenoid_states[] array
-//				//setKeyOutput(noteToPlay->key, keyOutput);
-//				previousNotesPlayed[noteToPlay->key] = (currentTime + noteToPlay->intensity) % SONG_LENGTH;
-//				noteToPlay = noteToPlay->next;
-//			}
-//		}
-//		
-//		
-//		// increment the time
-//		currentTime++;
-//		if(currentTime > SONG_LENGTH)
-//			currentTime = 0;
-//		
-//		// reset key cool down if it is time too
-//		for(i = 0; i < KEYS; i++) {
-//			if(keyInputCoolDown[i] == currentTime)
-//				keyInputCoolDown[i] = -1;
-//		}
-//		
-//		// TODO: replace with solenoid_play
-//		//clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, KEY_BYTE_SIZE, keyOutput);
-//		
-//		// TODO: replace this with a reliable 1-second tick (implemented by a timer)
-//		// delay
-//		HAL_Delay(1);
-//	}
+	 // JP's code for the song
+	uint32_t i;
+	// current song to be played
+	Note *currentSong = init_note(KEY_TRACK_EMPTY, 0, 100);
+	Note *noteToPlay = NULL;
+	
+	// reset key output
+	for(i = 0; i < KEY_BYTE_SIZE; i++)
+		keyOutput[i] = 0;
+	
+	// set key cool down
+	for(i = 0; i < KEY_BYTE_SIZE; i++)
+		keyInputCoolDown[i] = -1;
+	
+	// main loop
+	while (1)
+	{
+		// TODO: why the fuck is this here? clock_in() should overwrite the array...
+		// reset key input
+		for(i = 0; i < KEY_BYTE_SIZE; i++)
+			keyInput[i] = 0;
+		
+		// get all of the key inputs
+		clock_in(KEY_INPUT_GPIO, KEY_INPUT_CLOCK, KEY_INPUT_DATA, KEY_INPUT_LATCH, KEY_BYTE_SIZE, keyInput);
+		uint8_t curKey = 0;
+		for(i = 0; i < KEY_BYTE_SIZE; i++) {
+			uint8_t mask = 1;
+			
+			for(j = 0; j < 8; j++) {
+				if((mask & keyInput[i]) != 0 && keyInputCoolDown[curKey] == -1) {
+					Note* n = init_note(curKey, currentTime, 10);
+					insert_note(&currentSong, n);
+					totalNotes++;
+					keyInputCoolDown[curKey] = (currentTime + KEY_COOLDOWN) % SONG_LENGTH;
+				}
+				// get next bit
+				mask <<= 1;
+				// increment current key
+				curKey++;
+			}
+		}
+		
+		if(currentSong->key != KEY_TRACK_EMPTY) {
+			if(noteToPlay == NULL) {
+				noteToPlay = currentSong;
+			} else if(noteToPlay->time == currentTime) {
+				// TODO: replace this with an edit to the solenoid_states[] array
+				//setKeyOutput(noteToPlay->key, keyOutput);
+				noteToPlay = noteToPlay->next;
+			}
+		}
+		
+		
+		// increment the time
+		currentTime++;
+		if(currentTime > SONG_LENGTH)
+			currentTime = 0;
+		
+		// reset key cool down if it is time too
+		for(i = 0; i < KEYS; i++) {
+			if(keyInputCoolDown[i] == currentTime)
+				keyInputCoolDown[i] = -1;
+		}
+		
+		// TODO: replace with solenoid_play
+		//clock_out(GPIOC, SOL_SR_CLOCK, SOL_SR_DATA, SOL_SR_LATCH, KEY_BYTE_SIZE, keyOutput);
+		
+		// TODO: replace this with a reliable 1-second tick (implemented by a timer)
+		// delay
+		HAL_Delay(1);
+	}
 }
 
 /**
