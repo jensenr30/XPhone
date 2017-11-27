@@ -14,16 +14,35 @@
 	
 	#include <inttypes.h>
 	#include <stdlib.h>
-	#define KeyType uint16_t				// this is the data type used to index into the keys (for XPhone, this goes from 0 to 36).
+	#define KeyType uint8_t					// this is the data type used to index into the keys (for XPhone, this goes from 0 to 36).
+	#define KeyIntensityType uint8_t		// this is the data type used to store the intensity of the key hit. 
 	#define KeyStateType uint8_t			// this is the data type used to record the state of a key (boolean: 0 or 1)
+	#define KeyTimeType uint32_t			// this is the data type used to record the time at which the key was played (ms)
 	
 	#if STM_PROGRAM
 		#define KEYS 			((KeyType)37)	// this is the total number of keys on the XPhone hardware operated by the stm32
 		#define MIDI_OFFSET 	((KeyType)60)	// the xylophone starts on middle C, and goes up from there.
 	#endif
 	
+	/// Note structure
+	// the notes to be played
+	typedef struct Note {
+		// the key to be played
+		KeyType key;
+		// the time between the start of the track and
+		// when the key will be played (in milliseconds)
+		KeyTimeType time;
+		// how hard the key is going to be hit
+		KeyIntensityType intensity;
+		// pointer to the next element in the list
+		struct Note *next;
+	} Note;
 	
-	/// Structures
+	
+	/// Functions
+	Note* init_note(KeyType key, KeyTimeType time, KeyIntensityType intensity);
+	void insert_note(Note **song, Note *note);
+	void clear_song(Note *song);
 	
 	#if SDL_PROGRAM
 		/// SDLKey structure
@@ -35,30 +54,6 @@
 			// the color of the rect or "the key"
 			int color;
 		} SDLKey;
-	#endif
-	
-	
-	/// Note structure
-	// the notes to be played
-	typedef struct Note {
-		// the key to be played
-		uint8_t key;
-		// the time between the start of the track and
-		// when the key will be played (in milliseconds)
-		uint32_t time;
-		// how hard the key is going to be hit
-		uint8_t intensity;
-		// pointer to the next element in the list
-		struct Note *next;
-	} Note;
-	
-	
-	/// Functions
-	Note* init_note(uint8_t key, uint32_t time, uint8_t intensity);
-	void insert_note(Note **song, Note *note);
-	void clear_song(Note *song);
-	
-	#if SDL_PROGRAM
 		
 		void play_song(Note *song, SDLKey *keys);
 		

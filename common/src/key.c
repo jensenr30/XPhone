@@ -1,15 +1,16 @@
 // key.c
 //
 //
-
+#ifdef SDL_PROGRAM
 #include "globals.h"
+#endif
 #include "key.h"
 
 /// initilize a note
-// uint8_t key is the key to be played
-// uint32_t time is the time to be played at
-// uint8_t intensity is the intensity of the key being played
-Note* init_note(uint8_t key, uint32_t time, uint8_t intensity) {
+// key is the key to be played
+// time is the time to be played at
+// intensity is the intensity of the key being played
+Note* init_note(KeyType key, KeyTimeType time, KeyIntensityType intensity) {
     Note *note = malloc(sizeof(Note));
     note->key = key;
     note->time = time;

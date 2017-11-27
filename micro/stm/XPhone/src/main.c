@@ -92,7 +92,7 @@ void warning(char *message)
 //				dir=0	=>	data[0],			data[1],			data[2],			...
 //				else	 =>	data[bits-1], data[bits-2], data[bits-3], ...
 //=============================================================================
-void shift_out(GPIO_TypeDef* GPIO, uint8_t clockPin, uint8_t dataPin, uint8_t latchPin, uint32_t bits, uint8_t *data, uint8_t dir)
+void shift_out(GPIO_TypeDef* GPIO, GPIO_Pin_Type clockPin, GPIO_Pin_Type dataPin, GPIO_Pin_Type latchPin, uint32_t bits, uint8_t *data, uint8_t dir)
 {
 	uint32_t b;
 	uint32_t i;

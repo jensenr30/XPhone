@@ -2,6 +2,7 @@
 	#define GPIO_H_INCLUDED
 	
 	static GPIO_InitTypeDef GPIO_Struct;
+	#define GPIO_Pin_Type uint16_t
 	
 	//==============================================================================
 	// GPIO pin control functions
