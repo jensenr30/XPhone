@@ -107,6 +107,8 @@ int main(void)
 //				noteToPlay = noteToPlay->next;						// and move to the next key
 //			}
 //		}
+		shift_in(KEY_INPUT_GPIO,KEY_INPUT_CLOCK,KEY_INPUT_DATA,KEY_INPUT_LATCH,8,(uint8_t *)solenoid_states,1);
+		solenoid_update();
 		
 		// reset key cool down if it is time too
 		for(k = 0; k < KEYS; k++)

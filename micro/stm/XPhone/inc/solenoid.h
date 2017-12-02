@@ -49,6 +49,7 @@
 			solenoid_timing_array[i] = SOL_TIM_OFF;
 			solenoid_states[i] = 0;
 		}
+		solenoid_update();
 		
 		//--------------------------------------------------------------------------
 		// configure timer 2 
