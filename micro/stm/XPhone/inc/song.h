@@ -24,6 +24,7 @@
 	{
 		// song variables
 		SongTime = 0;										// start out at 0 ms.
+		SongLength = 2000;									// by default, the song starts out being 6 second long
 		songCurrent = init_note(KEY_TRACK_EMPTY, 0, 100);	// create an empty song
 		noteToPlay = songCurrent;							// make noteToPlay point at the song.
 		
@@ -47,7 +48,10 @@
 		if (SONG_TIM->SR & TIM_SR_UIF) 				// if UIF flag is set
 		{
 			SONG_TIM->SR &= ~TIM_SR_UIF;				// clear UIF flag
-			SongTime++;									// increment song time
+			if(SongTime+1 >= SongLength)				// if the song has reached its end,
+				SongTime = 0;								// start over
+			else										// otherwise,
+				SongTime++;									// increment song time by 1
 		}
 	}
 	

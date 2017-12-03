@@ -60,8 +60,23 @@ int main(void)
 //		HAL_Delay(1);					// wait a bit
 //	}
 	
+	
+//	// A little test to make sure shift_in is working.
+//	while(1)
+//	{
+//		shift_in(KEY_INPUT_GPIO,KEY_INPUT_CLOCK,KEY_INPUT_DATA,KEY_INPUT_LATCH,8,(uint8_t *)solenoid_states,1);
+//		solenoid_update();
+//	}	
+	
+//	// jensen's code to test hitting a key
+//	while (1)
+//	{
+//		solenoid_play(3,4000);
+//		HAL_Delay(200);
+//	}
+	
 	KeyType k;
-	KeyTimeType currentTime = KeyTimeMax;	// this is used to store the current time of the song 
+	KeyTimeType currentTime = KeyTimeMax;	// this is used to store the current time of the song. It is initialized to a value that SongTime will never be, so that the while() wait loops fails and sets it right away.
 	//-------------------------------------------------------------------------
 	// Main Program Loop
 	//-------------------------------------------------------------------------
@@ -69,51 +84,61 @@ int main(void)
 	{
 		while(currentTime == SongTime) {;}			// wait for the 1 millisecond tick
 		currentTime = SongTime;						// update the currentTime to the SongTime (which is based on the SONG_TIM song timer)
-		pin_tog(DEBUG_GPIO,DEBUG_0);				// debugging to make sure my 1-ms tick still works.
-		// TODO: input all keys into key_inputs[] array.
 		
-//		// get all of the key inputs
-//		clock_in(KEY_INPUT_GPIO, KEY_INPUT_CLOCK, KEY_INPUT_DATA, KEY_INPUT_LATCH, KEY_BYTE_SIZE, keyInput);
-//		// decipher the input from clock in (only 8 bits here. TODO: increase to 37 bits)
-//		uint8_t curKey = 0;
-//		for(i = 0; i < KEY_BYTE_SIZE; i++) {
-//			uint8_t mask = 1;
-//			
-//			for(j = 0; j < 8; j++) {
-//				if((mask & keyInput[i]) != 0 && keyInputCoolDown[curKey] == -1) {
-//					Note* n = init_note(curKey, currentTime, 10);
-//					insert_note(&currentSong, n);
-//					totalNotes++;
-//					keyInputCoolDown[curKey] = (currentTime + KEY_COOLDOWN) % SongLength;
-//				}
-//				// get next bit
-//				mask <<= 1;
-//				// increment current key
-//				curKey++;
-//			}
-//		}
+		//----------------------------------------------------------------------
+		// play all the notes you must
+		//----------------------------------------------------------------------
+		if(noteToPlay == NULL)								// if you have reached the end of the song,
+			noteToPlay = songCurrent;							// start over from the beginning
+		else if(noteToPlay->key == KEY_TRACK_EMPTY)			
+			noteToPlay = songCurrent;							// try refreshing it
+		else if(noteToPlay->time >= SongLength)				// if the next note should be played AFTER THE SONG ENDS (ridiculous, should never happen)
+		{	
+			noteToPlay = songCurrent;							// restart the song
+			warning("Somehow, you got a note in your song that has a time that is AFTER your song ends!");
+		}
+		if(songCurrent->key != KEY_TRACK_EMPTY)				// if this is not an empty song
+		{
+			while(noteToPlay->time == currentTime)				// if the next note to play should be played at the curren time,
+			{
+				solenoid_play(noteToPlay->key,4000);				// play it  TODO: put in the proper intensity
+				noteToPlay = noteToPlay->next;						// move to the next note
+				KeyCooldownActive[noteToPlay->key] = 1;				// activate the cooldown for this key
+				KeyCooldownTimes[noteToPlay->key] = (currentTime + KEY_COOLDOWN) % SongLength;	// ^
+				if(noteToPlay == NULL) break;						// if this is the end of the song, start over.
+			}
+		}
 		
-//		if (currentSong->key != KEY_TRACK_EMPTY) {			// if this is not an empty song,
-//			// TODO: this check should be moved outside this, but kept inside as well. This may make it impossible to play the first note under some conditions...
-//			if (noteToPlay == NULL)								// if you have reached the end of the song,
-//			{							
-//				noteToPlay = currentSong;							// go back to the beginning of the song
-//			}
-//			// TODO: this NEEDs to be changed to a while() loop, because there could be multiple notes played at the same millisecond.
-//			else if (noteToPlay->time == currentTime)			// if the next note you are going to play should be played now,
-//			{
-//				// TODO: figure out the appropriate length of time to turn on the solenoid (not just 2 ms).
-//				solenoid_play(noteToPlay->key,2000);				// play the key
-//				noteToPlay = noteToPlay->next;						// and move to the next key
-//			}
-//		}
-		shift_in(KEY_INPUT_GPIO,KEY_INPUT_CLOCK,KEY_INPUT_DATA,KEY_INPUT_LATCH,8,(uint8_t *)solenoid_states,1);
-		solenoid_update();
+		//----------------------------------------------------------------------
+		// input all keys into key_inputs[] array.
+		//----------------------------------------------------------------------
+		shift_in(KEY_INPUT_GPIO, KEY_INPUT_CLOCK, KEY_INPUT_DATA, KEY_INPUT_LATCH, KEYS, (KeyStateType *) key_input_states, 0);
 		
+		// check to see if you need to add any notes to the song
+		for (k=0; k < KEYS; k++)
+		{
+			// if this key is ON and the cooldown period is not active, 
+			if (key_input_states[k] && !KeyCooldownActive[k])
+			{
+				//pin_on(DEBUG_GPIO,DEBUG_0);
+				// add the key to the song
+				Note* n = init_note(k, currentTime, 40);
+				insert_note(&songCurrent, n);
+				// activate the cooldown for this key
+				KeyCooldownActive[k] = 1;
+				KeyCooldownTimes[k] = (currentTime + KEY_COOLDOWN) % SongLength;
+			}
+		}
+		
+		//----------------------------------------------------------------------
 		// reset key cool down if it is time too
+		//----------------------------------------------------------------------
 		for(k = 0; k < KEYS; k++)
 		{
-			if(KeyCooldownTimes[k] == currentTime) KeyCooldownActive[k] = 0;
+			if(KeyCooldownTimes[k] == currentTime)		// if the cooldown is over, 
+				KeyCooldownActive[k] = 2;					// flag that the cooldown is over.
+			if( (KeyCooldownActive[k] == 2) && (key_input_states[k] == 0) )		// but wait until the key input is actually LOW...
+				KeyCooldownActive[k] = 0;					// ...before you actually accept another key press
 		}
 	}
 }

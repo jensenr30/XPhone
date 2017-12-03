@@ -88,7 +88,11 @@ void clear_song(Note *song) {
 	void key_init()
 	{
 		KeyType i;
-		for(i = 0; i < KEYS; i++) KeyCooldownActive[i] = 0; // initialize the cooldown periods to 0.
+		for(i = 0; i < KEYS; i++)
+		{
+			KeyCooldownActive[i] = 0;	// initialize the cooldown periods to 0.
+			key_input_states[i] = 0;	// initialize the key input states to 0.
+		}
 	}
 #endif
 
