@@ -75,6 +75,25 @@ int main(void)
 //		HAL_Delay(200);
 //	}
 	
+//	// jensen's code to test volume vs time 
+//	while (1)
+//	{
+//		solenoid_play(3,3000);
+//		HAL_Delay(1000);
+//		solenoid_play(3,3500);
+//		HAL_Delay(1000);
+//		solenoid_play(3,4000);
+//		HAL_Delay(1000);
+//		solenoid_play(3,5000);
+//		HAL_Delay(1000);
+//		solenoid_play(3,6000);
+//		HAL_Delay(1000);
+//		solenoid_play(3,8000);
+//		HAL_Delay(1000);
+//		solenoid_play(3,9999);
+//		HAL_Delay(5000);
+//	}
+	
 	
 //	// code to see how many notes I can add before something goes to shit (run out of memory)
 //	// last time I checked this, I got a warning on note #10496 (  I can have over 10,000 note song!  =D  this is probably way more than I'll ever need)
