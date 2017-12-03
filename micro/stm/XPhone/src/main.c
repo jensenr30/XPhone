@@ -75,6 +75,19 @@ int main(void)
 //		HAL_Delay(200);
 //	}
 	
+	
+//	// code to see how many notes I can add before something goes to shit (run out of memory)
+//	// last time I checked this, I got a warning on note #10496 (  I can have over 10,000 note song!  =D  this is probably way more than I'll ever need)
+//	uint32_t i_i_i = 0;
+//	Note* jenNOTE;
+//	while(1)
+//	{
+//		jenNOTE = init_note(i_i_i%256, i_i_i, 40);
+//		insert_note(&songCurrent, jenNOTE);
+//		i_i_i++;
+//	}
+	
+	
 	KeyType k;
 	KeyTimeType currentTime = KeyTimeMax;	// this is used to store the current time of the song. It is initialized to a value that SongTime will never be, so that the while() wait loops fails and sets it right away.
 	//-------------------------------------------------------------------------

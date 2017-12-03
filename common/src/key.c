@@ -12,6 +12,11 @@
 // intensity is the intensity of the key being played
 Note* init_note(KeyType key, KeyTimeType time, KeyIntensityType intensity) {
     Note *note = malloc(sizeof(Note));
+    if(note == NULL)
+    {
+    	warning("Could not init_note()! We ran out of memory, Jim!");
+    	return NULL;
+    }
     note->key = key;
     note->time = time;
     note->intensity = intensity;
@@ -23,6 +28,18 @@ Note* init_note(KeyType key, KeyTimeType time, KeyIntensityType intensity) {
 // Note *song is the address of the list to be inserted into
 // Note *note is the address of the note to be inserted into the list
 void insert_note(Note **song, Note *note) {
+	
+	if(note == NULL)
+	{
+		warning("You cannot insert a note that is NULL! You are trying to insert NOTHING into the song!");
+		return;
+	}
+	if(song == NULL)
+	{
+		warning("You cannot insert a note into a song that is NULL! You are trying to insert a note into a song that doesn't exist!!");
+		return;
+	}
+	
     // iteration variables
     Note *cur = *song;
     Note *after = NULL;
