@@ -94,7 +94,23 @@ int main(void)
 //		HAL_Delay(5000);
 //	}
 	
-	
+	uint16_t TON  = 2;
+	uint16_t TOFF = 14;
+	uint16_t cycles = 15;
+	// code to test solenoid hitting (direct GPIO control. i know i'm using the debug pin. it doesn't make sense, but that is the pin I chose.)
+//	while (1)
+//	{
+//		for (i=0; i<cycles; i++)
+//		{
+//			pin_on(DEBUG_GPIO,DEBUG_ERROR_LED);
+//			HAL_Delay(TON);
+//			pin_off(DEBUG_GPIO,DEBUG_ERROR_LED);
+//			HAL_Delay(TOFF);
+//		}
+//		HAL_Delay(1500);
+//	}
+//	
+//	
 //	// code to see how many notes I can add before something goes to shit (run out of memory)
 //	// last time I checked this, I got a warning on note #10496 (  I can have over 10,000 note song!  =D  this is probably way more than I'll ever need)
 //	uint32_t i_i_i = 0;
@@ -144,7 +160,7 @@ int main(void)
 		//----------------------------------------------------------------------
 		// input all keys into key_inputs[] array.
 		//----------------------------------------------------------------------
-		shift_in(KEY_INPUT_GPIO, KEY_INPUT_CLOCK, KEY_INPUT_DATA, KEY_INPUT_LATCH, KEYS, (KeyStateType *) key_input_states, 0);
+		shift_in(KEY_INPUT_GPIO, KEY_INPUT_CLOCK, KEY_INPUT_DATA, KEY_INPUT_LATCH, KEYS, (KeyStateType *) key_input_states, KEY_INPUT_DIR);
 		
 		// check to see if you need to add any notes to the song
 		for (k=0; k < KEYS; k++)

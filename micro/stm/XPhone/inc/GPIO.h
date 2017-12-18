@@ -18,11 +18,11 @@
 	// GPIO pin definitions
 	//==============================================================================
 	// solenoid control shift register
-	#define SOL_SR_GPIO			GPIOC				// the register that is used to shift out data to control the shift registers
-	#define SOL_SR_DATA			GPIO_PIN_1			// SER (74hc595 pin 14)	data in
-	#define SOL_SR_LATCH		GPIO_PIN_4			// RCK (74hc595 pin 12) register clock (update output)
-	#define SOL_SR_CLOCK		GPIO_PIN_5			// SCK (74hc595 pin 11) data clock in
-	#define SOL_SR_DIR 1							// direction that the solenoid shift register shifts out key data
+	#define SOL_SR_GPIO			GPIOG				// the register that is used to shift out data to control the shift registers
+	#define SOL_SR_DATA			GPIO_PIN_11			// SER (74hc595 pin 14)	data in
+	#define SOL_SR_LATCH		GPIO_PIN_13			// RCK (74hc595 pin 12) register clock (update output)
+	#define SOL_SR_CLOCK		GPIO_PIN_12			// SCK (74hc595 pin 11) data clock in
+	#define SOL_SR_DIR			1					// direction that the solenoid shift register shifts out key data
 	
 	// debug pins
 	#define DEBUG_GPIO 			GPIOG				// register used for debug pins
@@ -34,10 +34,11 @@
 	// these pins control an input shift-register.
 	// The input-shift register is connected to all the digital key input signals.
 	// These tells us which key of the xylophone has just been played.
-	#define KEY_INPUT_GPIO		GPIOF				// register used for digital key inputs
-	#define KEY_INPUT_DATA		GPIO_PIN_2			// pin used to input data from shift registers
-	#define KEY_INPUT_LATCH		GPIO_PIN_1			// pin used to latch (shift all bits into register) for input shift-register on input keys
-	#define KEY_INPUT_CLOCK		GPIO_PIN_0			// pin used to clock data in bit-by-bit from the input shift-register.
+	#define KEY_INPUT_GPIO		GPIOG				// register used for digital key inputs
+	#define KEY_INPUT_DATA		GPIO_PIN_10			// pin used to input data from shift registers
+	#define KEY_INPUT_LATCH		GPIO_PIN_15			// pin used to latch (shift all bits into register) for input shift-register on input keys
+	#define KEY_INPUT_CLOCK		GPIO_PIN_9			// pin used to clock data in bit-by-bit from the input shift-register.
+	#define KEY_INPUT_DIR		1					// direction that data is shifted in from the input key shift register.
 	
 	
 	//==============================================================================
@@ -70,9 +71,9 @@
 	void GPIO_init()
 	{
 		// enable the clocks for the ports we want to use
-		__HAL_RCC_GPIOC_CLK_ENABLE();
-		__HAL_RCC_GPIOF_CLK_ENABLE();
-		__HAL_RCC_GPIOD_CLK_ENABLE();
+		//__HAL_RCC_GPIOC_CLK_ENABLE();
+		//__HAL_RCC_GPIOF_CLK_ENABLE();
+		//__HAL_RCC_GPIOD_CLK_ENABLE();
 		__HAL_RCC_GPIOG_CLK_ENABLE();
 		
 		// enable solenoid output shift register pins
