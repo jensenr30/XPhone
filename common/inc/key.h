@@ -33,6 +33,9 @@
 	} Note;
 	
 	
+	KeyIntensityType keyIntensityMin[KEYS];
+	KeyIntensityType keyIntensityMax[KEYS];
+	
 	/// Functions
 	Note* init_note(KeyType key, KeyTimeType time, KeyIntensityType intensity);
 	void insert_note(Note **song, Note *note);

@@ -190,12 +190,16 @@ int main(void)
 			{
 				//pin_on(DEBUG_GPIO,DEBUG_0);
 				ctrlKeyHit = CTRL_IN_ACTIVE_NEW;				// record that the user hit a key
-				// add the key to the song
-				Note* n = init_note(k, currentTime, 40);
-				insert_note(&songCurrent, n);
-				// activate the cooldown for this key
-				KeyCooldownActive[k] = 1;
-				KeyCooldownTimes[k] = (currentTime + KEY_COOLDOWN) % SongLength;
+				// if you are in recording mode,
+				if(ctrlMode == CTRL_MODE_RECORD)
+				{
+					// add the key to the song
+					Note* n = init_note(k, currentTime, 40);
+					insert_note(&songCurrent, n);
+					// activate the cooldown for this key
+					KeyCooldownActive[k] = 1;
+					KeyCooldownTimes[k] = (currentTime + KEY_COOLDOWN) % SongLength;
+				}
 			}
 		}
 		

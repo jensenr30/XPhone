@@ -15,13 +15,15 @@
 	#define CONTROL_H_DEF
 	
 	#define ctrlType 				uint8_t
-	#define CTRL_MODE_STOP			(0)
+	#define CTRL_MODE_STOP			(0)					// nothing happens in this state. default state.
 	#define CTRL_MODE_ARMED			(1)
 	#define CTRL_MODE_RECORD		(2)
 	#define CTRL_MODE_PLAY			(3)
+	#define CTRL_MODE_CAL			(4)
 	#define CTRL_ARM_DBC_TIME		((KeyTimeType)500)	// milliseconds that the use must hold the ARM button down for it to arm the XPhone.
 	#define CTRL_PEDAL_DBC_TIME		((KeyTimeType)500)	// milliseconds that the use must hold the ARM button down for it to arm the XPhone.
 	#define CTRL_LED_BLINK_PERIOD	((KeyTimeType)500)	// milliseconds it takes for the LED to turn on and off when in a blinking mode (record / armed).
+	#define CTRL_CAL_HOLD_TIME		((KeyTimeType)3000)	// milliseconds it takes for the calibration routine to be activated
 
 	#define CTRL_IN_INACTIVE		(0)					// this indicates the input is inactive (off).
 	#define CTRL_IN_ACTIVE_NEW		(1)					// this indicates the input JUST changed state.
@@ -31,11 +33,13 @@
 	KeyTimeType ctrlModeTimeAdder = 0;					// keeps track of when the last mode change was (useful for making the LED blink ON when the mode change happens - this gives VERY fast visual feedback.
 	
 	
-	uint8_t ctrlArm = 0;								// this tells us the user intended to press the arm button.
+	uint8_t ctrlArm = CTRL_IN_INACTIVE;					// this tells us the user intended to press the arm button.
 	KeyTimeType ctrlArmDBC = 0;							// this is the debounce counter for the arm control input.
-	uint8_t ctrlPedal = 0;								// this tells us when the user intended to step on the floor pedal.
+	uint8_t ctrlPedal = CTRL_IN_INACTIVE;				// this tells us when the user intended to step on the floor pedal.
 	KeyTimeType ctrlPedalDBC = 0;						// this id the debounce counter for the floor pedal.
-	uint8_t ctrlKeyHit = 0;								// this tells us if a key was just hit by the user.
+	uint8_t ctrlKeyHit = CTRL_IN_INACTIVE;				// this tells us if a key was just hit by the user.
+	uint8_t ctrlCal = CTRL_IN_INACTIVE;					// this tells us if the user wants to do a calibration.
+	KeyTimeType ctrlCalDBC = 0;							// this tells us how long the cal button has been held down for
 	
 	void ctrl_mode_set(ctrlType mode)
 	{
@@ -84,6 +88,19 @@
 			if(ctrlPedalDBC < CTRL_PEDAL_DBC_TIME)	// if the debounce time has not yet been met,
 				ctrlPedalDBC++;							// increment the debounce time
 		}
+		
+		// if the cal button is held down (active low)
+		if(!pin_read(CTRL_IN_CAL_GPIO,CTRL_IN_CAL))
+		{
+			if(ctrlCalDBC < CTRL_CAL_HOLD_TIME)	ctrlCalDBC++;
+			else if(ctrlCal==CTRL_IN_INACTIVE)	ctrlCal = CTRL_IN_ACTIVE_NEW;
+			else								ctrlCal = CTRL_IN_ACTIVE_OLD;
+		}
+		else
+		{
+			ctrlCalDBC = 0;
+			ctrlCal = CTRL_IN_INACTIVE;
+		}
 	}
 	
 	// run this as frequently as you like. I recommend once per ms of the song.
@@ -117,11 +134,21 @@
 				ctrl_mode_set(CTRL_MODE_RECORD);										// start recording use input again.
 			}
 			break;
+		case CTRL_MODE_CAL:
+			if( (ctrlArm==CTRL_IN_ACTIVE_NEW) || (ctrlPedal==CTRL_IN_ACTIVE_NEW) || (ctrlCal==CTRL_IN_ACTIVE_NEW) )	// if the user hits the arm button, steps on the pedal, or hits the cal button again,
+			{
+				ctrl_mode_set(CTRL_MODE_PLAY);										// we exit to PLAY mode.
+			}
+			break;
 		default:
 			warning("I have no clue what mode you are in man. It's not on the list.");
 			break;
 		}
-		
+		/// enter cal mode if the user wants to.
+		if(ctrlCal==CTRL_IN_ACTIVE_NEW)
+		{
+			ctrlMode = CTRL_MODE_CAL;
+		}
 	}
 	
 	
@@ -158,6 +185,10 @@
 			{
 				ctrl_LED_o();
 			}
+		}
+		else if(ctrlMode == CTRL_MODE_CAL)
+		{
+			ctrl_LED_y();
 		}
 		else												// if you don't know what mode you just got into,
 		{
