@@ -35,6 +35,7 @@
 	KeyTimeType ctrlArmDBC = 0;							// this is the debounce counter for the arm control input.
 	uint8_t ctrlPedal = 0;								// this tells us when the user intended to step on the floor pedal.
 	KeyTimeType ctrlPedalDBC = 0;						// this id the debounce counter for the floor pedal.
+	uint8_t ctrlKeyHit = 0;								// this tells us if a key was just hit by the user.
 	
 	void ctrl_mode_set(ctrlType mode)
 	{
@@ -47,33 +48,41 @@
 	void ctrl_in_debounce()
 	{
 		// if the arm button is being held and the counter is not at its max,
-		if( pin_read(CTRL_IN_ARM_GPIO,CTRL_IN_ARM) )
+		if(pin_read(CTRL_IN_ARM_GPIO,CTRL_IN_ARM))
 		{
-			if(ctrlArmDBC < CTRL_ARM_DBC_TIME)
-				ctrlArmDBC++; 		// increment arm held time
-			else
+			if(ctrlArmDBC >= CTRL_ARM_DBC_TIME)	// if the debounce time has elapsed
 			{
-				if(ctrlArm == CTRL_IN_INACTIVE)
-					ctrlArm = CTRL_IN_ACTIVE_NEW;
-				else
-					ctrlArm = CTRL_IN_ACTIVE_OLD;
+				if(ctrlArm == CTRL_IN_INACTIVE)		// if the arm button was just pressed,
+					ctrlArm = CTRL_IN_ACTIVE_NEW;			// record it as active new.
+				else									// otherwise,
+					ctrlArm = CTRL_IN_ACTIVE_OLD;			// record it as active old (it's been pressed down for a while).
 			}
 		}
 		else
 		{
-			ctrlArmDBC = 0;				// reset the debounce counter
-			ctrlArm = CTRL_IN_INACTIVE;	// record the control input as being inactive
+			if(ctrlArm != CTRL_IN_INACTIVE) ctrlArmDBC = 0;	// reset the debounce timer if necessary
+			ctrlArm = CTRL_IN_INACTIVE;			// set the arm button as inactive
+			if(ctrlArmDBC < CTRL_ARM_DBC_TIME)	// if the debounce time has not yet been met,
+				ctrlArmDBC++;							// increment the debounce time
 		}
 		
-		// if the pedal was just hit
+		// if the pedal is held down
 		if(!pin_read(CTRL_IN_PEDAL_GPIO,CTRL_IN_PEDAL))
 		{
-			ctrlPedal = 1;
+			if(ctrlPedalDBC >= CTRL_PEDAL_DBC_TIME)	// if the debounce time has elapsed
+			{
+				if(ctrlPedal == CTRL_IN_INACTIVE)		// if the pedal was just hit,
+					ctrlPedal = CTRL_IN_ACTIVE_NEW;			// record it as active new.
+				else									// otherwise,
+					ctrlPedal = CTRL_IN_ACTIVE_OLD;			// record it as active old (it's been held for a while).
+			}
 		}
 		else
 		{
-			ctrlPedalDBC = 0;		// otherwise, reset it.
-			ctrlPedal = CTRL_IN_INACTIVE;
+			if(ctrlPedal != CTRL_IN_INACTIVE) ctrlPedalDBC = 0;	// reset the debounce timer if necessary
+			ctrlPedal = CTRL_IN_INACTIVE;			// set the pedal as inactive
+			if(ctrlPedalDBC < CTRL_PEDAL_DBC_TIME)	// if the debounce time has not yet been met,
+				ctrlPedalDBC++;							// increment the debounce time
 		}
 	}
 	
@@ -82,24 +91,30 @@
 	{
 		switch(ctrlMode)
 		{
-		case CTRL_MODE_STOP:
-			if(ctrlArm)
+		case CTRL_MODE_STOP:													// STOP mode
+			if( (ctrlArm==CTRL_IN_ACTIVE_NEW) || (ctrlPedal==CTRL_IN_ACTIVE_NEW) )	// if either the pedal or the arm button are activated by user,
 			{
-				song_set_to_beginning();
-				ctrl_mode_set(CTRL_MODE_ARMED);
+				ctrl_mode_set(CTRL_MODE_ARMED);											// move into armed mode
 			}
 			break;
-		case CTRL_MODE_ARMED:
-			
-			break;
-		case CTRL_MODE_RECORD:
-			
-			break;
-		case CTRL_MODE_PLAY:
-			ctrl_LED_g();
-			if(ctrlArm)
+		case CTRL_MODE_ARMED:													// ARMED mode
+			if( (ctrlPedal==CTRL_IN_ACTIVE_NEW) || (ctrlKeyHit==CTRL_IN_ACTIVE_NEW) || (ctrlArm==CTRL_IN_ACTIVE_NEW) ) // if [the pedal was just stepped on] OR [a key was just hit] OR [the arm button was just pressed],  
 			{
-				ctrl_mode_set(CTRL_MODE_RECORD);
+				song_set_to_beginning();												// set song to beginning
+				ctrl_mode_set(CTRL_MODE_RECORD);										// and start recording
+			}
+			break;
+		case CTRL_MODE_RECORD:													// RECORD mode
+			if( (ctrlArm==CTRL_IN_ACTIVE_NEW) || (ctrlPedal==CTRL_IN_ACTIVE_NEW) )	// if either the pedal or the arm button are activated by user,
+			{
+				ctrl_mode_set(CTRL_MODE_PLAY);											// stop recording; exit to play mode.
+			}
+			break;
+		case CTRL_MODE_PLAY:													// PLAY mode
+			ctrl_LED_g();
+			if( (ctrlArm==CTRL_IN_ACTIVE_NEW) || (ctrlPedal==CTRL_IN_ACTIVE_NEW) )	// if either the pedal or the arm button are activated by user,
+			{
+				ctrl_mode_set(CTRL_MODE_RECORD);										// start recording use input again.
 			}
 			break;
 		default:

@@ -189,6 +189,7 @@ int main(void)
 			if (key_input_states[k] && !KeyCooldownActive[k])
 			{
 				//pin_on(DEBUG_GPIO,DEBUG_0);
+				ctrlKeyHit = CTRL_IN_ACTIVE_NEW;				// record that the user hit a key
 				// add the key to the song
 				Note* n = init_note(k, currentTime, 40);
 				insert_note(&songCurrent, n);
