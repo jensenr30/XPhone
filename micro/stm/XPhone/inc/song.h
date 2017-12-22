@@ -16,6 +16,7 @@
 	// this will point to the next note you are going to play
 	Note *noteToPlay = NULL;
 	
+	// TODO implement a way to limit to total possible notes
 	
 	//=============================================================================
 	// This sets up all the song stuff.
@@ -37,6 +38,13 @@
 		NVIC_EnableIRQ(TIM3_IRQn);							// enable timer interrupt handler
 		SONG_TIM->CNT = 0;									// init the counter at 0.
 		SONG_TIM->EGR |= TIM_EGR_UG;						// generate a timer update (this updates all the timer settings that were just configured). See RM0402.pdf section 17.4.6	"TIMx event generation register (TIMx_EGR)"
+	}
+	
+	//=============================================================================
+	void song_set_to_beginning()
+	{
+		SONG_TIM->CNT = 0;									// set the timer/counter to 0 (this ensures that the first ms of the song really lasts the full ms).
+		SongTime = 0;										// set the song time to 0
 	}
 	
 	//=============================================================================

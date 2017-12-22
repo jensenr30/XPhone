@@ -10,19 +10,10 @@
 #include "debug.h"
 #include "solenoid.h"
 #include "song.h"
+#include "control.h"
 
 // clock config. function def
 static void system_clock_config(void);	
-
-
-// JP's key input/output definitions
-int totalNotes = 0;
-
-#define size 14
-int i, j;
-int song[size] = {
-			0,1,2,3,4,5,6,7,6,5,4,3,2,1
-};
 
 
 //=============================================================================
@@ -94,9 +85,9 @@ int main(void)
 //		HAL_Delay(5000);
 //	}
 	
-	uint16_t TON  = 2;
-	uint16_t TOFF = 14;
-	uint16_t cycles = 15;
+//	uint16_t TON  = 2;
+//	uint16_t TOFF = 14;
+//	uint16_t cycles = 15;
 	// code to test solenoid hitting (direct GPIO control. i know i'm using the debug pin. it doesn't make sense, but that is the pin I chose.)
 //	while (1)
 //	{
@@ -121,6 +112,35 @@ int main(void)
 //		insert_note(&songCurrent, jenNOTE);
 //		i_i_i++;
 //	}
+	
+	
+//	// jensen's code to test RGB LED.
+//	KeyTimeType ct = KeyTimeMax;	// this is used to store the current time of the song. It is initialized to a value that SongTime will never be, so that the while() wait loops fails and sets it right away.
+//	while(1)
+//	{
+//		while(ct == SongTime) {;}			// wait for the 1 millisecond tick
+//		ct = SongTime;						// update the currentTime to the SongTime (which is based on the SONG_TIM song timer)
+//		if(ct < 500)
+//		{
+//			pin_on(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R);
+//		}
+//		else if(ct < 1000)
+//		{
+//			pin_off(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R);
+//			pin_on(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G);
+//		}
+//		else if(ct < 1500)
+//		{
+//			pin_off(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G);
+//			pin_on(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B);
+//		}
+//		else
+//		{
+//			pin_off(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B);
+//		}
+//			
+//	}
+	
 	
 	
 	KeyType k;
@@ -188,6 +208,19 @@ int main(void)
 			if( (KeyCooldownActive[k] == 2) && (key_input_states[k] == 0) )		// but wait until the key input is actually LOW...
 				KeyCooldownActive[k] = 0;					// ...before you actually accept another key press
 		}
+		
+		//----------------------------------------------------------------------
+		// manage what mode you are in
+		//----------------------------------------------------------------------
+		ctrl_in_debounce();			// check inputs and debounce them
+		ctrl_mode_manage();			// manage/change the mode that the XPhone is in based on events, user input, etc...
+		
+		//----------------------------------------------------------------------
+		// control LED based on the current mode
+		//----------------------------------------------------------------------
+		ctrl_LED();
+		
+		
 	}
 }
 

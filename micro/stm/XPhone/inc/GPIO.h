@@ -41,6 +41,30 @@
 	#define KEY_INPUT_DIR		1					// direction that data is shifted in from the input key shift register.
 	
 	
+	// these pins are inputs/outputs on the control panel
+	#define CTRL_IN_ARM_GPIO	GPIOC 
+	#define CTRL_IN_ARM			GPIO_PIN_11			// input pin for arming recording mode (recording doesn't start yet, but it will when the user hits a note, or steps on the pedal.
+	#define CTRL_IN_PEDAL_GPIO	GPIOC
+	#define CTRL_IN_PEDAL		GPIO_PIN_10			// input pin for the pedal. Active LOW. If mode is ARMED, stepping on the pedal will set it to RECORD mode. If in RECORD mode, stepping on pedal exits RECORD mode into PLAY mode).
+	#define CTRL_IN_SYNC_GPIO	GPIO
+	#define CTRL_IN_SYNC		GPIO_PIN_			// input pin for the sync signal (resets the song to timer=0)
+	
+	#define CTRL_OUT_LED_R_GPIO	GPIOC
+	#define CTRL_OUT_LED_R		GPIO_PIN_12			// output pin controlling red part of the RGB LED
+	#define CTRL_OUT_LED_G_GPIO	GPIOD
+	#define CTRL_OUT_LED_G		GPIO_PIN_2			// output pin controlling green part of the RGB LED
+	#define CTRL_OUT_LED_B_GPIO	GPIOF
+	#define CTRL_OUT_LED_B		GPIO_PIN_6			// output pin controlling blue part of the RGB LED
+	
+	#define CTRL_OUT_SYNC_GPIO	//TODO
+	#define CTRL_OUT_SYNC		//TODO			// output pin for syncing other modules. When (SongTime==0), sends out a 1 ms trigger signal (normally 0 V, 3.3 V for 1 ms). 
+	
+	#define ctrl_LED_o()		pin_off(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R); pin_off(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G); pin_off(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = off
+	#define ctrl_LED_r()		pin_on(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R);  pin_off(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G); pin_off(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = red
+	#define ctrl_LED_g()		pin_off(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R); pin_on(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G);  pin_off(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = green
+	#define ctrl_LED_b()		pin_off(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R); pin_off(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G); pin_on(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = blue
+	#define ctrl_LED_w()		pin_on(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R);  pin_on(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G);  pin_on(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = white
+	
 	//==============================================================================
 	// GPIO functions
 	//==============================================================================
@@ -71,9 +95,9 @@
 	void GPIO_init()
 	{
 		// enable the clocks for the ports we want to use
-		//__HAL_RCC_GPIOC_CLK_ENABLE();
-		//__HAL_RCC_GPIOF_CLK_ENABLE();
-		//__HAL_RCC_GPIOD_CLK_ENABLE();
+		__HAL_RCC_GPIOC_CLK_ENABLE();
+		__HAL_RCC_GPIOF_CLK_ENABLE();
+		__HAL_RCC_GPIOD_CLK_ENABLE();
 		__HAL_RCC_GPIOG_CLK_ENABLE();
 		
 		// enable solenoid output shift register pins
@@ -96,6 +120,18 @@
 		pin_off(DEBUG_GPIO, DEBUG_1);
 		pin_off(DEBUG_GPIO, DEBUG_WARNING_LED);
 		pin_off(DEBUG_GPIO, DEBUG_ERROR_LED);
+		
+		// control panel pins
+		GPIO_set_input(CTRL_IN_ARM_GPIO,CTRL_IN_ARM);
+		
+		GPIO_set_output(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R);
+		GPIO_set_output(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G);
+		GPIO_set_output(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B);
+		
+		//initialize control pins
+		pin_off(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R);
+		pin_off(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G);
+		pin_off(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B);
 		
 	}
 	
