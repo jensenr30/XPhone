@@ -33,7 +33,8 @@ int main(void)
 	GPIO_init();						// set up all GPIO pins for everything.
 	solenoid_init();					// initialize all solenoid stuff.
 	key_init();							// initialize all the key stuff
-	song_init();							// set up song stuff
+	ctrl_init();
+	song_init();						// set up song stuff
 	
 //	// Code to test the 1-ms tick
 //	while(1)
