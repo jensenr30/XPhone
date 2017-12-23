@@ -7,7 +7,7 @@ void song_init()
 {
 	// song variables
 	SongTime = 0;										// start out at 0 ms.
-	SongLength = 2000;									// by default, the song starts out being 6 second long
+	SongLength = KeyTimeMax;							// by default, the song is YEARS long.
 	songCurrent = init_note(KEY_TRACK_EMPTY, 0, 100);	// create an empty song
 	noteToPlay = songCurrent;							// make noteToPlay point at the song.
 	

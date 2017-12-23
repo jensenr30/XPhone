@@ -5,7 +5,8 @@
 #include "globals.h"
 #endif
 #include "key.h"
-#include "GPIO.h"
+#include "solenoid.h"
+#include "song.h"
 
 /// initilize a note
 // key is the key to be played
@@ -107,13 +108,29 @@ void clear_song(Note *song) {
 // calibrates all the keys on the XPhone
 void key_cal()
 {
+	ctrl_LED_w();
+	uint8_t gotMin;
+	uint16_t tmax = 20;	// max amount of time you should have to wait to see the results of your xylophone key hit is this many ms.
+	uint16_t t;
 	KeyType k;
 	for(k=0; k<KEYS; k++)
 	{
+		gotMin = 0;
 		keyIntensityMin[k] = KEY_CAL_START;
-		solenoid_play(k,keyIntensityMin[k]);
-		pause(KEY_CAL_WAIT);
-		keys_read();
+		while(!gotMin)
+		{
+			solenoid_play(k,keyIntensityMin[k]);
+			t = 0;
+			while(t<tmax)
+			{
+				pause(1);
+				keys_read();
+				gotMin |= key_input_states[k];
+				t++;
+			}
+			if(!gotMin) keyIntensityMin[k] += KEY_CAL_STEP;
+			pause(KEY_CAL_STEP_TIME);
+		}
 		
 	}
 }

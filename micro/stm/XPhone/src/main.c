@@ -21,6 +21,8 @@ static void system_clock_config(void);
 //=============================================================================
 int main(void)
 {
+	KeyType k;
+	KeyTimeType currentTime = KeyTimeMax;	// this is used to store the current time of the song. It is initialized to a value that SongTime will never be, so that the while() wait loops fails and sets it right away.
 	
 	// TODO: write a watchdog type of code that ensures that the solenoid timer doesn't go too high.
 	// you would need to gracefully return the solenoid timer to 0 while adjusting the off-times of all of the currently turned-on solenoids.
@@ -148,14 +150,23 @@ int main(void)
 //	while(1)
 //	{
 //		solenoid_play(i%KEYS,3000);
-//		i+=5;
+//		i+=7;
 //		pause(200);
 //	}
-//	
 	
 	
-	KeyType k;
-	KeyTimeType currentTime = KeyTimeMax;	// this is used to store the current time of the song. It is initialized to a value that SongTime will never be, so that the while() wait loops fails and sets it right away.
+	// calibrate all the key amplitudes
+	key_cal();
+	
+	while(1)
+	{
+		for(k=0;k++;k<KEYS)
+		{
+			solenoid_play(k,keyIntensityMin[noteToPlay->key]+500);
+			pause(700);
+		}
+	}
+	
 	//-------------------------------------------------------------------------
 	// Main Program Loop
 	//-------------------------------------------------------------------------
@@ -182,7 +193,7 @@ int main(void)
 			{
 				while(noteToPlay->time == currentTime)				// if the next note to play should be played at the curren time,
 				{
-					solenoid_play(noteToPlay->key,4000);				// play it  TODO: put in the proper intensity
+					solenoid_play(noteToPlay->key,keyIntensityMin[noteToPlay->key]+500);	// play it  TODO: put in the proper intensity
 					noteToPlay = noteToPlay->next;						// move to the next note
 					KeyCooldownActive[noteToPlay->key] = 1;				// activate the cooldown for this key
 					KeyCooldownTimes[noteToPlay->key] = (currentTime + KEY_COOLDOWN) % SongLength;	// ^

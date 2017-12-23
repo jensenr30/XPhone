@@ -97,6 +97,10 @@ void ctrl_init(){
 			if( (ctrlArm==CTRL_IN_ACTIVE_NEW) || (ctrlPedal==CTRL_IN_ACTIVE_NEW) )	// if either the pedal or the arm button are activated by user,
 			{
 				ctrl_mode_set(CTRL_MODE_PLAY);											// stop recording; exit to play mode.
+				if(SongLength==KeyTimeMax)												// if this is the first thing you recorded,
+				{
+					SongLength = SongTime;													// set this as the song length.
+				}
 			}
 			break;
 		case CTRL_MODE_PLAY:													// PLAY mode

@@ -3,7 +3,6 @@
 	#include <inttypes.h>
 	#include "GPIO.h"
 	#include "main.h"
-	#include "key.h"
 	#include "debug.h"
 	//==============================================================================
 	// solenoid system
