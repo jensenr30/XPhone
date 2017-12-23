@@ -141,6 +141,16 @@ int main(void)
 //			
 //	}
 	
+	// jensen's little test of all the keys.
+//	int i;
+//	i = 0;
+//	while(1)
+//	{
+//		solenoid_play(i%KEYS,3000);
+//		i+=5;
+//		pause(200);
+//	}
+//	
 	
 	
 	KeyType k;
@@ -156,31 +166,35 @@ int main(void)
 		//----------------------------------------------------------------------
 		// play all the notes you must
 		//----------------------------------------------------------------------
-		if(noteToPlay == NULL)								// if you have reached the end of the song,
-			noteToPlay = songCurrent;							// start over from the beginning
-		else if(noteToPlay->key == KEY_TRACK_EMPTY)			
-			noteToPlay = songCurrent;							// try refreshing it
-		else if(noteToPlay->time >= SongLength)				// if the next note should be played AFTER THE SONG ENDS (ridiculous, should never happen)
-		{	
-			noteToPlay = songCurrent;							// restart the song
-			warning("Somehow, you got a note in your song that has a time that is AFTER your song ends!");
-		}
-		if(songCurrent->key != KEY_TRACK_EMPTY)				// if this is not an empty song
+		if(ctrlMode==CTRL_MODE_PLAY || ctrlMode==CTRL_MODE_RECORD)
 		{
-			while(noteToPlay->time == currentTime)				// if the next note to play should be played at the curren time,
+			if(noteToPlay == NULL)								// if you have reached the end of the song,
+				noteToPlay = songCurrent;							// start over from the beginning
+			else if(noteToPlay->key == KEY_TRACK_EMPTY)			
+				noteToPlay = songCurrent;							// try refreshing it
+			else if(noteToPlay->time >= SongLength)				// if the next note should be played AFTER THE SONG ENDS (ridiculous, should never happen)
+			{	
+				noteToPlay = songCurrent;							// restart the song
+				warning("Somehow, you got a note in your song that has a time that is AFTER your song ends!");
+			}
+			if(songCurrent->key != KEY_TRACK_EMPTY)				// if this is not an empty song
 			{
-				solenoid_play(noteToPlay->key,4000);				// play it  TODO: put in the proper intensity
-				noteToPlay = noteToPlay->next;						// move to the next note
-				KeyCooldownActive[noteToPlay->key] = 1;				// activate the cooldown for this key
-				KeyCooldownTimes[noteToPlay->key] = (currentTime + KEY_COOLDOWN) % SongLength;	// ^
-				if(noteToPlay == NULL) break;						// if this is the end of the song, start over.
+				while(noteToPlay->time == currentTime)				// if the next note to play should be played at the curren time,
+				{
+					solenoid_play(noteToPlay->key,4000);				// play it  TODO: put in the proper intensity
+					noteToPlay = noteToPlay->next;						// move to the next note
+					KeyCooldownActive[noteToPlay->key] = 1;				// activate the cooldown for this key
+					KeyCooldownTimes[noteToPlay->key] = (currentTime + KEY_COOLDOWN) % SongLength;	// ^
+					if(noteToPlay == NULL) break;						// if this is the end of the song, start over.
+				}
 			}
 		}
+		
 		
 		//----------------------------------------------------------------------
 		// input all keys into key_inputs[] array.
 		//----------------------------------------------------------------------
-		shift_in(KEY_INPUT_GPIO, KEY_INPUT_CLOCK, KEY_INPUT_DATA, KEY_INPUT_LATCH, KEYS, (KeyStateType *) key_input_states, KEY_INPUT_DIR);
+		keys_read();
 		
 		// check to see if you need to add any notes to the song
 		for (k=0; k < KEYS; k++)

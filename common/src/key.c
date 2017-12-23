@@ -5,6 +5,7 @@
 #include "globals.h"
 #endif
 #include "key.h"
+#include "GPIO.h"
 
 /// initilize a note
 // key is the key to be played
@@ -99,6 +100,27 @@ void clear_song(Note *song) {
     }
     // set the first element to the empty note
     *song = *init_note(KEY_TRACK_EMPTY, 0, 100);
+}
+
+
+
+// calibrates all the keys on the XPhone
+void key_cal()
+{
+	KeyType k;
+	for(k=0; k<KEYS; k++)
+	{
+		keyIntensityMin[k] = KEY_CAL_START;
+		solenoid_play(k,keyIntensityMin[k]);
+		pause(KEY_CAL_WAIT);
+		keys_read();
+		
+	}
+}
+
+void keys_read()
+{
+	shift_in(KEY_INPUT_GPIO, KEY_INPUT_CLOCK, KEY_INPUT_DATA, KEY_INPUT_LATCH, KEYS, (KeyStateType *) key_input_states, KEY_INPUT_DIR);
 }
 
 #if STM_PROGRAM

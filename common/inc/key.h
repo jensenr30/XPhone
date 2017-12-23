@@ -33,14 +33,21 @@
 	} Note;
 	
 	
-	KeyIntensityType keyIntensityMin[KEYS];
-	KeyIntensityType keyIntensityMax[KEYS];
+	
+	// TODO figure out a way to change uint32_t to SolTimType without having build issues. It is probably due to my shitty .h and .c structure...
+	uint32_t keyIntensityMin[KEYS];
+	uint32_t keyIntensityMax[KEYS];
+	#define KEY_CAL_START	((uint32_t)1000)	// initial solenoid intensity
+	#define KEY_CAL_STEP	((uint32_t)100)		// solenoid intensity step size.
+	#define KEY_CAL_WAIT	(5)					// wait this many milliseconds after hitting the key to check the key's state.
 	
 	/// Functions
 	Note* init_note(KeyType key, KeyTimeType time, KeyIntensityType intensity);
 	void insert_note(Note **song, Note *note);
 	void clear_song(Note *song);
 	void key_init();
+	void key_cal();
+	void keys_read();
 	
 	#if SDL_PROGRAM
 		/// SDLKey structure

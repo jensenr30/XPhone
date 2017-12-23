@@ -40,11 +40,29 @@
 		SONG_TIM->EGR |= TIM_EGR_UG;						// generate a timer update (this updates all the timer settings that were just configured). See RM0402.pdf section 17.4.6	"TIMx event generation register (TIMx_EGR)"
 	}
 	
+	
+	//=============================================================================
+	// restarts the song timer to 0
 	//=============================================================================
 	void song_set_to_beginning()
 	{
 		SONG_TIM->CNT = 0;									// set the timer/counter to 0 (this ensures that the first ms of the song really lasts the full ms).
 		SongTime = 0;										// set the song time to 0
+	}
+	
+	
+	//=============================================================================
+	// blocks program execution for some time (milliseconds)
+	//=============================================================================
+	void pause(uint32_t ms)
+	{
+		KeyTimeType st = SongTime;
+		while(ms)
+		{
+			while(st == SongTime){}
+			st = SongTime;
+			ms--;
+		}
 	}
 	
 	//=============================================================================
