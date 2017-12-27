@@ -42,41 +42,52 @@ void insert_note(Note **song, Note *note) {
 		return;
 	}
 	
-    // iteration variables
-    Note *cur = *song;
-    Note *after = NULL;
-
-    // iterate over all the elements
-    while(cur != NULL) {
-        // check if the note should go before the current note
-        if(cur->time > note->time) {
-            break;
-        }
-        // check if the note should go after the current note
-        if(cur->time < note->time) {
-            // save the note for later use
-            after = cur;
-        }
-        // get next element
-        cur = cur->next;
-    }
-
-    // check if it is the first element of the song to be added onto
-    if(after == NULL) {
-        note->next = *song;
-        *song = note;
-    // check if it is the first note to be added to the song
-    } else if(after->key == KEY_TRACK_EMPTY) {
-        // set note as first element
-        *song = note;
-    // check if it is the last item to be added
-    } else if(cur == NULL) {
-        after->next = note;
-    // add if between two items already in the list
-    } else {
-        after->next = note;
-        note->next = cur;
-    }
+	// if this is the first note to insert,
+	if( (*song)->key == KEY_TRACK_EMPTY )
+	{
+		note_clear_from_memory(*song);			// delete the placeholder note,
+		*song = note;							// point the song to the current note.
+		noteToPlay = *song;						// the next note you should play is the first one (when you stop recording and start playing this note)
+	}
+	// if this is NOT the first note to insert,
+	else
+	{
+		
+		Note *cur = *song;		// iteration variables
+		Note *after = NULL;		// the new *note will be inserted just after this one.
+		
+		// iterate over all the elements
+		while(cur != NULL) {
+			// check if the note should go before the current note
+			if(cur->time > note->time) {
+				break;
+			}
+			// check if the note should go after the current note
+			if(cur->time < note->time) {
+				// save the note for later use
+				after = cur;
+			}
+			// get next element
+			cur = cur->next;
+		}
+	
+		// check if it is the first element of the song to be added onto
+		if(after == NULL) {
+			note->next = *song;
+			*song = note;
+		// check if it is the first note to be added to the song
+		} else if(after->key == KEY_TRACK_EMPTY) {
+			// set note as first element
+			*song = note;
+		// check if it is the last item to be added
+		} else if(cur == NULL) {
+			after->next = note;
+		// add if between two items already in the list
+		} else {
+			after->next = note;
+			note->next = cur;
+		}
+	}
 }
 
 /// clear a song
@@ -94,7 +105,7 @@ void clear_song(Note *song) {
         // store the next element in a temporary variable
         next = cur->next;
         // remove the current note
-        //free(cur);
+        //free(cur);					// TODO need to put this back into the program, probably use the note_clear_from_memory function.
         cur = NULL;
         // set the current to the next element
         cur = next;
@@ -104,35 +115,88 @@ void clear_song(Note *song) {
 }
 
 
+void note_clear_from_memory(Note *note)
+{
+    if(note == NULL)
+    {
+    	warning("Could not clear note from memory using note_clear_from_memory()! Reason: I got a NULL pointer!");
+    	return;
+    }
+    free(note);
+}
+
 
 // calibrates all the keys on the XPhone
 void key_cal()
 {
-	ctrl_LED_w();
-	uint8_t gotMin;
-	uint16_t tmax = 20;	// max amount of time you should have to wait to see the results of your xylophone key hit is this many ms.
-	uint16_t t;
-	KeyType k;
-	for(k=0; k<KEYS; k++)
-	{
-		gotMin = 0;
-		keyIntensityMin[k] = KEY_CAL_START;
-		while(!gotMin)
-		{
-			solenoid_play(k,keyIntensityMin[k]);
-			t = 0;
-			while(t<tmax)
-			{
-				pause(1);
-				keys_read();
-				gotMin |= key_input_states[k];
-				t++;
-			}
-			if(!gotMin) keyIntensityMin[k] += KEY_CAL_STEP;
-			pause(KEY_CAL_STEP_TIME);
-		}
-		
-	}
+	// manual intensity setting
+	keyIntensityMin[0]	=	2400;
+	keyIntensityMin[1]	=	2600;
+	keyIntensityMin[2]	=	2900;
+	keyIntensityMin[3]	=	2300;
+	keyIntensityMin[4]	=	2300;
+	keyIntensityMin[5]	=	2800;
+	keyIntensityMin[6]	=	2400;
+	keyIntensityMin[7]	=	2500;
+	keyIntensityMin[8]	=	3000;
+	keyIntensityMin[9]	=	3500;
+	keyIntensityMin[10]	=	2400;
+	keyIntensityMin[11]	=	2500;
+	
+	keyIntensityMin[12]	=	2800;
+	keyIntensityMin[13]	=	2800;
+	keyIntensityMin[14]	=	3600;
+	keyIntensityMin[15]	=	2900;
+	keyIntensityMin[16]	=	2600;
+	keyIntensityMin[17]	=	3500;
+	keyIntensityMin[18]	=	2500;
+	keyIntensityMin[19]	=	2800;
+	keyIntensityMin[20]	=	3500;
+	keyIntensityMin[21]	=	2500;
+	keyIntensityMin[22]	=	3000;
+	keyIntensityMin[23]	=	2600;
+	
+	keyIntensityMin[24]	=	4000;
+	keyIntensityMin[25]	=	3500;
+	keyIntensityMin[26]	=	4500;
+	keyIntensityMin[27]	=	3600;
+	keyIntensityMin[28]	=	3800;
+	keyIntensityMin[29]	=	4700;
+	keyIntensityMin[30]	=	2900;
+	keyIntensityMin[31]	=	3100;
+	keyIntensityMin[32]	=	2500;
+	keyIntensityMin[33]	=	2900;
+	keyIntensityMin[34]	=	3100;
+	keyIntensityMin[35]	=	2500;
+	
+	keyIntensityMin[36]	=	3500;
+	
+//	// first attempt at calibration method. Doesn't work so well because the sensitivity of the keys is not really the same across all keys.
+//	ctrl_LED_w();
+//	uint8_t gotMin;
+//	uint16_t tmax = 20;	// max amount of time you should have to wait to see the results of your xylophone key hit is this many ms.
+//	uint16_t t;
+//	KeyType k;
+//	for(k=0; k<KEYS; k++)
+//	{
+//		gotMin = 0;
+//		keyIntensityMin[k] = KEY_CAL_START;
+//		while(!gotMin)
+//		{
+//			solenoid_play(k,keyIntensityMin[k]);
+//			t = 0;
+//			while(t<tmax)
+//			{
+//				pause(1);
+//				keys_read();
+//				gotMin |= key_input_states[k];
+//				t++;
+//			}
+//			if(!gotMin) keyIntensityMin[k] += KEY_CAL_STEP;
+//			pause(KEY_CAL_STEP_TIME);
+//		}
+//		
+//	}
 }
 
 void keys_read()
@@ -146,7 +210,8 @@ void keys_read()
 		KeyType i;
 		for(i = 0; i < KEYS; i++)
 		{
-			KeyCooldownActive[i] = 0;	// initialize the cooldown periods to 0.
+			KeyCooldownActive[i] = 0;	// initialize all cooldowns to be not active at the beginning.
+			KeyCooldownTimes[i] = 0;	// initialize all the cooldown times to 0.
 			key_input_states[i] = 0;	// initialize the key input states to 0.
 		}
 	}

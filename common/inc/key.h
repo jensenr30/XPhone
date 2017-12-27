@@ -16,7 +16,7 @@
 	volatile KeyStateType key_input_states[KEYS];	// the key input states
 	// key input cooldown periods
 	#define KEY_COOLDOWN ((KeyTimeType)50)	// Once a key is hit, it takes this many milliseconds before the XPhone will recognize another key hit. If you hit they key a bunch of times within this window of time, it will only register the first key hit. This is a way of debouncing the input.
-	KeyTimeType KeyCooldownTimes[KEYS];		// this array indicates the times (for each key) at which you can start looking for key hits again.   
+	KeyTimeType KeyCooldownTimes[KEYS];		// this tells you how many milliseconds you have to wait until you can input on this key again. this is usually set to 50 right away, and it gets decremented.
 	uint8_t KeyCooldownActive[KEYS];		// this array indicates (for each key) whether or not it is in its cooldown period.
 	
 	#define KEY_TRACK_EMPTY 255	
@@ -47,6 +47,7 @@
 	Note* init_note(KeyType key, KeyTimeType time, KeyIntensityType intensity);
 	void insert_note(Note **song, Note *note);
 	void clear_song(Note *song);
+	void note_clear_from_memory(Note *note);
 	void key_init();
 	void key_cal();
 	void keys_read();

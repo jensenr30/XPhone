@@ -116,8 +116,7 @@ int main(void)
 //		i_i_i++;
 //	}
 	
-	
-//	// jensen's code to test RGB LED.
+		//	// jensen's code to test RGB LED.
 //	KeyTimeType ct = KeyTimeMax;	// this is used to store the current time of the song. It is initialized to a value that SongTime will never be, so that the while() wait loops fails and sets it right away.
 //	while(1)
 //	{
@@ -143,8 +142,14 @@ int main(void)
 //		}
 //			
 //	}
+
 	
-	// jensen's little test of all the keys.
+	// calibrate all the key amplitudes
+	key_cal();
+	
+
+	
+//	// jensen's little test of all the keys.
 //	int i;
 //	i = 0;
 //	while(1)
@@ -153,19 +158,46 @@ int main(void)
 //		i+=7;
 //		pause(200);
 //	}
+//	
 	
+//	uint32_t adder=0, step=1, wait=125;
+//	// play all keys in sequence
+//	while(1)
+//	{
+//		for(k=0;k<KEYS;k++)
+//		{
+//			solenoid_play((k*step)%KEYS,keyIntensityMin[k]+adder);
+//			pause(wait);
+//		}
+//		//adder += 500;
+//		pause(1000);
+//	}
 	
-	// calibrate all the key amplitudes
-	key_cal();
-	
-	while(1)
-	{
-		for(k=0;k++;k<KEYS)
-		{
-			solenoid_play(k,keyIntensityMin[noteToPlay->key]+500);
-			pause(700);
-		}
-	}
+//	// this is jensen's test to check when activating the solenoid of one key sets off a different key.
+//	uint16_t a, t, start=1000, stop=4000, step=500, tmax = 50, k2;
+//	while(1)
+//	{
+//		for(k=0; k<KEYS; k++)					// for each key,
+//		{
+//			for(a=start;a<=stop;a+=step)				// try a few amplitudes
+//			{
+//				solenoid_play(k,a);						// play the key
+//				for(t=0;t<tmax;t++)
+//				{
+//					keys_read();							// read all keys
+//					for(k2=0; k2<KEYS; k2++)				
+//					{
+//						if(key_input_states[k2] && (k2 != k))	// if any keys are high that are NOT the key we are trying to play,
+//						{
+//							warning("That should not have happened");	// give a warning.
+//						}
+//					}
+//					pause(1);
+//				}
+//				pause(167);
+//			}
+//		}
+//	}
 	
 	//-------------------------------------------------------------------------
 	// Main Program Loop
@@ -182,7 +214,7 @@ int main(void)
 		{
 			if(noteToPlay == NULL)								// if you have reached the end of the song,
 				noteToPlay = songCurrent;							// start over from the beginning
-			else if(noteToPlay->key == KEY_TRACK_EMPTY)			
+			else if(noteToPlay->key == KEY_TRACK_EMPTY)			// if you have an empty track,
 				noteToPlay = songCurrent;							// try refreshing it
 			else if(noteToPlay->time >= SongLength)				// if the next note should be played AFTER THE SONG ENDS (ridiculous, should never happen)
 			{	
@@ -191,13 +223,12 @@ int main(void)
 			}
 			if(songCurrent->key != KEY_TRACK_EMPTY)				// if this is not an empty song
 			{
-				while(noteToPlay->time == currentTime)				// if the next note to play should be played at the curren time,
+				while( (noteToPlay->time == currentTime) && (noteToPlay != NULL) )				// if the next note to play should be played at the current time,
 				{
-					solenoid_play(noteToPlay->key,keyIntensityMin[noteToPlay->key]+500);	// play it  TODO: put in the proper intensity
+					solenoid_play(noteToPlay->key,keyIntensityMin[noteToPlay->key]);	// play it  TODO: put in the proper intensity
 					noteToPlay = noteToPlay->next;						// move to the next note
 					KeyCooldownActive[noteToPlay->key] = 1;				// activate the cooldown for this key
-					KeyCooldownTimes[noteToPlay->key] = (currentTime + KEY_COOLDOWN) % SongLength;	// ^
-					if(noteToPlay == NULL) break;						// if this is the end of the song, start over.
+					KeyCooldownTimes[noteToPlay->key] = KEY_COOLDOWN;	// ^
 				}
 			}
 		}
@@ -208,6 +239,7 @@ int main(void)
 		//----------------------------------------------------------------------
 		keys_read();
 		
+		ctrlKeyHit = CTRL_IN_INACTIVE;	// reset this flag. If the user hits a key, this will be set to CTRL_IN_ACTIVE_NEW.
 		// check to see if you need to add any notes to the song
 		for (k=0; k < KEYS; k++)
 		{
@@ -217,14 +249,19 @@ int main(void)
 				//pin_on(DEBUG_GPIO,DEBUG_0);
 				ctrlKeyHit = CTRL_IN_ACTIVE_NEW;				// record that the user hit a key
 				// if you are in recording mode,
-				if(ctrlMode == CTRL_MODE_RECORD)
+				if(ctrlMode == CTRL_MODE_ARMED)
+				{
+					song_set_to_beginning();												// set song to beginning
+					currentTime = 0;
+				}
+				if( (ctrlMode == CTRL_MODE_RECORD) || (ctrlMode == CTRL_MODE_ARMED) )
 				{
 					// add the key to the song
-					Note* n = init_note(k, currentTime, 40);
+					Note* n = init_note(k, currentTime, 128);	// TODO set a valid amplitude value
 					insert_note(&songCurrent, n);
 					// activate the cooldown for this key
 					KeyCooldownActive[k] = 1;
-					KeyCooldownTimes[k] = (currentTime + KEY_COOLDOWN) % SongLength;
+					KeyCooldownTimes[k] = KEY_COOLDOWN;
 				}
 			}
 		}
@@ -234,10 +271,17 @@ int main(void)
 		//----------------------------------------------------------------------
 		for(k = 0; k < KEYS; k++)
 		{
-			if(KeyCooldownTimes[k] == currentTime)		// if the cooldown is over, 
-				KeyCooldownActive[k] = 2;					// flag that the cooldown is over.
-			if( (KeyCooldownActive[k] == 2) && (key_input_states[k] == 0) )		// but wait until the key input is actually LOW...
-				KeyCooldownActive[k] = 0;					// ...before you actually accept another key press
+			if(KeyCooldownTimes[k])		// if there is still cooldown time left,
+			{
+				KeyCooldownTimes[k]--;		// decrement the cooldown timer.
+			}
+			else						// if the cooldown is over,
+			{
+				if(key_input_states[k]==0)	// if the key is actually off
+				{
+					KeyCooldownActive[k] = 0;	// you can finally deactivate the cooldown period.
+				}
+			}	
 		}
 		
 		//----------------------------------------------------------------------
