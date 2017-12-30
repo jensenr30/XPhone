@@ -51,6 +51,7 @@
 	void key_init();
 	void key_cal();
 	void keys_read();
+	void key_make_track_empty(Note *note);
 	
 	#if SDL_PROGRAM
 		/// SDLKey structure

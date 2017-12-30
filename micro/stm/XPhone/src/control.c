@@ -73,6 +73,19 @@ void ctrl_init(){
 			ctrlCalDBC = 0;
 			ctrlCal = CTRL_IN_INACTIVE;
 		}
+		
+		// if the clear button is held down,
+		if(pin_read(CTRL_IN_CLEAR_GPIO,CTRL_IN_CLEAR))
+		{
+			if(ctrlClearDBC < CTRL_CLEAR_HOLD_TIME)	ctrlClearDBC++;
+			else if(ctrlClear==CTRL_IN_INACTIVE)	ctrlClear = CTRL_IN_ACTIVE_NEW;
+			else									ctrlClear = CTRL_IN_ACTIVE_OLD;
+		}
+		else
+		{
+			ctrlClearDBC = 0;
+			ctrlClear = CTRL_IN_INACTIVE;
+		}
 	}
 	
 	// run this as frequently as you like. I recommend once per ms of the song.

@@ -18,7 +18,7 @@
 	volatile KeyTimeType SongLength;						// this is how long the song is (ms). Defaults to maximum time (4294967295 milliseconds, or about 1.2 hours)
 	Note *songCurrent;										// this points to the current song you are playing
 	Note *noteToPlay;										// this will point to the next note you are going to play
-
+	
 	// TODO implement a way to limit to total possible notes
 	
 	//=============================================================================
@@ -29,6 +29,7 @@
 	void song_set_to_beginning();
 	void pause(uint32_t ms);
 	void TIM3_IRQHandler(void);
+	void song_clear(Note *song);
 	
 	
 #endif // SONG_H_DEF

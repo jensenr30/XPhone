@@ -1,4 +1,5 @@
 #include "song.h"
+#include "debug.h"
 
 //=============================================================================
 // This sets up all the song stuff.
@@ -8,7 +9,8 @@ void song_init()
 	// song variables
 	SongTime = 0;										// start out at 0 ms.
 	SongLength = KeyTimeMax;							// by default, the song is YEARS long.
-	songCurrent = init_note(KEY_TRACK_EMPTY, 0, 57);	// create an empty song. 57 is arbitrary. just a way of keeping track of what line of code initialized the note.
+	songCurrent = init_note(0, 0, 0);					// create a new note to start the song.
+	key_make_track_empty(songCurrent);					// indicate the song is currently empty.
 	noteToPlay = songCurrent;							// make noteToPlay point at the song.
 	
 	// song 1-ms timer setup
@@ -61,4 +63,30 @@ void TIM3_IRQHandler(void)
 		else										// otherwise,
 			SongTime++;									// increment song time by 1
 	}
+}
+
+
+//=============================================================================
+// this deletes all the notes from the song you give it (frees memory).
+// it will leave the song in the same state song_init() does (note[0] = KEY_TRACK_EMPTY).
+//=============================================================================
+void song_clear(Note *song)
+{
+	// don't accept shitty input.
+	if(song == NULL)
+	{
+		warning("song_clear() was passed a NULL song! Exiting function...");
+		return;
+	}
+	// free all the notes until you get to the end (where the next note becomes NULL).
+	Note *cur = song->next;
+	Note *freeme = NULL;
+	while(cur != NULL)
+	{
+		freeme = cur;
+		cur = cur->next;
+		free(freeme);
+	}
+	// indicate the song is now empty by changing the first note to a KEY_TRACK_EMPTY note using the proper function:
+	key_make_track_empty(song);
 }

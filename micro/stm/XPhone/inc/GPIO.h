@@ -24,11 +24,12 @@
 	#define SOL_SR_DIR			1					// direction that the solenoid shift register shifts out key data
 	
 	// debug pins
-	#define DEBUG_GPIO 			GPIOG				// register used for debug pins
-	#define DEBUG_0 			GPIO_PIN_0			// pin used for programmer to debug code
-	#define DEBUG_1 			GPIO_PIN_1			// pin used for programmer to debug code
-	#define DEBUG_WARNING_LED	GPIO_PIN_2			// pin used to turn on an LED to indicate a	warning happened.
-	#define DEBUG_ERROR_LED		GPIO_PIN_3			// pin used to turn on an LED to indicate an error	 happened.
+	#define DEBUG_0_GPIO			GPIOF			
+	#define DEBUG_0					GPIO_PIN_9		// pin is used for whatever the fuck I feel like.   :-)
+	#define DEBUG_WARNING_LED_GPIO 	GPIOE			
+	#define DEBUG_WARNING_LED		GPIO_PIN_1		// pin used to turn on an LED to indicate a	warning happened.
+	#define DEBUG_ERROR_LED_GPIO	GPIOE			
+	#define DEBUG_ERROR_LED			GPIO_PIN_6		// pin used to turn on an LED to indicate an error	 happened.
 	
 	// these pins control an input shift-register.
 	// The input-shift register is connected to all the digital key input signals.
@@ -45,11 +46,15 @@
 	#define CTRL_IN_ARM			GPIO_PIN_11			// input pin for arming recording mode (recording doesn't start yet, but it will when the user hits a note, or steps on the pedal.
 	#define CTRL_IN_PEDAL_GPIO	GPIOC
 	#define CTRL_IN_PEDAL		GPIO_PIN_10			// input pin for the pedal. Active LOW. If mode is ARMED, stepping on the pedal will set it to RECORD mode. If in RECORD mode, stepping on pedal exits RECORD mode into PLAY mode).
-	#define CTRL_IN_SYNC_GPIO	GPIOH
-	#define CTRL_IN_SYNC		GPIO_PIN_2			// input pin for the sync signal (resets the song to timer=0)
 	#define CTRL_IN_CAL_GPIO	GPIOD
 	#define CTRL_IN_CAL			GPIO_PIN_9			// the calibration button. hold it for a little bit, and the XPhone will go thru a cal. procedure. 
-	
+	#define CTRL_IN_CLEAR_GPIO	GPIOG
+	#define CTRL_IN_CLEAR		GPIO_PIN_0			// pin used to clear the current song 
+	#define CTRL_IN_TIMING_GPIO	GPIOG				
+	#define CTRL_IN_TIMING		GPIO_PIN_1			// pin checks to see what timing we should use. if pin is high, we use external timing (song resets when CTRL_IN_SYNC signal goes high). low=internal timing (song resets when SongTime == SongLength).
+	#define CTRL_IN_SYNC_GPIO	GPIOD				
+	#define CTRL_IN_SYNC		GPIO_PIN_0			// if the user selects external timing, this pin will control when the XPhone resets the SongTime to 0.
+
 	#define CTRL_OUT_LED_R_GPIO	GPIOC
 	#define CTRL_OUT_LED_R		GPIO_PIN_12			// output pin controlling red part of the RGB LED
 	#define CTRL_OUT_LED_G_GPIO	GPIOD

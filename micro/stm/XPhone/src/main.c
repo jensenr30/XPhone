@@ -38,6 +38,7 @@ int main(void)
 	ctrl_init();
 	song_init();						// set up song stuff
 	
+	
 //	// Code to test the 1-ms tick
 //	while(1)
 //	{
@@ -289,13 +290,11 @@ int main(void)
 		//----------------------------------------------------------------------
 		ctrl_in_debounce();			// check inputs and debounce them
 		ctrl_mode_manage();			// manage/change the mode that the XPhone is in based on events, user input, etc...
-		
+		if(ctrlClear == CTRL_IN_ACTIVE_NEW) song_clear(songCurrent);	// if the user wants to clear the song, do it.
 		//----------------------------------------------------------------------
 		// control LED based on the current mode
 		//----------------------------------------------------------------------
 		ctrl_LED();
-		
-		
 	}
 }
 

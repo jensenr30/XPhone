@@ -7,7 +7,7 @@
 //=============================================================================
 void error(char *message)
 {
-	pin_on(DEBUG_GPIO, DEBUG_ERROR_LED);
+	pin_on(DEBUG_ERROR_LED_GPIO, DEBUG_ERROR_LED);
 	while (1) {;} // freeze program
 }
 
@@ -18,6 +18,6 @@ void error(char *message)
 //=============================================================================
 void warning(char *message)
 {
-	pin_on(DEBUG_GPIO, DEBUG_WARNING_LED);
+	pin_on(DEBUG_WARNING_LED_GPIO, DEBUG_WARNING_LED);
 	return;
 }

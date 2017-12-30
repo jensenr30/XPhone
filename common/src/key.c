@@ -26,6 +26,20 @@ Note* init_note(KeyType key, KeyTimeType time, KeyIntensityType intensity) {
     return note;
 }
 
+// change a note to signify an empty song.
+void key_make_track_empty(Note *note)
+{
+	if(note == NULL)
+	{
+		warning("key_make_track_empty() received NULL note. Exiting function...");
+		return;
+	}
+	note->intensity = 69;			// a way to remember the note was created in this function
+	note->key = KEY_TRACK_EMPTY;	// this note tells you the song is empty.
+	note->next = NULL;				// there is no note after this one.
+	note->time = 0;					// this doesn't really matter.
+}
+
 /// insert a note into the song
 // Note *song is the address of the list to be inserted into
 // Note *note is the address of the note to be inserted into the list
@@ -90,29 +104,31 @@ void insert_note(Note **song, Note *note) {
 	}
 }
 
-/// clear a song
-// Note *song is the song to be cleared
-void clear_song(Note *song) {
-    // if the song does not have any elements don't clear it
-    if(song->key == KEY_TRACK_EMPTY)
-        return;
-    // iteration variable
-    Note *cur = song;
-    // temporary note variable
-    Note *next = NULL;
-    // iterate through the list
-    while(cur != NULL) {
-        // store the next element in a temporary variable
-        next = cur->next;
-        // remove the current note
-        //free(cur);					// TODO need to put this back into the program, probably use the note_clear_from_memory function.
-        cur = NULL;
-        // set the current to the next element
-        cur = next;
-    }
-    // set the first element to the empty note
-    *song = *init_note(KEY_TRACK_EMPTY, 0, 100);
-}
+
+// this function is not optimal. replaced by: song.c -> song_clear()
+///// clear a song
+//// Note *song is the song to be cleared
+//void clear_song(Note *song) {
+//    // if the song does not have any elements don't clear it
+//    if(song->key == KEY_TRACK_EMPTY)
+//        return;
+//    // iteration variable
+//    Note *cur = song;
+//    // temporary note variable
+//    Note *next = NULL;
+//    // iterate through the list
+//    while(cur != NULL) {
+//        // store the next element in a temporary variable
+//        next = cur->next;
+//        // remove the current note
+//        //free(cur);					// TODO need to put this back into the program, probably use the note_clear_from_memory function.
+//        cur = NULL;
+//        // set the current to the next element
+//        cur = next;
+//    }
+//    // set the first element to the empty note
+//    *song = *init_note(KEY_TRACK_EMPTY, 0, 100);
+//}
 
 
 void note_clear_from_memory(Note *note)
