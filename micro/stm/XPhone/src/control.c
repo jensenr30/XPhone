@@ -102,6 +102,7 @@ void ctrl_init(){
 		case CTRL_MODE_ARMED:													// ARMED mode
 			if( (ctrlPedal==CTRL_IN_ACTIVE_NEW) || (ctrlKeyHit==CTRL_IN_ACTIVE_NEW) || (ctrlArm==CTRL_IN_ACTIVE_NEW) ) // if [the pedal was just stepped on] OR [a key was just hit] OR [the arm button was just pressed],  
 			{
+				song_set_to_beginning();												// set song to beginning
 				ctrl_mode_set(CTRL_MODE_RECORD);										// and start recording
 			}
 			break;

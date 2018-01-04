@@ -252,8 +252,7 @@ int main(void)
 				// if you are in recording mode,
 				if(ctrlMode == CTRL_MODE_ARMED)
 				{
-					song_set_to_beginning();												// set song to beginning
-					currentTime = 0;
+					currentTime = 0;			// reset currentTime so that the first note gets placed at the proper time (0).
 				}
 				if( (ctrlMode == CTRL_MODE_RECORD) || (ctrlMode == CTRL_MODE_ARMED) )
 				{
