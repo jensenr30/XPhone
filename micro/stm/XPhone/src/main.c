@@ -11,6 +11,7 @@
 #include "solenoid.h"
 #include "song.h"
 #include "control.h"
+#include "UART.h"
 
 // clock config. function def
 static void system_clock_config(void);	
@@ -38,6 +39,34 @@ int main(void)
 	ctrl_init();
 	song_init();						// set up song stuff
 	
+	UartHandle.Instance				= USARTx;
+	
+	UartHandle.Init.BaudRate		= 9600;
+	UartHandle.Init.WordLength		= UART_WORDLENGTH_9B;
+	UartHandle.Init.StopBits		= UART_STOPBITS_1;
+	UartHandle.Init.Parity			= UART_PARITY_ODD;
+	UartHandle.Init.HwFlowCtl		= UART_HWCONTROL_NONE;
+	UartHandle.Init.Mode			= UART_MODE_TX_RX;
+	UartHandle.Init.OverSampling	= UART_OVERSAMPLING_8;
+	if (HAL_UART_Init(&UartHandle) != HAL_OK)
+	{
+		/* Initialization Error */
+		error("HAL_UART_Init() failed!");
+	}
+	
+	/* Output a message on Hyperterminal using printf function */
+	printf("\n\r UART Printf Example: retarget the C library printf function to the UART\n\r");
+	printf("** Test finished successfully. ** \n\r");
+
+	
+//	// code to test HAL_Delay. 2018-01-09: tested and HAL_Delay was working at the right frequency.
+//	while(1)
+//	{
+//		pin_on(DEBUG_0_GPIO,DEBUG_0);
+//		HAL_Delay(100);
+//		pin_off(DEBUG_0_GPIO,DEBUG_0);
+//		HAL_Delay(200);
+//	}
 	
 //	// Code to test the 1-ms tick
 //	while(1)
