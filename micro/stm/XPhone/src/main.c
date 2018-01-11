@@ -23,7 +23,6 @@ static void system_clock_config(void);
 int main(void)
 {
 	KeyType k;
-	KeyTimeType currentTime = KeyTimeMax;	// this is used to store the current time of the song. It is initialized to a value that SongTime will never be, so that the while() wait loops fails and sets it right away.
 	
 	// TODO: write a watchdog type of code that ensures that the solenoid timer doesn't go too high.
 	// you would need to gracefully return the solenoid timer to 0 while adjusting the off-times of all of the currently turned-on solenoids.
@@ -42,10 +41,20 @@ int main(void)
 	UART_init();						// set up the UART communication interface. (message to/from the computer)
 
 
-	// test how long it takes to send a UART message.
-	pin_on(DEBUG_0_GPIO,DEBUG_0);
-	printn("I'm testing how long it takes to print a long message to the UART because I cannot tolerate a function that is blocking that takes up too much time! This is a pretty long one, most of them would be shorter than this. This is just an extreme case, really, just to see...");
-	pin_off(DEBUG_0_GPIO,DEBUG_0);
+//	// test how long it takes to send a UART message.
+//	// at 57600 baud:
+//		// 2018-01-09 1   byte  took 0.2  ms (0.20 ms per character)
+//		// 2018-01-09 100 bytes took 21.0 ms (0.21 ms per character)
+//	// at 230400 baud:
+//		// 2018-01-09 1   byte  took .062 ms ( 62 us per character)
+//		// 2018-01-09 100 bytes took 4.80 ms ( 48 us per character)
+//	// these numbers line up pretty good with the theoretical time it should take to transmit this data.
+//	// the printf function (UART functionality) is a blocking function. I wonder what kind of bad shit happens if it gets interrupted?
+//	// maybe the bad shit can be avoided if I run at lower speeds, assuming MY interrupt routines are running faster than bits in the UART data...
+//	pin_on(DEBUG_0_GPIO,DEBUG_0);
+//	// send 100 characters
+//	printn("000000000010000000002000000000300000000040000000005000000000600000000070000000008000000000900000000");	// print 100 bytes to the UART (including the newline at the end)
+//	pin_off(DEBUG_0_GPIO,DEBUG_0);
 	
 //	// test that the DEBUG_LED works.
 //	while(1)
@@ -224,13 +233,23 @@ int main(void)
 //		}
 //	}
 	
+	// this keeps track of how many times you need to check if the current time is the correct time
+	uint32_t ct_checks;
 	//-------------------------------------------------------------------------
 	// Main Program Loop
 	//-------------------------------------------------------------------------
+	song_set_to_beginning();
 	while (1)
 	{
-		while(currentTime == SongTime) {;}			// wait for the 1 millisecond tick
-		currentTime = SongTime;						// update the currentTime to the SongTime (which is based on the SONG_TIM song timer)
+		ct_checks = 0;
+		while(currentTime == SongTime) {ct_checks++;}	// wait for the 1 millisecond tick (SongTime is updated on an interrupt. see song.h and song.c)
+		currentTime = SongTime;							// update the currentTime to the SongTime (which is based on the SONG_TIM song timer)
+		#if(DEBUG_UART)
+			if(ct_checks == 0)								// if we arrived too late to meet the 1-ms tick on time,
+			{
+				printn("L");	// report it.
+			}
+		#endif
 		
 		//----------------------------------------------------------------------
 		// play all the notes you must
@@ -251,9 +270,9 @@ int main(void)
 				while( (noteToPlay->time == currentTime) && (noteToPlay != NULL) )				// if the next note to play should be played at the current time,
 				{
 					solenoid_play(noteToPlay->key,keyIntensityMin[noteToPlay->key]);	// play it  TODO: put in the proper intensity
-					noteToPlay = noteToPlay->next;						// move to the next note
 					KeyCooldownActive[noteToPlay->key] = 1;				// activate the cooldown for this key
 					KeyCooldownTimes[noteToPlay->key] = KEY_COOLDOWN;	// ^
+					noteToPlay = noteToPlay->next;						// move to the next note
 				}
 			}
 		}
@@ -283,6 +302,9 @@ int main(void)
 					// add the key to the song
 					Note* n = init_note(k, currentTime, 128);	// TODO set a valid amplitude value
 					insert_note(&songCurrent, n);
+					#if(DEBUG_UART)
+						printf("t %8.3f   k %2d%s",currentTime/(float)1000,k,newline);
+					#endif
 					// activate the cooldown for this key
 					KeyCooldownActive[k] = 1;
 					KeyCooldownTimes[k] = KEY_COOLDOWN;

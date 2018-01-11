@@ -1,4 +1,5 @@
 #include "control.h"
+#include "UART.h"
 
 void ctrl_init(){
 		ctrlMode = CTRL_MODE_STOP;
@@ -17,6 +18,17 @@ void ctrl_init(){
 	{
 		ctrlMode = mode;
 		ctrlModeTimeAdder = ((SongTime%CTRL_LED_BLINK_PERIOD)+1)*CTRL_LED_BLINK_PERIOD - SongTime;
+		#if(DEBUG_UART)
+			switch(mode)
+			{
+				case CTRL_MODE_STOP:	printn("mode: STOP");		break;
+				case CTRL_MODE_ARMED:	printn("mode: ARMED");		break;
+				case CTRL_MODE_RECORD:	printn("mode: RECORD");		break;
+				case CTRL_MODE_PLAY:	printn("mode: PLAY");		break;
+				case CTRL_MODE_CAL:		printn("mode: CAL");		break;
+				default:				printn("mode: UNKNOWN!");	break;
+			}
+		#endif
 	}
 	
 	
@@ -113,6 +125,9 @@ void ctrl_init(){
 				if(SongLength==KeyTimeMax)												// if this is the first thing you recorded,
 				{
 					SongLength = SongTime;													// set this as the song length.
+					#if(DEBUG_UART)
+						printf("SongTime = %.3f s%s",SongTime/(float)1000,newline);
+					#endif
 				}
 			}
 			break;

@@ -21,7 +21,7 @@
 	#define USARTx_RX_GPIO_PORT				GPIOD
 	#define USARTx_RX_AF					GPIO_AF7_USART3
 	
-	#define USARTx_BUAD						57600
+	#define USARTx_BUAD						230400
 	#define newline							"\n"
 	
 	UART_HandleTypeDef UartHandle;

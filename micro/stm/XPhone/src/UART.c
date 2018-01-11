@@ -19,9 +19,9 @@ void UART_init()
 {
 	UartHandle.Instance				= USARTx;
 	UartHandle.Init.BaudRate		= USARTx_BUAD;
-	UartHandle.Init.WordLength		= UART_WORDLENGTH_9B;
+	UartHandle.Init.WordLength		= UART_WORDLENGTH_8B;
 	UartHandle.Init.StopBits		= UART_STOPBITS_1;
-	UartHandle.Init.Parity			= UART_PARITY_ODD;
+	UartHandle.Init.Parity			= UART_PARITY_NONE;
 	UartHandle.Init.HwFlowCtl		= UART_HWCONTROL_NONE;
 	UartHandle.Init.Mode			= UART_MODE_TX_RX;
 	UartHandle.Init.OverSampling	= UART_OVERSAMPLING_8;

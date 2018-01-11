@@ -30,8 +30,9 @@ void song_init()
 //=============================================================================
 void song_set_to_beginning()
 {
-	SONG_TIM->CNT = 0;									// set the timer/counter to 0 (this ensures that the first ms of the song really lasts the full ms).
-	SongTime = 0;										// set the song time to 0
+	SONG_TIM->CNT = 0;					// set the timer/counter to 0 (this ensures that the first ms of the song really lasts the full ms).
+	SongTime = 0;						// set the song time to 0
+	currentTime = 0;					// reset the main.c while(1) loop current timer as well
 }
 
 

@@ -2,6 +2,8 @@
 #include "GPIO.h"
 #include "UART.h"
 
+
+
 //=============================================================================
 // this function happens when something FATAL happens. The program cannot continue, and it will freeze here indefinitely.
 // this can be used as a breakpoint when you are debugging to see WHY the error happened.
