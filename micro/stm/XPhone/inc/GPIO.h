@@ -24,8 +24,8 @@
 	#define SOL_SR_DIR			1					// direction that the solenoid shift register shifts out key data
 	
 	// debug pins
-	#define DEBUG_0_GPIO			GPIOF			
-	#define DEBUG_0					GPIO_PIN_9		// pin is used for whatever the fuck I feel like.   :-)
+	#define DEBUG_0_GPIO			GPIOG			
+	#define DEBUG_0					GPIO_PIN_2		// pin is used for whatever the fuck I feel like.   :-)
 	#define DEBUG_WARNING_LED_GPIO 	GPIOE			
 	#define DEBUG_WARNING_LED		GPIO_PIN_1		// pin used to turn on an LED to indicate a	warning happened.
 	#define DEBUG_ERROR_LED_GPIO	GPIOE			

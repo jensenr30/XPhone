@@ -39,6 +39,16 @@ int main(void)
 	song_init();						// set up song stuff
 	
 	
+	// code to test HAL_Delay(T). It should be T milliseconds, but it has been measured to be about 3.2*T milliseconds before...
+	// similar to 16/5... the clock is running slower than it should be perhaps? 50 MHz / 16 MHz??? I don't know. grasping at straws...
+	while(1)
+	{
+		pin_on(DEBUG_0_GPIO,DEBUG_0);
+		HAL_Delay(100);
+		pin_off(DEBUG_0_GPIO,DEBUG_0);
+		HAL_Delay(400);
+	}
+	
 //	// Code to test the 1-ms tick
 //	while(1)
 //	{
