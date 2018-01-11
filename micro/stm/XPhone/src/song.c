@@ -33,6 +33,7 @@ void song_set_to_beginning()
 	SONG_TIM->CNT = 0;					// set the timer/counter to 0 (this ensures that the first ms of the song really lasts the full ms).
 	SongTime = 0;						// set the song time to 0
 	currentTime = 0;					// reset the main.c while(1) loop current timer as well
+	noteToPlay = songCurrent;			// set the net note to play to be the first note in the song.
 }
 
 
@@ -60,9 +61,13 @@ void TIM3_IRQHandler(void)
 	{
 		SONG_TIM->SR &= ~TIM_SR_UIF;				// clear UIF flag
 		if(SongTime+1 >= SongLength)				// if the song has reached its end,
+		{
 			SongTime = 0;								// start over
+		}
 		else										// otherwise,
+		{
 			SongTime++;									// increment song time by 1
+		}
 	}
 }
 

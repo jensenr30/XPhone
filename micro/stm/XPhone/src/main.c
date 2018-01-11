@@ -251,6 +251,12 @@ int main(void)
 			}
 		#endif
 		
+		// if this is the beginning of the song,
+		if(currentTime == 0)
+		{
+			noteToPlay = songCurrent;					// always start playing from the top!
+		}
+		
 		//----------------------------------------------------------------------
 		// play all the notes you must
 		//----------------------------------------------------------------------

@@ -136,20 +136,32 @@ void solenoid_play(KeyType key, SolTimType length)
 	{
 		warning("you tried to play a key out of the valid range! I'm going to play the highest key to let you know you suck and your program is broken.");
 		key = KEYS - 1;
+		#if(DEBUG_UART)
+			printf("key=%d  length=%.3f ms%s",key, length/(float)1000,newline);
+		#endif
 	}
 	if (length >= SOL_TIME_TOO_LONG)
 	{
 		warning("you are trying to play a key for too long. I'll still play the key, but there is probably an error in the code that is making it so long...");
 		length = SOL_TIME_TOO_LONG;
+		#if(DEBUG_UART)
+			printf("key=%d  length=%.3f ms%s",key, length/(float)1000,newline);
+		#endif
 	}
 	if (length <= SOL_TIME_TOO_SHORT)
 	{
 		warning("you are trying to play a key for too short. I'll still play the key (at the minimum length), but there is probably an error in the code (or calibration data) that is making it so short...");
 		length = SOL_TIME_TOO_SHORT;
+		#if(DEBUG_UART)
+			printf("key=%d  length=%.3f ms%s",key, length/(float)1000,newline);
+		#endif
 	}
 	if (solenoid_states[key])
 	{
-		warning("You are trying to play a key that is already on. Try again later...");
+		warning("You try to play key that is already on!");
+		#if(DEBUG_UART)
+			printf("key=%d  length=%.3f ms%s",key, length/(float)1000,newline);
+		#endif
 		return;
 	}
 	
