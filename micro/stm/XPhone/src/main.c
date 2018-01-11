@@ -39,24 +39,7 @@ int main(void)
 	ctrl_init();
 	song_init();						// set up song stuff
 	
-	UartHandle.Instance				= USARTx;
-	
-	UartHandle.Init.BaudRate		= 9600;
-	UartHandle.Init.WordLength		= UART_WORDLENGTH_9B;
-	UartHandle.Init.StopBits		= UART_STOPBITS_1;
-	UartHandle.Init.Parity			= UART_PARITY_ODD;
-	UartHandle.Init.HwFlowCtl		= UART_HWCONTROL_NONE;
-	UartHandle.Init.Mode			= UART_MODE_TX_RX;
-	UartHandle.Init.OverSampling	= UART_OVERSAMPLING_8;
-	if (HAL_UART_Init(&UartHandle) != HAL_OK)
-	{
-		/* Initialization Error */
-		error("HAL_UART_Init() failed!");
-	}
-	
-	/* Output a message on Hyperterminal using printf function */
-	printf("\n\r UART Printf Example: retarget the C library printf function to the UART\n\r");
-	printf("** Test finished successfully. ** \n\r");
+	UART_init();						// set up the UART communication interface. (message to/from the computer)
 
 	
 //	// code to test HAL_Delay. 2018-01-09: tested and HAL_Delay was working at the right frequency.
