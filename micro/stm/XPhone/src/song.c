@@ -38,7 +38,7 @@ void song_set_to_beginning()
 //=============================================================================
 // blocks program execution for some time (milliseconds)
 //=============================================================================
-void pause(uint32_t ms)
+void pause_ms(uint32_t ms)
 {
 	KeyTimeType st = SongTime;
 	while(ms)

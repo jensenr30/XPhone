@@ -25,11 +25,13 @@
 	
 	// debug pins
 	#define DEBUG_0_GPIO			GPIOG			
-	#define DEBUG_0					GPIO_PIN_2		// pin is used for whatever the fuck I feel like.   :-)
+	#define DEBUG_0					GPIO_PIN_2		// used for whatever the fuck I feel like.   :-)
+	#define DEBUG_LED_GPIO			GPIOF
+	#define DEBUG_LED				GPIO_PIN_9		// used for whatever the fuck I feel like.   :-)
 	#define DEBUG_WARNING_LED_GPIO 	GPIOE			
-	#define DEBUG_WARNING_LED		GPIO_PIN_1		// pin used to turn on an LED to indicate a	warning happened.
+	#define DEBUG_WARNING_LED		GPIO_PIN_1		// used to turn on an LED to indicate the warning() function was called.
 	#define DEBUG_ERROR_LED_GPIO	GPIOE			
-	#define DEBUG_ERROR_LED			GPIO_PIN_6		// pin used to turn on an LED to indicate an error	 happened.
+	#define DEBUG_ERROR_LED			GPIO_PIN_6		// used to turn on an LED to indicate the error() function was called.
 	
 	// these pins control an input shift-register.
 	// The input-shift register is connected to all the digital key input signals.
@@ -46,6 +48,7 @@
 	#define CTRL_IN_ARM			GPIO_PIN_11			// input pin for arming recording mode (recording doesn't start yet, but it will when the user hits a note, or steps on the pedal.
 	#define CTRL_IN_PEDAL_GPIO	GPIOC
 	#define CTRL_IN_PEDAL		GPIO_PIN_10			// input pin for the pedal. Active LOW. If mode is ARMED, stepping on the pedal will set it to RECORD mode. If in RECORD mode, stepping on pedal exits RECORD mode into PLAY mode).
+	// todo assign a pin to the cal gpio
 	#define CTRL_IN_CAL_GPIO	GPIOD
 	#define CTRL_IN_CAL			GPIO_PIN_9			// the calibration button. hold it for a little bit, and the XPhone will go thru a cal. procedure. 
 	#define CTRL_IN_CLEAR_GPIO	GPIOG
@@ -62,8 +65,8 @@
 	#define CTRL_OUT_LED_B_GPIO	GPIOF
 	#define CTRL_OUT_LED_B		GPIO_PIN_6			// output pin controlling blue part of the RGB LED
 	
-	#define CTRL_OUT_SYNC_GPIO	//TODO
-	#define CTRL_OUT_SYNC		//TODO			// output pin for syncing other modules. When (SongTime==0), sends out a 1 ms trigger signal (normally 0 V, 3.3 V for 1 ms). 
+	//#define CTRL_OUT_SYNC_GPIO	//TODO
+	//#define CTRL_OUT_SYNC		//TODO			// output pin for syncing other modules. When (SongTime==0), sends out a 1 ms trigger signal (normally 0 V, 3.3 V for 1 ms). 
 	
 	#define ctrl_LED_o()		pin_off(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R); pin_off(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G); pin_off(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = off
 	#define ctrl_LED_r()		pin_on(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R);  pin_off(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G); pin_off(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = red

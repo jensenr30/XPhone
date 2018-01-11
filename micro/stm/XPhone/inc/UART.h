@@ -22,7 +22,7 @@
 	#define USARTx_RX_AF					GPIO_AF7_USART3
 	
 	#define USARTx_BUAD						9600
-	#define newline							"\n\r"							
+	#define newline							"\n"
 	
 	UART_HandleTypeDef UartHandle;
 	

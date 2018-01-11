@@ -31,6 +31,7 @@ void UART_init()
 	}
 	else
 	{
+		printf(newline);
 		UART_print("XPhone boot!");
 	}
 }

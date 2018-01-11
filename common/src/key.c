@@ -203,13 +203,13 @@ void key_cal()
 //			t = 0;
 //			while(t<tmax)
 //			{
-//				pause(1);
+//				pause_ms(1);
 //				keys_read();
 //				gotMin |= key_input_states[k];
 //				t++;
 //			}
 //			if(!gotMin) keyIntensityMin[k] += KEY_CAL_STEP;
-//			pause(KEY_CAL_STEP_TIME);
+//			pause_ms(KEY_CAL_STEP_TIME);
 //		}
 //		
 //	}

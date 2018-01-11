@@ -41,6 +41,13 @@ int main(void)
 	
 	UART_init();						// set up the UART communication interface. (message to/from the computer)
 
+
+	
+	// test that the DEBUG_LED works.
+	while(1)
+	{
+		pause_ms(1);
+	}
 	
 //	// code to test HAL_Delay. 2018-01-09: tested and HAL_Delay was working at the right frequency.
 //	while(1)
@@ -169,7 +176,7 @@ int main(void)
 //	{
 //		solenoid_play(i%KEYS,3000);
 //		i+=7;
-//		pause(200);
+//		pause_ms(200);
 //	}
 //	
 	
@@ -180,10 +187,10 @@ int main(void)
 //		for(k=0;k<KEYS;k++)
 //		{
 //			solenoid_play((k*step)%KEYS,keyIntensityMin[k]+adder);
-//			pause(wait);
+//			pause_ms(wait);
 //		}
 //		//adder += 500;
-//		pause(1000);
+//		pause_ms(1000);
 //	}
 	
 //	// this is jensen's test to check when activating the solenoid of one key sets off a different key.
@@ -205,9 +212,9 @@ int main(void)
 //							warning("That should not have happened");	// give a warning.
 //						}
 //					}
-//					pause(1);
+//					pause_ms(1);
 //				}
-//				pause(167);
+//				pause_ms(167);
 //			}
 //		}
 //	}

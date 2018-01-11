@@ -50,10 +50,12 @@ void GPIO_init()
 	GPIO_set_output(DEBUG_WARNING_LED_GPIO,DEBUG_WARNING_LED);
 	GPIO_set_output(DEBUG_ERROR_LED_GPIO,DEBUG_ERROR_LED);
 	GPIO_set_output(DEBUG_0_GPIO,DEBUG_0);
+	GPIO_set_output(DEBUG_LED_GPIO,DEBUG_LED);
 	// initialize debug pins
 	pin_off(DEBUG_WARNING_LED_GPIO, DEBUG_WARNING_LED);
 	pin_off(DEBUG_ERROR_LED_GPIO, DEBUG_ERROR_LED);
 	pin_off(DEBUG_0_GPIO,DEBUG_0);
+	pin_off(DEBUG_LED_GPIO,DEBUG_LED);
 	
 	
 	// control panel pins
