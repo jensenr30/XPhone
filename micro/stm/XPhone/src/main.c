@@ -42,12 +42,17 @@ int main(void)
 	UART_init();						// set up the UART communication interface. (message to/from the computer)
 
 
+	// test how long it takes to send a UART message.
+	pin_on(DEBUG_0_GPIO,DEBUG_0);
+	printn("I'm testing how long it takes to print a long message to the UART because I cannot tolerate a function that is blocking that takes up too much time! This is a pretty long one, most of them would be shorter than this. This is just an extreme case, really, just to see...");
+	pin_off(DEBUG_0_GPIO,DEBUG_0);
 	
-	// test that the DEBUG_LED works.
-	while(1)
-	{
-		pause_ms(1);
-	}
+//	// test that the DEBUG_LED works.
+//	while(1)
+//	{
+//		pin_set(DEBUG_LED_GPIO,DEBUG_LED,pin_read(CTRL_IN_SYNC_GPIO,CTRL_IN_SYNC));
+//		pause_ms(1);
+//	}
 	
 //	// code to test HAL_Delay. 2018-01-09: tested and HAL_Delay was working at the right frequency.
 //	while(1)

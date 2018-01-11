@@ -1,4 +1,5 @@
 #include "UART.h"
+#include "debug.h"
 
 PUTCHAR_PROTOTYPE
 {
@@ -9,7 +10,7 @@ PUTCHAR_PROTOTYPE
   return ch;
 }
 
-void UART_print(char *msg)
+void printn(char *msg)
 {
 	printf("%s%s",msg,newline);
 }
@@ -32,6 +33,6 @@ void UART_init()
 	else
 	{
 		printf(newline);
-		UART_print("XPhone boot!");
+		printn("XPhone boot!");
 	}
 }
