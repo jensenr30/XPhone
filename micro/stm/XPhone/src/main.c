@@ -104,14 +104,29 @@ int main(void)
 	char buffer[100];
 	HAL_ADC_Start(&AdcHandle);
 	pause_ms(10);
-	printn("just before while(1)");
+	
+	printn("printn A");
+	printf("printf A\r\n");
+	
+	HAL_ADC_Start(&AdcHandle);
+	
+	printn("printn B");
+	printf("printf B\r\n");
+	
+	HAL_ADC_PollForConversion(&AdcHandle,ADC_POLL_TIMEOUT_MS);
+	
+	printn("printn C");
+	printf("printf C\r\n");
+	
 	// Code to check if the ADC is working
 	while(1)
 	{
 		value = ADC_read(&AdcHandle);
 		sprintf(buffer, "ADC = %.2f",ADCx_REF_VOLTAGE*value/ADCx_MAX_CONV);
-		printn(buffer);
+		printf("%s%s",buffer,newline);
 		pause_ms(500);
+		//printn("printn C");
+		//printf("printf C\r\n");
 	}
 	
 	
