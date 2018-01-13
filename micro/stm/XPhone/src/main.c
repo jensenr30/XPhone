@@ -10,10 +10,6 @@
 #include "control.h"
 #include "UART.h"
 #include "ADC.h"
-
-//=============================================================================
-// clock config. function def (eventually put this in main.h)
-//=============================================================================
 static void system_clock_config(void);
 
 
