@@ -38,6 +38,7 @@ ADC_HandleTypeDef    AdcHandle;
 	/* Variable used to get converted value */
 	__IO uint16_t uhADCxConvertedValue;
 	
+	void ADC_init();
 	ADC_Type ADC_read(ADC_HandleTypeDef *);
 	
 #endif
