@@ -1,3 +1,10 @@
+// IMPORTANT: in order for the UART to work at all, you must be sure
+// to set HSE_VALUE to ((uint32_t)8000000). Or, you must set it correctly.
+// This has to do with making sure that SysTick (the thing that controls HAL_Delay)
+// is set up with the proper timing. Without that proper timing, the UART will 
+// output data, but the data will be sent/received at the wrong frequency and
+// communication will not work.
+
 #ifndef UART_H_DEF
 	#define UART_H_DEF
 	
