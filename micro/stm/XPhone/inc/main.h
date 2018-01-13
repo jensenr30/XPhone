@@ -1,5 +1,8 @@
 #ifndef MAIN_H_DEF
 	#define MAIN_H_DEF
+	#include "stm32f4xx.h"
+	#include "stm32f4xx_nucleo_144.h"
+	#include <stdlib.h>
 	#include "key.h"
 	// primary things about hardware
 	#define STM_PROGRAM 	1				// define STM_PROGRAM if it should compile for an stm32 microprocessor for the actual XPhone hardware.

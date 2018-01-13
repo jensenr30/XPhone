@@ -102,7 +102,7 @@
   *        (when HSE is used as system clock source, directly or through the PLL).  
   */
 #if !defined  (HSE_VALUE) 
-  #define HSE_VALUE    ((uint32_t)8000000) /*!< Value of the External oscillator in Hz */
+  #define HSE_VALUE ((uint32_t)8000000) /*!< Value of the External oscillator in Hz */
 #endif /* HSE_VALUE */
 
 #if !defined  (HSE_STARTUP_TIMEOUT)
@@ -408,7 +408,15 @@
 #ifdef HAL_SPDIFRX_MODULE_ENABLED
  #include "stm32f4xx_hal_spdifrx.h"
 #endif /* HAL_SPDIFRX_MODULE_ENABLED */
-   
+
+#ifdef HAL_DFSDM_MODULE_ENABLED
+ #include "stm32f4xx_hal_dfsdm.h"
+#endif /* HAL_DFSDM_MODULE_ENABLED */
+
+#ifdef HAL_LPTIM_MODULE_ENABLED
+ #include "stm32f4xx_hal_lptim.h"
+#endif /* HAL_LPTIM_MODULE_ENABLED */
+
 /* Exported macro ------------------------------------------------------------*/
 #ifdef  USE_FULL_ASSERT
 /**
@@ -424,15 +432,8 @@
   void assert_failed(uint8_t* file, uint32_t line);
 #else
   #define assert_param(expr) ((void)0)
-#endif /* USE_FULL_ASSERT */    
-    
-/**
-  * @}
-  */ 
+#endif /* USE_FULL_ASSERT */
 
-/**
-  * @}
-  */
 
 #ifdef __cplusplus
 }
