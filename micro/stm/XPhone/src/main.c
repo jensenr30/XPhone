@@ -39,20 +39,12 @@ int main(void)
 	song_init();						// set up song stuff
 	
 	UART_init();						// set up the UART communication interface. (message to/from the computer)
-//	printn("past UART_init");
-	printn("printn works");
-	printf("printf works%s",newline);
-	printf("yup printf still works\r\n");
-	printn("printn still works");
 	//-------------------------------------------------------------------------
 	// code to initialize the ADC (eventually, put this in ADC.c in ADC_init())
 	//-------------------------------------------------------------------------
-	BSP_LED_Init(LED1);
-	printn("past LED1");
 	ADC_ChannelConfTypeDef sConfig;
 	/*##-1- Configure the ADC peripheral #######################################*/
 	AdcHandle.Instance          = ADCx;
-	
 	
 	AdcHandle.Init.ClockPrescaler        = ADC_CLOCKPRESCALER_PCLK_DIV8;
 	AdcHandle.Init.Resolution            = ADCx_RESOLUTION;
@@ -67,14 +59,11 @@ int main(void)
 	AdcHandle.Init.DMAContinuousRequests = ENABLE;
 	AdcHandle.Init.EOCSelection          = DISABLE;
 	
-	
-	
 	if (HAL_ADC_Init(&AdcHandle) != HAL_OK)
 	{
 		/* ADC initialization Error */
 		error("Could not initialize ADC!");
 	}
-	printn("past HAL_ADC_Init");
 	
 	/*##-2- Configure ADC regular channel ######################################*/
 	sConfig.Channel      = ADC_CHANNEL_10;
@@ -87,55 +76,19 @@ int main(void)
 		/* Channel Configuration Error */
 		error("Could not configure ADC!");
 	}
-	printn("past HAL_ADC_ConfigChannel");
 	
-//	/*##-3- Start the conversion process #######################################*/
-//	if(HAL_ADC_Start_DMA(&AdcHandle, (uint32_t*)&uhADCxConvertedValue, 1) != HAL_OK)
-//	{
-//		/* Start Conversation Error */
-//		error("Could not start ADC conversion!");
-//	}
-//	printn("past ADC_Start_DMA");
-//	
-//	HAL_ADC_Stop_DMA(&AdcHandle);
-//	printn("past HAL_ADC_Stop_DMA");
 	
-	uint32_t value;
+	
+	// code to test the UART printing analog voltages to virtual COM port.
+	ADC_Type value;
 	char buffer[100];
-	HAL_ADC_Start(&AdcHandle);
-	pause_ms(10);
-	
-	printn("printn A");
-	printf("printf A\r\n");
-	
-	HAL_ADC_Start(&AdcHandle);
-	
-	printn("printn B");
-	printf("printf B\r\n");
-	
-	HAL_ADC_PollForConversion(&AdcHandle,ADC_POLL_TIMEOUT_MS);
-	
-	printn("printn C");
-	printf("printf C\n");
-	
-	char ch = (char)48+6;
-	// Code to check if the ADC is working
 	while(1)
 	{
 		value = ADC_read(&AdcHandle);
-		sprintf(buffer, "ADC = %.2f",ADCx_REF_VOLTAGE*value/ADCx_MAX_CONV);
-		//printf("%s%s",buffer,newline);
+		sprintf(buffer, "ADC = %.2f V",ADCx_REF_VOLTAGE*value/ADCx_MAX_CONV);
+		printf("%s%s",buffer,newline);
 		pause_ms(500);
-		printn("in the mix");
-		//printf("printf C\r\n");
-		HAL_UART_Transmit(&UartHandle, (uint8_t *)&ch, 1, 0xFFFF);
 	}
-	
-	
-	
-	
-	// TODO figure out why printf doesn't seem to work after doing the ADC stuff.
-	// HOWEVER, printn STILL WORKS, AND THAT USES printf!!! so something weird is going on. I don't understand it...
 	
 //	// test how long it takes to send a UART message.
 //	// at 57600 baud:
