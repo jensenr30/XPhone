@@ -37,16 +37,16 @@ int main(void)
 	ADC_init();							// initialize the Analog to Digital Converter system so we can measure how loud the keys were hit.
 	
 	
-	// code to test the UART printing analog voltages to virtual COM port.
-	ADC_Type value;
-	char buffer[100];
-	while(1)
-	{
-		value = ADC_read(&AdcHandle);
-		sprintf(buffer, "ADC = %.2f V",ADCx_REF_VOLTAGE*value/ADCx_MAX_CONV);
-		printf("%s%s",buffer,newline);
-		pause_ms(500);
-	}
+//	// code to test the UART printing analog voltages to virtual COM port.
+//	ADC_Type value;
+//	char buffer[100];
+//	while(1)
+//	{
+//		value = ADC_read(&AdcHandle);
+//		sprintf(buffer, "ADC = %.2f V",ADCx_REF_VOLTAGE*value/ADCx_MAX_CONV);
+//		printf("%s%s",buffer,newline);
+//		pause_ms(500);
+//	}
 	
 //	// test how long it takes to send a UART message.
 //	// at 57600 baud:
