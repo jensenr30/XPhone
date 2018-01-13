@@ -26,6 +26,10 @@
 	#define ADCx_DMA_IRQn                   DMA2_Stream0_IRQn
 	#define ADCx_DMA_IRQHandler             DMA2_Stream0_IRQHandler
 	
+	#define ADCx_RESOLUTION					ADC_RESOLUTION_12B
+	#define ADCx_REF_VOLTAGE				((float)3.3)
+	#define ADCx_MAX						((uint16_t)(1<<12)-1)	
+	
 	ADC_HandleTypeDef    AdcHandle;
 	
 	/* Variable used to get converted value */
