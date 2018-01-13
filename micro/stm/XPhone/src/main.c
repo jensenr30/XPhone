@@ -47,49 +47,48 @@ int main(void)
 	//-------------------------------------------------------------------------
 	// code to initialize the ADC (eventually, put this in ADC.c in ADC_init())
 	//-------------------------------------------------------------------------
-//	BSP_LED_Init(LED1);
-//	printn("past LED1");
-//	ADC_ChannelConfTypeDef sConfig;
-//	/*##-1- Configure the ADC peripheral #######################################*/
-//	AdcHandle.Instance          = ADCx;
-//	
-//	
-//	AdcHandle.Init.ClockPrescaler        = ADC_CLOCKPRESCALER_PCLK_DIV4;
-//	AdcHandle.Init.Resolution            = ADCx_RESOLUTION;
-//	
-//	AdcHandle.Init.ScanConvMode          = DISABLE;                       /* Sequencer disabled (ADC conversion on only 1 channel: channel set on rank 1) */
-//	AdcHandle.Init.ContinuousConvMode    = ENABLE;                        /* Continuous mode disabled to have only 1 conversion at each conversion trig */
-//	AdcHandle.Init.DiscontinuousConvMode = DISABLE;                       /* Parameter discarded because sequencer is disabled */
-//	AdcHandle.Init.NbrOfDiscConversion   = 0;
-//	AdcHandle.Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;        /* Conversion start trigged at each external event */
-//	AdcHandle.Init.ExternalTrigConv      = ADC_EXTERNALTRIGCONV_T1_CC1;
-//	AdcHandle.Init.DataAlign             = ADC_DATAALIGN_RIGHT;
-//	AdcHandle.Init.NbrOfConversion       = 1;
-//	AdcHandle.Init.DMAContinuousRequests = ENABLE;
-//	AdcHandle.Init.EOCSelection          = DISABLE;
-//	
-//	
-//	
-//	if (HAL_ADC_Init(&AdcHandle) != HAL_OK)
-//	{
-//		/* ADC initialization Error */
-//		error("Could not initialize ADC!");
-//	}
-//	printn("past HAL_ADC_Init");
-//	
-//	/*##-2- Configure ADC regular channel ######################################*/
-//	sConfig.Channel      = ADC_CHANNEL_10;
-//	sConfig.Rank         = 1;
-//	sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
-//	sConfig.Offset       = 0;
-//	
-//	if (HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK)
-//	{
-//		/* Channel Configuration Error */
-//		error("Could not configure ADC!");
-//	}
-//	printn("past HAL_ADC_ConfigChannel");
-//	
+	BSP_LED_Init(LED1);
+	printn("past LED1");
+	ADC_ChannelConfTypeDef sConfig;
+	/*##-1- Configure the ADC peripheral #######################################*/
+	AdcHandle.Instance          = ADCx;
+	
+	
+	AdcHandle.Init.ClockPrescaler        = ADC_CLOCKPRESCALER_PCLK_DIV8;
+	AdcHandle.Init.Resolution            = ADCx_RESOLUTION;
+	AdcHandle.Init.ScanConvMode          = DISABLE;                       /* Sequencer disabled (ADC conversion on only 1 channel: channel set on rank 1) */
+	AdcHandle.Init.ContinuousConvMode    = DISABLE;                       /* Continuous mode disabled to have only 1 conversion at each conversion trig */
+	AdcHandle.Init.DiscontinuousConvMode = DISABLE;                       /* Parameter discarded because sequencer is disabled */
+	AdcHandle.Init.NbrOfDiscConversion   = 0;
+	AdcHandle.Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;        /* Conversion start trigged at each external event */
+	AdcHandle.Init.ExternalTrigConv      = ADC_SOFTWARE_START;
+	AdcHandle.Init.DataAlign             = ADC_DATAALIGN_RIGHT;
+	AdcHandle.Init.NbrOfConversion       = 1;
+	AdcHandle.Init.DMAContinuousRequests = ENABLE;
+	AdcHandle.Init.EOCSelection          = DISABLE;
+	
+	
+	
+	if (HAL_ADC_Init(&AdcHandle) != HAL_OK)
+	{
+		/* ADC initialization Error */
+		error("Could not initialize ADC!");
+	}
+	printn("past HAL_ADC_Init");
+	
+	/*##-2- Configure ADC regular channel ######################################*/
+	sConfig.Channel      = ADC_CHANNEL_10;
+	sConfig.Rank         = 1;
+	sConfig.SamplingTime = ADC_SAMPLETIME_480CYCLES;
+	sConfig.Offset       = 0;
+	
+	if (HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK)
+	{
+		/* Channel Configuration Error */
+		error("Could not configure ADC!");
+	}
+	printn("past HAL_ADC_ConfigChannel");
+	
 //	/*##-3- Start the conversion process #######################################*/
 //	if(HAL_ADC_Start_DMA(&AdcHandle, (uint32_t*)&uhADCxConvertedValue, 1) != HAL_OK)
 //	{
@@ -100,16 +99,26 @@ int main(void)
 //	
 //	HAL_ADC_Stop_DMA(&AdcHandle);
 //	printn("past HAL_ADC_Stop_DMA");
-//	
-//	char buffer[100];
-//	// Code to check if the ADC is working
-//	while(1)
-//	{
-//		//pause_ms(333);
-//		//sprintf(buffer, "ADC = %.2f",uhADCxConvertedValue/ADCx_REF_VOLTAGE);
-//		printn(buffer);
-//	}
 	
+	uint32_t value;
+	char buffer[100];
+	HAL_ADC_Start(&AdcHandle);
+	pause_ms(10);
+	printn("just before while(1)");
+	// Code to check if the ADC is working
+	while(1)
+	{
+		value = ADC_read(&AdcHandle);
+		sprintf(buffer, "ADC = %.2f",ADCx_REF_VOLTAGE*value/ADCx_MAX_CONV);
+		printn(buffer);
+		pause_ms(500);
+	}
+	
+	
+	
+	
+	// TODO figure out why printf doesn't seem to work after doing the ADC stuff.
+	// HOWEVER, printn STILL WORKS, AND THAT USES printf!!! so something weird is going on. I don't understand it...
 	
 //	// test how long it takes to send a UART message.
 //	// at 57600 baud:

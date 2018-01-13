@@ -28,10 +28,16 @@
 	
 	#define ADCx_RESOLUTION					ADC_RESOLUTION_12B
 	#define ADCx_REF_VOLTAGE				((float)3.3)
-	#define ADCx_MAX						((uint16_t)(1<<12)-1)	
+	#define ADCx_MAX_CONV					((uint16_t)(1<<12)-1)	
+	#define ADC_POLL_TIMEOUT_MS				(5)
+	#define ADC_Type						uint16_t
+
+ADC_HandleTypeDef    AdcHandle;
 	
-	ADC_HandleTypeDef    AdcHandle;
 	
 	/* Variable used to get converted value */
 	__IO uint16_t uhADCxConvertedValue;
+	
+	ADC_Type ADC_read(ADC_HandleTypeDef *);
+	
 #endif
