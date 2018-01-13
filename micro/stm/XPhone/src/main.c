@@ -30,17 +30,15 @@ int main(void)
 	//-------------------------------------------------------------------------
 	// Initialize
 	//-------------------------------------------------------------------------
-	HAL_Init();							// Initialize the hardware access library
-	system_clock_config();				// Configure the system clock to 100 MHz
-	GPIO_init();						// set up all GPIO pins for everything.
+	HAL_Init();							// initialize the hardware access library
+	system_clock_config();				// configure  the system clock to 100 MHz
+	GPIO_init();						// initialize all GPIO pins for everything.
 	solenoid_init();					// initialize all solenoid stuff.
 	key_init();							// initialize all the key stuff
-	ctrl_init();
-	song_init();						// set up song stuff
-	
-	UART_init();						// set up the UART communication interface. (message to/from the computer)
-	ADC_init();							// set up the Analog to Digital Converter system so we can measure how loud the keys were hit.
-	
+	ctrl_init();						// initialize control input/output stuff.
+	song_init();						// initialize song stuff
+	UART_init();						// initialize the UART communication interface. (message to/from the computer)
+	ADC_init();							// initialize the Analog to Digital Converter system so we can measure how loud the keys were hit.
 	
 	
 	// code to test the UART printing analog voltages to virtual COM port.

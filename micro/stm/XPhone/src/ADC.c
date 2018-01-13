@@ -1,4 +1,5 @@
 #include "ADC.h"
+#include "debug.h"
 
 ADC_Type ADC_read(ADC_HandleTypeDef *han)
 {
