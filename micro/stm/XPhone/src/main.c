@@ -116,17 +116,19 @@ int main(void)
 	HAL_ADC_PollForConversion(&AdcHandle,ADC_POLL_TIMEOUT_MS);
 	
 	printn("printn C");
-	printf("printf C\r\n");
+	printf("printf C\n");
 	
+	char ch = (char)48+6;
 	// Code to check if the ADC is working
 	while(1)
 	{
 		value = ADC_read(&AdcHandle);
 		sprintf(buffer, "ADC = %.2f",ADCx_REF_VOLTAGE*value/ADCx_MAX_CONV);
-		printf("%s%s",buffer,newline);
+		//printf("%s%s",buffer,newline);
 		pause_ms(500);
-		//printn("printn C");
+		printn("in the mix");
 		//printf("printf C\r\n");
+		HAL_UART_Transmit(&UartHandle, (uint8_t *)&ch, 1, 0xFFFF);
 	}
 	
 	
