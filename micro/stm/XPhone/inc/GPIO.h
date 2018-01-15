@@ -33,6 +33,10 @@
 	#define AMUX_SR_CLOCK_GPIO	GPIOF				// 
 	#define AMUX_SR_CLOCK		GPIO_PIN_8			// used to clock said data into the shift register.
 	
+	// ADC pin
+	#define ADCx_CHANNEL_GPIO_PORT	GPIOC			//
+	#define ADCx_CHANNEL_PIN		GPIO_PIN_0		// pin used to sample analog voltage of the key strikes.
+	
 	// debug pins
 	#define DEBUG_0_GPIO			GPIOG			
 	#define DEBUG_0					GPIO_PIN_2		// used for whatever the fuck I feel like.   :-)
