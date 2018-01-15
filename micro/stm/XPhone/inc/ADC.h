@@ -31,6 +31,7 @@
 	#define ADCx_MAX_CONV					((uint16_t)(1<<12)-1)	
 	#define ADC_POLL_TIMEOUT_MS				(5)
 	#define ADC_Type						uint16_t
+	#define ADC_Type_MAX					((ADC_Type)-1)
 	
 	// the variable that stores all of the ADCx configuration
 	ADC_HandleTypeDef    AdcHandle;

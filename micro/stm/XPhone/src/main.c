@@ -37,6 +37,17 @@ int main(void)
 	ADC_init();							// initialize the Analog to Digital Converter system so we can measure how loud the keys were hit.
 	
 	
+	
+	// code to test the analog-multiplexer and its associated output-shift-register.
+	ADC_Type value;
+	while(1)
+	{
+		
+		value = ADC_read(&AdcHandle);
+		
+		
+	}
+	
 //	// code to test the UART printing analog voltages to virtual COM port.
 //	ADC_Type value;
 //	char buffer[100];

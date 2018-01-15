@@ -22,6 +22,14 @@
 	#define SOL_SR_LATCH		GPIO_PIN_13			// RCK (74hc595 pin 12) register clock (update output)
 	#define SOL_SR_CLOCK		GPIO_PIN_12			// SCK (74hc595 pin 11) data clock in
 	#define SOL_SR_DIR			1					// direction that the solenoid shift register shifts out key data
+
+	// ANALOG MULTIPLEXER shift register: these pins control a shift register.
+	// The outputs of the shift register drive the logic inputs of the analog multiplexer.
+	// this allows me to select which which key's amplitude I want to sample with the ADC.
+	#define AMUX_SR_DATA_GPIO	GPIOD				// 
+	#define AMUX_SR_DATA		GPIO_PIN_1			// used to output data to the shift register.
+	#define AMUX_SR_CLOCK_GPIO	GPIOF				// 
+	#define AMUX_SR_CLOCK		GPIO_PIN_8			// used to clock said data into the shift register.
 	
 	// debug pins
 	#define DEBUG_0_GPIO			GPIOG			
