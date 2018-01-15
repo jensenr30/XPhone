@@ -8,9 +8,9 @@ void solenoid_init()
 	//--------------------------------------------------------------------------
 	// set initial states of the solenoid shift-register pins
 	//--------------------------------------------------------------------------
-	pin_off(SOL_SR_GPIO, SOL_SR_CLOCK);
-	pin_off(SOL_SR_GPIO, SOL_SR_DATA);
-	pin_off(SOL_SR_GPIO, SOL_SR_LATCH);
+	pin_off(SOL_SR_CLOCK_GPIO, SOL_SR_CLOCK);
+	pin_off(SOL_SR_DATA_GPIO, SOL_SR_DATA);
+	pin_off(SOL_SR_LATCH_GPIO, SOL_SR_LATCH);
 	
 	//--------------------------------------------------------------------------
 	// setup solenoid variables

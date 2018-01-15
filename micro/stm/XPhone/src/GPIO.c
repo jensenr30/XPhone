@@ -37,9 +37,9 @@ void GPIO_init()
 	__HAL_RCC_GPIOH_CLK_ENABLE();
 	
 	// enable solenoid output shift register pins
-	GPIO_set_output(SOL_SR_GPIO,SOL_SR_DATA);
-	GPIO_set_output(SOL_SR_GPIO,SOL_SR_CLOCK);
-	GPIO_set_output(SOL_SR_GPIO,SOL_SR_LATCH);
+	GPIO_set_output(SOL_SR_DATA_GPIO,SOL_SR_DATA);
+	GPIO_set_output(SOL_SR_CLOCK_GPIO,SOL_SR_CLOCK);
+	GPIO_set_output(SOL_SR_LATCH_GPIO,SOL_SR_LATCH);
 	
 	// enable key input shift register pins
 	GPIO_set_input(KEY_INPUT_GPIO,KEY_INPUT_DATA);
@@ -91,7 +91,7 @@ void GPIO_init()
 //				dir=0	=>	data[0],			data[1],			data[2],			...
 //				else	 =>	data[bits-1], data[bits-2], data[bits-3], ...
 //=============================================================================
-void shift_out(GPIO_TypeDef* GPIO, GPIO_Pin_Type clockPin, GPIO_Pin_Type dataPin, GPIO_Pin_Type latchPin, uint32_t bits, uint8_t *data, uint8_t dir)
+void shift_out(GPIO_TypeDef* clockGPIO, GPIO_Pin_Type clockPin, GPIO_TypeDef* dataGPIO, GPIO_Pin_Type dataPin, GPIO_TypeDef* latchGPIO, GPIO_Pin_Type latchPin, uint32_t bits, uint8_t *data, uint8_t dir)
 {
 	uint32_t i;								// used for incrementing through all bits 
 	uint32_t b;								// used for indexing the right element of the array (allows us to do MSB first or LSB first)
@@ -101,13 +101,13 @@ void shift_out(GPIO_TypeDef* GPIO, GPIO_Pin_Type clockPin, GPIO_Pin_Type dataPin
 			b = (bits - 1) - i;						// MSB (most significant bit first)
 		else									// if dir is false,
 			b = i;									// LSB (least significant bit first)
-		pin_set(GPIO, dataPin, data[b]);		// output the right data
-		pin_off(GPIO, clockPin);				// clock (advance) shift register
-		pin_on(GPIO, clockPin);					// ^
+		pin_set(dataGPIO, dataPin, data[b]);		// output the right data
+		pin_off(clockGPIO, clockPin);				// clock (advance) shift register
+		pin_on(clockGPIO, clockPin);					// ^
 	}
-	pin_off(GPIO, latchPin);				// update the shift register
-	pin_on(GPIO, latchPin);					// ^
-	pin_off(GPIO, latchPin);				// ^
+	pin_off(latchGPIO, latchPin);				// update the shift register
+	pin_on(latchGPIO, latchPin);					// ^
+	pin_off(latchGPIO, latchPin);				// ^
 }
 
 

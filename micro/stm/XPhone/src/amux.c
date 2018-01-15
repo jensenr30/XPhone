@@ -24,6 +24,7 @@ ADC_Type amux_read(KeyType k)
 		key_select[b] = ( (k&(1<<b)) == 1);
 	}
 	
+	
 	//shift_out();
 	return value;
 }

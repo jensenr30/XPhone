@@ -17,9 +17,11 @@
 	// GPIO pin definitions
 	//==============================================================================
 	// solenoid control shift register
-	#define SOL_SR_GPIO			GPIOG				// the register that is used to shift out data to control the shift registers
+	#define SOL_SR_DATA_GPIO	GPIOG				//
 	#define SOL_SR_DATA			GPIO_PIN_11			// SER (74hc595 pin 14)	data in
+	#define SOL_SR_LATCH_GPIO	GPIOG				//
 	#define SOL_SR_LATCH		GPIO_PIN_13			// RCK (74hc595 pin 12) register clock (update output)
+	#define SOL_SR_CLOCK_GPIO	GPIOG				//
 	#define SOL_SR_CLOCK		GPIO_PIN_12			// SCK (74hc595 pin 11) data clock in
 	#define SOL_SR_DIR			1					// direction that the solenoid shift register shifts out key data
 
@@ -90,7 +92,7 @@
 	void GPIO_set_output(GPIO_TypeDef *GPIO,uint16_t Pin);
 	void GPIO_set_input(GPIO_TypeDef *GPIO, uint16_t Pin);
 	void GPIO_init();
-	void shift_out(GPIO_TypeDef* GPIO, GPIO_Pin_Type clockPin, GPIO_Pin_Type dataPin, GPIO_Pin_Type latchPin, uint32_t bits, uint8_t *data, uint8_t dir);
+	void shift_out(GPIO_TypeDef* clockGPIO, GPIO_Pin_Type clockPin, GPIO_TypeDef* dataGPIO, GPIO_Pin_Type dataPin, GPIO_TypeDef* latchGPIO, GPIO_Pin_Type latchPin, uint32_t bits, uint8_t *data, uint8_t dir);
 	void shift_in(GPIO_TypeDef* GPIO, GPIO_Pin_Type clockPin, GPIO_Pin_Type dataPin, GPIO_Pin_Type latchPin, uint32_t bits, uint8_t *data, uint8_t dir);
 	
 #endif // GPIO_H_INCLUDED

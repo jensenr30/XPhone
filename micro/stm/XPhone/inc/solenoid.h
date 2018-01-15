@@ -26,7 +26,7 @@
 	volatile KeyStateType solenoid_states[KEYS];			// records the state of each solenoids. 0 = off, 1 means on. After modifying this array, you must run solenoid_update() for the solenoids to actually be turned on/off.
 	
 	// this function will update the sates of the solenoid drivers.
-	#define solenoid_update() shift_out(SOL_SR_GPIO,SOL_SR_CLOCK,SOL_SR_DATA,SOL_SR_LATCH,KEYS,(KeyStateType *)solenoid_states,SOL_SR_DIR)
+	#define solenoid_update() shift_out(SOL_SR_CLOCK_GPIO,SOL_SR_CLOCK,SOL_SR_DATA_GPIO,SOL_SR_DATA,SOL_SR_LATCH_GPIO,SOL_SR_LATCH,KEYS,(KeyStateType *)solenoid_states,SOL_SR_DIR)
 	
 	#if(SOL_TIM_OFF < SOL_TIM_MOD)
 	#error "You cannot make your solenoid OFF flag be a value less than the solenoid modulo value."

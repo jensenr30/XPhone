@@ -39,14 +39,14 @@ int main(void)
 	
 	
 	// code to test the analog-multiplexer and its associated output-shift-register.
-	ADC_Type value;
-	while(1)
-	{
-		
-		value = ADC_read(&AdcHandle);
-		
-		
-	}
+//	ADC_Type value;
+//	while(1)
+//	{
+//		
+//		value = ADC_read(&AdcHandle);
+//		
+//		
+//	}
 	
 //	// code to test the UART printing analog voltages to virtual COM port.
 //	ADC_Type value;
