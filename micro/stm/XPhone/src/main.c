@@ -10,6 +10,8 @@
 #include "control.h"
 #include "UART.h"
 #include "ADC.h"
+#include "amux.h"
+#include "pause.h"
 static void system_clock_config(void);
 
 
@@ -36,28 +38,37 @@ int main(void)
 	UART_init();						// initialize the UART communication interface. (message to/from the computer)
 	ADC_init();							// initialize the Analog to Digital Converter system so we can measure how loud the keys were hit.
 	
+	// code to test pause_us().
+	// 2018-01-15: TESTED: pause_us(1) delays for almost exactly 1 microsecond. However, the time is variable; probably due to my interrupt routines.
+//	while(1)
+//	{
+//		pin_on(DEBUG_0_GPIO,DEBUG_0);
+//		pause_us(1);
+//		pin_off(DEBUG_0_GPIO,DEBUG_0);
+//		pause_us(1);
+//	}
 	
-	
-	// code to test the analog-multiplexer and its associated output-shift-register.
+	 //code to test the analog-multiplexer and its associated output-shift-register.
 //	ADC_Type value;
 //	while(1)
 //	{
 //		
 //		value = ADC_read(&AdcHandle);
-//		
+//		//sprintf(buffer, "ADC = %.2f V",ADC_volt(value));
 //		
 //	}
+	amux_read(0);
 	
-//	// code to test the UART printing analog voltages to virtual COM port.
-//	ADC_Type value;
-//	char buffer[100];
-//	while(1)
-//	{
-//		value = ADC_read(&AdcHandle);
-//		sprintf(buffer, "ADC = %.2f V",ADCx_REF_VOLTAGE*value/ADCx_MAX_CONV);
-//		printf("%s%s",buffer,newline);
-//		pause_ms(500);
-//	}
+	// code to test the UART printing analog voltages to virtual COM port.
+	ADC_Type value;
+	char buffer[100];
+	while(1)
+	{
+		value = ADC_read(&AdcHandle);
+		sprintf(buffer, "ADC = %.2f V",ADC_volt(value));
+		printf("%s%s",buffer,newline);
+		pause_ms(500);
+	}
 	
 //	// test how long it takes to send a UART message.
 //	// at 57600 baud:

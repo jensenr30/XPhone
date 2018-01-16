@@ -27,7 +27,6 @@
 	
 	void song_init();
 	void song_set_to_beginning();
-	void pause_ms(uint32_t ms);
 	void TIM3_IRQHandler(void);
 	void song_clear(Note *song);
 	

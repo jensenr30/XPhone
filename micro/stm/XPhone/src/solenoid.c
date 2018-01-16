@@ -94,7 +94,7 @@ void solenoid_shut_off_the_right_ones()
 		}
 		if (solenoid_states[k])	keys_all_off = 0;			// if any key is currently on, then [all keys off] is false.
 	}
-	if(keys_all_off) SOL_TIM->CNT = 0;				// if all the keys are off now, it is a goot time to reset the timer to 0. This is done to avoid the overflow problem. The timer will always be reset long before we run out of time.
+	if(keys_all_off) SOL_TIM->CNT = 0;				// if all the keys are off now, it is a good time to reset the timer to 0. This is done to avoid the overflow problem. The timer will always be reset long before we run out of time.
 }
 
 

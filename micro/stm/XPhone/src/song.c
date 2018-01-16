@@ -38,20 +38,6 @@ void song_set_to_beginning()
 
 
 //=============================================================================
-// blocks program execution for some time (milliseconds)
-//=============================================================================
-void pause_ms(uint32_t ms)
-{
-	KeyTimeType st = SongTime;
-	while(ms)
-	{
-		while(st == SongTime){}
-		st = SongTime;
-		ms--;
-	}
-}
-
-//=============================================================================
 // this function increments the SongTime variable once for every millisecond that passes.
 // At 1 second, SongTime will equal 1000.
 //=============================================================================

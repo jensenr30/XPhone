@@ -32,6 +32,8 @@
 	// the variable that stores all of the ADCx configuration
 	ADC_HandleTypeDef    AdcHandle;
 	
+	#define ADC_volt(read) (ADCx_REF_VOLTAGE*read/ADCx_MAX_CONV)
+	
 	// function prototypes (see ADC.c for function definitions).
 	void ADC_init();
 	ADC_Type ADC_read(ADC_HandleTypeDef *);

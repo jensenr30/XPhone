@@ -51,6 +51,7 @@ void GPIO_init()
 	GPIO_set_output(DEBUG_ERROR_LED_GPIO,DEBUG_ERROR_LED);
 	GPIO_set_output(DEBUG_0_GPIO,DEBUG_0);
 	GPIO_set_output(DEBUG_LED_GPIO,DEBUG_LED);
+	
 	// initialize debug pins
 	pin_off(DEBUG_WARNING_LED_GPIO, DEBUG_WARNING_LED);
 	pin_off(DEBUG_ERROR_LED_GPIO, DEBUG_ERROR_LED);
@@ -74,6 +75,13 @@ void GPIO_init()
 	pin_off(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R);
 	pin_off(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G);
 	pin_off(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B);
+	
+	// initialize the amux shift register pins
+	GPIO_set_output(AMUX_SR_DATA_GPIO,AMUX_SR_DATA);
+	GPIO_set_output(AMUX_SR_CLOCK_GPIO,AMUX_SR_CLOCK);
+	// initialize states of amux pins
+	pin_off(AMUX_SR_DATA_GPIO,AMUX_SR_DATA);
+	pin_off(AMUX_SR_CLOCK_GPIO,AMUX_SR_CLOCK);
 	
 }
 
