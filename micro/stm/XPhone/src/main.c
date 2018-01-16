@@ -38,6 +38,7 @@ int main(void)
 	UART_init();						// initialize the UART communication interface. (message to/from the computer)
 	ADC_init();							// initialize the Analog to Digital Converter system so we can measure how loud the keys were hit.
 	
+	key_cal();							// calibrate all the key amplitudes
 	// code to test pause_us().
 	// 2018-01-15: TESTED: pause_us(1) delays for almost exactly 1 microsecond. However, the time is variable; probably due to my interrupt routines.
 //	while(1)
@@ -47,28 +48,80 @@ int main(void)
 //		pin_off(DEBUG_0_GPIO,DEBUG_0);
 //		pause_us(1);
 //	}
-	
-	 //code to test the analog-multiplexer and its associated output-shift-register.
-//	ADC_Type value;
+//	amux_read(0);
 //	while(1)
 //	{
-//		
-//		value = ADC_read(&AdcHandle);
-//		//sprintf(buffer, "ADC = %.2f V",ADC_volt(value));
-//		
+//		//amux_read(0);
+//		//pause_ms(1);
+//		//amux_read(12);
+//		//pause_ms(1);
 //	}
-	amux_read(0);
 	
-	// code to test the UART printing analog voltages to virtual COM port.
+	
+//	// code to test the analog-multiplexer and its associated output-shift-register.
+//	ADC_Type value;
+//	uint8_t gotKey = 0;
+//	uint8_t kk = 0;
+//	uint8_t kkk = KEY_TRACK_EMPTY;
+//	char buffer[100];
+//	while(1)
+//	{
+//		keys_read();
+//		gotKey = 0;
+//		for(kk=0; kk<KEYS; kk++)
+//		{
+//			if(key_input_states[kk])
+//			{
+//				gotKey = 1;
+//				kkk = kk;
+//			}
+//		}
+//		
+//		if(gotKey)
+//		{
+//			pause_ms(20);
+//			value = amux_read(kkk);
+//			sprintf(buffer, "key %2d = %.2f V",kkk,ADC_volt(value));
+//			printf("%s%s",buffer,newline);
+//		}
+//		else
+//		{
+//			pause_ms(1);
+//		}
+//	}
+//	
+	
+	
+	// code to see how repeatable the whole system is (solenoid + analog measurement)
 	ADC_Type value;
+	uint8_t gotKey = 0;
+	uint8_t kk = 0;
+	uint8_t kkk = KEY_TRACK_EMPTY;
 	char buffer[100];
+	k = 0;
 	while(1)
 	{
-		value = ADC_read(&AdcHandle);
-		sprintf(buffer, "ADC = %.2f V",ADC_volt(value));
+		k+=5;
+		if(k>=KEYS) k = k%KEYS;
+		solenoid_play(k,keyIntensityMin[k]);
+		pause_ms(20);
+		value = amux_read(k);
+		sprintf(buffer, "key %2d = %.2f V",k,ADC_volt(value));
 		printf("%s%s",buffer,newline);
-		pause_ms(500);
+		pause_ms(200);
 	}
+	
+	
+//	// code to test the UART printing analog voltages to virtual COM port.
+//	ADC_Type value;
+//	char buffer[100];
+//	while(1)
+//	{
+//		value = ADC_read(&AdcHandle);
+//		sprintf(buffer, "ADC = %.2f V",ADC_volt(value));
+//		printf("%s%s",buffer,newline);
+//		pause_ms(500);
+//	}
 	
 //	// test how long it takes to send a UART message.
 //	// at 57600 baud:
@@ -205,10 +258,6 @@ int main(void)
 //		}
 //			
 //	}
-
-	
-	// calibrate all the key amplitudes
-	key_cal();
 	
 
 	

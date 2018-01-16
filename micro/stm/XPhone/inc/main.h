@@ -13,4 +13,7 @@
 	
 	KeyTimeType currentTime;	// this is used to store the current time of the song. It is initialized to a value that SongTime will never be, so that the while() wait loops fails and sets it right away.
 	
-#endif // MAIN_H_DEF
+	#define wait_100ns() asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP")
+	
+	
+	#endif // MAIN_H_DEF
