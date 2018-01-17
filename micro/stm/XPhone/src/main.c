@@ -89,27 +89,27 @@ int main(void)
 //			pause_ms(1);
 //		}
 //	}
-//	
 	
 	
-//	// code to see how repeatable the whole system is (solenoid + analog measurement)
-//	ADC_Type value;
-//	uint8_t gotKey = 0;
-//	uint8_t kk = 0;
-//	uint8_t kkk = KEY_TRACK_EMPTY;
-//	char buffer[100];
-//	k = 0;
-//	while(1)
-//	{
-//		k+=5;
-//		if(k>=KEYS) k = k%KEYS;
-//		solenoid_play(k,keyIntensityMin[k]);
-//		pause_ms(20);
-//		value = amux_read(k);
-//		sprintf(buffer, "key %2d = %.2f V",k,ADC_volt(value));
-//		printf("%s%s",buffer,newline);
-//		pause_ms(200);
-//	}
+	
+	// code to see how repeatable the whole system is (solenoid + analog measurement)
+	ADC_Type value;
+	uint8_t gotKey = 0;
+	uint8_t kk = 0;
+	uint8_t kkk = KEY_TRACK_EMPTY;
+	char buffer[100];
+	k = 0;
+	while(1)
+	{
+		k+=5;
+		if(k>=KEYS) k = k%KEYS;
+		solenoid_play(k,keyIntensityMin[k]);
+		pause_ms(20);
+		value = amux_read(k);
+		sprintf(buffer, "key %2d = %.2f V",k,ADC_volt(value));
+		printf("%s%s",buffer,newline);
+		pause_ms(200);
+	}
 	
 	
 //	// code to test the UART printing analog voltages to virtual COM port.
