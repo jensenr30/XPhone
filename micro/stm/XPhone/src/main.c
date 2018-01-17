@@ -28,15 +28,16 @@ int main(void)
 	//-------------------------------------------------------------------------
 	// Initialize
 	//-------------------------------------------------------------------------
-	HAL_Init();							// initialize the hardware access library
-	system_clock_config();				// configure  the system clock to 100 MHz
-	GPIO_init();						// initialize all GPIO pins for everything.
-	solenoid_init();					// initialize all solenoid stuff.
+	HAL_Init();							// initialize all the hardware access library
+	system_clock_config();				// configure  all the system clock to 100 MHz
+	GPIO_init();						// initialize all the GPIO pins for everything.
+	solenoid_init();					// initialize all the solenoid stuff.
 	key_init();							// initialize all the key stuff
-	ctrl_init();						// initialize control input/output stuff.
-	song_init();						// initialize song stuff
-	UART_init();						// initialize the UART communication interface. (message to/from the computer)
-	ADC_init();							// initialize the Analog to Digital Converter system so we can measure how loud the keys were hit.
+	ctrl_init();						// initialize all the control input/output stuff.
+	song_init();						// initialize all the song stuff
+	UART_init();						// initialize all the UART communication interface. (message to/from the computer)
+	ADC_init();							// initialize all the Analog to Digital Converter system so we can measure how loud the keys were hit.
+	amux_init();						// initialize all the analog multiplexer stuff
 	
 	key_cal();							// calibrate all the key amplitudes
 	// code to test pause_us().
@@ -92,24 +93,25 @@ int main(void)
 	
 	
 	
-	// code to see how repeatable the whole system is (solenoid + analog measurement)
-	ADC_Type value;
-	uint8_t gotKey = 0;
-	uint8_t kk = 0;
-	uint8_t kkk = KEY_TRACK_EMPTY;
-	char buffer[100];
-	k = 0;
-	while(1)
-	{
-		k+=5;
-		if(k>=KEYS) k = k%KEYS;
-		solenoid_play(k,keyIntensityMin[k]);
-		pause_ms(20);
-		value = amux_read(k);
-		sprintf(buffer, "key %2d = %.2f V",k,ADC_volt(value));
-		printf("%s%s",buffer,newline);
-		pause_ms(200);
-	}
+//	// code to see how repeatable the whole system is (solenoid + analog measurement)
+//	ADC_Type value;
+//	uint8_t gotKey = 0;
+//	uint8_t kk = 0;
+//	uint8_t kkk = KEY_TRACK_EMPTY;
+//	char buffer[100];
+//	k = 0;
+//	while(1)
+//	{
+//		k+=5;
+//		if(k>=KEYS) k = k%KEYS;
+//		solenoid_play(k,keyIntensityMin[k]);
+//		pause_ms(20);
+//		value = amux_read(k);
+//		sprintf(buffer, "key %2d = %.2f V",k,ADC_volt(value));
+//		printf("%s%s",buffer,newline);
+//		pause_ms(200);
+//	}
+	
 	
 	
 //	// code to test the UART printing analog voltages to virtual COM port.
