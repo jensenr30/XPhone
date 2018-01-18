@@ -179,57 +179,60 @@ void key_step_intensity(SolTimType start, SolTimType stop, SolTimType step)
 }
 
 
+
+void key_cal_default()
+{
+	keyIntensityMin[0]	=	2822;
+	keyIntensityMin[1]	=	2618;
+	keyIntensityMin[2]	=	3009;
+	keyIntensityMin[3]	=	2710;
+	keyIntensityMin[4]	=	2499;
+	keyIntensityMin[5]	=	3231;
+	keyIntensityMin[6]	=	2419;
+	keyIntensityMin[7]	=	2674;
+	keyIntensityMin[8]	=	3102;
+	keyIntensityMin[9]	=	3581;
+	keyIntensityMin[10]	=	2962;
+	keyIntensityMin[11]	=	2481;
+	
+	keyIntensityMin[12]	=	2309;
+	keyIntensityMin[13]	=	2606;
+	keyIntensityMin[14]	=	2993;
+	keyIntensityMin[15]	=	2990;
+	keyIntensityMin[16]	=	2227;
+	keyIntensityMin[17]	=	2854;
+	keyIntensityMin[18]	=	1917;
+	keyIntensityMin[19]	=	3066;
+	keyIntensityMin[20]	=	3286;
+	keyIntensityMin[21]	=	1994;
+	keyIntensityMin[22]	=	2174;
+	keyIntensityMin[23]	=	2179;
+	
+	keyIntensityMin[24]	=	2669;
+	keyIntensityMin[25]	=	3172;
+	keyIntensityMin[26]	=	3641;
+	keyIntensityMin[27]	=	4149;
+	keyIntensityMin[28]	=	4222;
+	keyIntensityMin[29]	=	4817;
+	keyIntensityMin[30]	=	3009;
+	keyIntensityMin[31]	=	3242;
+	keyIntensityMin[32]	=	2618;
+	keyIntensityMin[33]	=	3069;
+	keyIntensityMin[34]	=	3428;
+	keyIntensityMin[35]	=	2729;
+	
+	keyIntensityMin[36]	=	3004;
+}
+
+
 // calibrates all the keys on the XPhone
 void key_cal()
 {
-	
-	// manual intensity setting
-	keyIntensityMin[0]	=	2200;
-	keyIntensityMin[1]	=	2600;
-	keyIntensityMin[2]	=	2900;
-	keyIntensityMin[3]	=	2300;
-	keyIntensityMin[4]	=	2300;
-	keyIntensityMin[5]	=	3300;
-	keyIntensityMin[6]	=	3000;
-	keyIntensityMin[7]	=	3000;
-	keyIntensityMin[8]	=	3500;
-	keyIntensityMin[9]	=	4200;
-	keyIntensityMin[10]	=	3000;
-	keyIntensityMin[11]	=	3000;
-	
-	keyIntensityMin[12]	=	2800;
-	keyIntensityMin[13]	=	2800;
-	keyIntensityMin[14]	=	3600;
-	keyIntensityMin[15]	=	2900;
-	keyIntensityMin[16]	=	2600;
-	keyIntensityMin[17]	=	2550;
-	keyIntensityMin[18]	=	2500;
-	keyIntensityMin[19]	=	3300;
-	keyIntensityMin[20]	=	3500;
-	keyIntensityMin[21]	=	2200;
-	keyIntensityMin[22]	=	2300;
-	keyIntensityMin[23]	=	2300;
-	
-	keyIntensityMin[24]	=	4000;
-	keyIntensityMin[25]	=	3700;
-	keyIntensityMin[26]	=	4500;
-	keyIntensityMin[27]	=	5000;
-	keyIntensityMin[28]	=	5000;
-	keyIntensityMin[29]	=	6000;
-	keyIntensityMin[30]	=	4000;
-	keyIntensityMin[31]	=	4000;
-	keyIntensityMin[32]	=	4000;
-	keyIntensityMin[33]	=	4000;
-	keyIntensityMin[34]	=	3500;
-	keyIntensityMin[35]	=	3000;
-	
-	keyIntensityMin[36]	=	3500;
-	
 	KeyType key, k;
-	uint8_t c, cycles = 10, step = 5;
+	uint8_t c, cycles = 6, step = 5;
 	float voltages[KEYS];
 	char buffer[100];
-	printn("key,solenoid_time_us,voltage_V");
+	printn("cal_cycle,key,solenoid_time_us,voltage_V");
 	for(c=0; c<cycles; c++)
 	{
 		for(key=0; key<KEYS; key++)
@@ -238,12 +241,10 @@ void key_cal()
 			solenoid_play(k,keyIntensityMin[k]);							// play this key
 			pause_ms(AMUX_SAMPLE_HOLDOFF);									// wait the appropriate holdoff time
 			voltages[k] = ADC_volt(amux_read(k));										// record the voltage produced by the key circuitry
-			sprintf(buffer, "%2d ,%4lu, %.2f",k,keyIntensityMin[k],voltages[k]);	// tell the user what you are doing.
+			sprintf(buffer, "%2d, %2d ,%4lu, %.2f",c,k,keyIntensityMin[k],voltages[k]);	// tell the user what you are doing.
 			printf("%s%s",buffer,newline);
-			keyIntensityMin[k] += (int16_t)((KEY_CAL_TARGET - voltages[k])*KEY_CAL_AUTO_ADJ_FACTOR);	// adjust the amount of time you turn the solenoid on for this key.
-			pause_ms(50);
+			keyIntensityMin[k] += (int16_t)((KEY_CAL_TARGET - voltages[k])*key_cal_adj(k));	// adjust the amount of time you turn the solenoid on for this key.
 		}
-		pause_ms(1000);
 	}
 
 	

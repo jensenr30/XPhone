@@ -15,5 +15,6 @@
 	
 	#define wait_100ns() asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP");asm("NOP")
 	
+	void XPhone_online();
 	
 	#endif // MAIN_H_DEF

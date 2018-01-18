@@ -9,9 +9,7 @@
 	#define KEYS				((KeyType)37)	// this is the total number of keys on the XPhone hardware operated by the stm32
 	#define MIDI_OFFSET			((KeyType)60)	// the xylophone starts on middle C, and goes up from there.
 	
-	#define KEY_CAL_TARGET		((float)1)		// the target voltage you are looking for from each key when doing a key_cal() routine.
-	#define KEY_CAL_AUTO_ADJ_FACTOR	(500)		// this is the amount of microseconds per vol error the algorithm will adjust the solenoid hit time in the key_cal() routine.
-
+	
 	// key input states
 	volatile KeyStateType key_input_states[KEYS];	// the key input states
 	// key input cooldown periods
@@ -42,13 +40,19 @@
 	#define KEY_CAL_START	((uint32_t)1500)	// initial solenoid intensity
 	#define KEY_CAL_STEP	((uint32_t)100)		// solenoid intensity step size.
 	#define KEY_CAL_STEP_TIME ((200))
-	
+	#define KEY_CAL_TARGET		((float)1)		// the target voltage you are looking for from each key when doing a key_cal() routine.
+	#define KEY_CAL_AUTO_ADJ_FACTOR	(500)		// this is the amount of microseconds per vol error the algorithm will adjust the solenoid hit time in the key_cal() routine.
+	#define KEY_CAL_a				((float)3.0)// this is one of the constants in my key calibration solenoid timing adjust control system. it controls the step size that is take when calibrating a key strike to a particular resultant voltage.
+	#define KEY_CAL_b				((float)0.2)// ^
+	#define KEY_CAL_c				((float)3.6)// ^
+	#define key_cal_adj(k)	(KEY_CAL_AUTO_ADJ_FACTOR*(KEY_CAL_c/(k+KEY_CAL_a) + KEY_CAL_b))
 	/// Functions
 	Note* init_note(KeyType key, KeyTimeType time, KeyIntensityType intensity);
 	void insert_note(Note **song, Note *note);
 	void clear_song(Note *song);
 	void note_clear_from_memory(Note *note);
 	void key_init();
+	void key_cal_default();
 	void key_cal();
 	void keys_read();
 	void key_make_track_empty(Note *note);

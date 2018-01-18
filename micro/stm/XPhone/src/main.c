@@ -38,10 +38,13 @@ int main(void)
 	UART_init();						// initialize all the UART communication interface. (message to/from the computer)
 	ADC_init();							// initialize all the Analog to Digital Converter system so we can measure how loud the keys were hit.
 	amux_init();						// initialize all the analog multiplexer stuff
+	key_cal_default();
 	
-	key_step_intensity(1000,6000,100);	// TODO remove this. this is just for debugging and checking out key amplitude as a function of solenoid activation time.
+	XPhone_online();					// play a little tune to indicate startup
 	
-	//key_cal();							// calibrate all the key amplitudes
+	
+	//key_step_intensity(1000,6000,100);	// this will get every key amplitude you would ever want to know, man.
+	
 	// code to test pause_us().
 	// 2018-01-15: TESTED: pause_us(1) delays for almost exactly 1 microsecond. However, the time is variable; probably due to my interrupt routines.
 //	while(1)
@@ -429,6 +432,18 @@ int main(void)
 		//----------------------------------------------------------------------
 		ctrl_LED();
 	}
+}
+
+
+
+void XPhone_online()
+{
+	pause_ms(300);
+	solenoid_play(19,keyIntensityMin[19]);
+	pause_ms(80);
+	solenoid_play(26,keyIntensityMin[26]);
+	pause_ms(80);
+	solenoid_play(31,keyIntensityMin[31]);
 }
 
 
