@@ -38,7 +38,7 @@ int main(void)
 	UART_init();						// initialize all the UART communication interface. (message to/from the computer)
 	ADC_init();							// initialize all the Analog to Digital Converter system so we can measure how loud the keys were hit.
 	amux_init();						// initialize all the analog multiplexer stuff
-	key_cal_default();
+	key_cal_default();					// setup the keys to be the default amplitude
 	
 	XPhone_online();					// play a little tune to indicate startup
 	
@@ -64,37 +64,39 @@ int main(void)
 //	}
 	
 	
-//	// code to test the analog-multiplexer and its associated output-shift-register.
-//	ADC_Type value;
-//	uint8_t gotKey = 0;
-//	uint8_t kk = 0;
-//	uint8_t kkk = KEY_TRACK_EMPTY;
-//	char buffer[100];
-//	while(1)
-//	{
-//		keys_read();
-//		gotKey = 0;
-//		for(kk=0; kk<KEYS; kk++)
-//		{
-//			if(key_input_states[kk])
-//			{
-//				gotKey = 1;
-//				kkk = kk;
-//			}
-//		}
-//		
-//		if(gotKey)
-//		{
-//			pause_ms(AMUX_SAMPLE_HOLDOFF);
-//			value = amux_read(kkk);
-//			sprintf(buffer, "key %2d = %.2f V",kkk,ADC_volt(value));
-//			printf("%s%s",buffer,newline);
-//		}
-//		else
-//		{
-//			pause_ms(1);
-//		}
-//	}
+	// this code allows the user to play any keys, and the UART will print the analog voltage that was measured as a result of striking the key.
+	// this comes in handy when you want to know how different keys voltage output respond to user key strikes.
+	ADC_Type value;
+	uint8_t gotKey = 0;
+	uint8_t kk = 0;
+	uint8_t kkk = KEY_TRACK_EMPTY;
+	char buffer[100];
+	printn("key,voltage");
+	while(1)
+	{
+		keys_read();
+		gotKey = 0;
+		for(kk=0; kk<KEYS; kk++)
+		{
+			if(key_input_states[kk])
+			{
+				gotKey = 1;
+				kkk = kk;
+			}
+		}
+		
+		if(gotKey)
+		{
+			pause_ms(AMUX_SAMPLE_HOLDOFF);
+			value = amux_read(kkk);
+			sprintf(buffer, "%2d,%5.2f V",kkk,ADC_volt(value));
+			printf("%s%s",buffer,newline);
+		}
+		else
+		{
+			pause_ms(1);
+		}
+	}
 	
 	
 	
