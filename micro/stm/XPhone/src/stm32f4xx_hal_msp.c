@@ -36,8 +36,10 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+#include "main.h"
 #include "UART.h"
 #include "ADC.h"
+#include "GPIO.h"
 
 /** @addtogroup STM32F4xx_HAL_Examples
   * @{

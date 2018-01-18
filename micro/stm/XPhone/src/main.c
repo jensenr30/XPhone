@@ -39,7 +39,9 @@ int main(void)
 	ADC_init();							// initialize all the Analog to Digital Converter system so we can measure how loud the keys were hit.
 	amux_init();						// initialize all the analog multiplexer stuff
 	
-	key_cal();							// calibrate all the key amplitudes
+	key_step_intensity(1000,6000,100);	// TODO remove this. this is just for debugging and checking out key amplitude as a function of solenoid activation time.
+	
+	//key_cal();							// calibrate all the key amplitudes
 	// code to test pause_us().
 	// 2018-01-15: TESTED: pause_us(1) delays for almost exactly 1 microsecond. However, the time is variable; probably due to my interrupt routines.
 //	while(1)
@@ -80,7 +82,7 @@ int main(void)
 //		
 //		if(gotKey)
 //		{
-//			pause_ms(20);
+//			pause_ms(AMUX_SAMPLE_HOLDOFF);
 //			value = amux_read(kkk);
 //			sprintf(buffer, "key %2d = %.2f V",kkk,ADC_volt(value));
 //			printf("%s%s",buffer,newline);
@@ -102,14 +104,14 @@ int main(void)
 //	k = 0;
 //	while(1)
 //	{
-//		k+=5;
+//		k+=1;
 //		if(k>=KEYS) k = k%KEYS;
 //		solenoid_play(k,keyIntensityMin[k]);
-//		pause_ms(20);
+//		pause_ms(AMUX_SAMPLE_HOLDOFF);
 //		value = amux_read(k);
 //		sprintf(buffer, "key %2d = %.2f V",k,ADC_volt(value));
 //		printf("%s%s",buffer,newline);
-//		pause_ms(200);
+//		pause_ms(1000);
 //	}
 	
 	

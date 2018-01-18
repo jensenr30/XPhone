@@ -1,17 +1,17 @@
-#ifndef KEY_H_INCLUDED
-	#define KEY_H_INCLUDED
-	
-	#include "GPIO.h"
+#ifndef KEY_H_DEF
+	#define KEY_H_DEF
 	#include <inttypes.h>
-	#include <stdlib.h>
-	#define KeyType uint8_t					// this is the data type used to index into the keys (for XPhone, this goes from 0 to 36).
-	#define KeyIntensityType uint8_t		// this is the data type used to store the intensity of the key hit. 
-	#define KeyStateType uint8_t			// this is the data type used to record the state of a key (boolean: 0 or 1)
-	#define KeyTimeType uint32_t			// this is the data type used to record the time at which the key was played (ms)
-	#define KeyTimeMax UINT32_MAX			// the is the max key time. 1.6 months.  :O
-	#define KEYS 			((KeyType)37)	// this is the total number of keys on the XPhone hardware operated by the stm32
-	#define MIDI_OFFSET 	((KeyType)60)	// the xylophone starts on middle C, and goes up from there.
+	#define KeyType 			uint8_t			// this is the data type used to index into the keys (for XPhone, this goes from 0 to 36).
+	#define KeyIntensityType	uint8_t			// this is the data type used to store the intensity of the key hit. 
+	#define KeyStateType		uint8_t			// this is the data type used to record the state of a key (boolean: 0 or 1)
+	#define KeyTimeType 		uint32_t		// this is the data type used to record the time at which the key was played (ms)
+	#define KeyTimeMax			UINT32_MAX		// the is the max key time. 1.6 months.  :O
+	#define KEYS				((KeyType)37)	// this is the total number of keys on the XPhone hardware operated by the stm32
+	#define MIDI_OFFSET			((KeyType)60)	// the xylophone starts on middle C, and goes up from there.
 	
+	#define KEY_CAL_TARGET		((float)1)		// the target voltage you are looking for from each key when doing a key_cal() routine.
+	#define KEY_CAL_AUTO_ADJ_FACTOR	(500)		// this is the amount of microseconds per vol error the algorithm will adjust the solenoid hit time in the key_cal() routine.
+
 	// key input states
 	volatile KeyStateType key_input_states[KEYS];	// the key input states
 	// key input cooldown periods
@@ -52,6 +52,7 @@
 	void key_cal();
 	void keys_read();
 	void key_make_track_empty(Note *note);
+	void key_step_intensity();
 	
 	#if SDL_PROGRAM
 		/// SDLKey structure
@@ -68,4 +69,4 @@
 		
 	#endif // SDL_PROGRAM
 
-#endif // KEY_H_INCLUDED
+#endif // KEY_H_DEF
