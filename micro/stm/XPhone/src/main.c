@@ -331,6 +331,7 @@ int main(void)
 	//-------------------------------------------------------------------------
 	// Main Program Loop
 	//-------------------------------------------------------------------------
+	uint8_t solenoid_ret;
 	song_set_to_beginning();
 	while (1)
 	{
@@ -368,7 +369,8 @@ int main(void)
 			{
 				while( (noteToPlay->time == currentTime) && (noteToPlay != NULL) )				// if the next note to play should be played at the current time,
 				{
-					solenoid_play(noteToPlay->key,keyIntensityMin[noteToPlay->key]);	// play it  TODO: put in the proper intensity
+					solenoid_ret = solenoid_play(noteToPlay->key,keyIntensityMin[noteToPlay->key]);	// play it  TODO: put in the proper intensity
+					//if(solenoid_ret == 1) note_delete(&songCurrent,noteToPlay);		// if the note was a repeat, delete it from the song.
 					KeyCooldownActive[noteToPlay->key] = 1;				// activate the cooldown for this key
 					KeyCooldownTimes[noteToPlay->key] = KEY_COOLDOWN;	// ^
 					noteToPlay = noteToPlay->next;						// move to the next note
@@ -403,7 +405,7 @@ int main(void)
 					SongNotesTotal++;
 					insert_note(&songCurrent, n);
 					#if(DEBUG_UART)
-						printf("t %8.3f   k %2d%s",currentTime/(float)1000,k,newline);
+						printf("t %8.3f   k %2d%s",SongTimeSec(SongTime),k,newline);
 					#endif
 					// activate the cooldown for this key
 					KeyCooldownActive[k] = 1;
@@ -441,20 +443,6 @@ int main(void)
 		ctrl_LED();
 	}
 }
-
-
-
-void XPhone_online()
-{
-	pause_ms(300);
-	solenoid_play(19,keyIntensityMin[19]);
-	pause_ms(80);
-	solenoid_play(26,keyIntensityMin[26]);
-	pause_ms(80);
-	solenoid_play(31,keyIntensityMin[31]);
-}
-
-
 
 
 // TODO figure out if you need this function. and if you do, put it in ADC.c
@@ -559,13 +547,19 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif
 
-/**
- * @}
- */
 
-/**
- * @}
- */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-
+// this is what happens when the XPhone resets
+void XPhone_online()
+{
+	uint16_t T = 80;		// ms between notes
+	uint16_t cycles = 1;	// how many times this is played
+	while(cycles > 0)
+	{
+		solenoid_play(19,keyIntensityMin[19]);
+		pause_ms(T);
+		solenoid_play(26,keyIntensityMin[26]);
+		pause_ms(T);
+		cycles--;
+	}
+	
+}

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include "song.h"
 #include "debug.h"
+#include "UART.h"
 
 /// initilize a note
 // key is the key to be played
@@ -49,12 +50,12 @@ void insert_note(Note **song, Note *note) {
 	
 	if(note == NULL)
 	{
-		warning("You cannot insert a note that is NULL! You are trying to insert NOTHING into the song!");
+		warning("insert_note(): note = NULL. aborting");
 		return;
 	}
 	if(song == NULL)
 	{
-		warning("You cannot insert a note into a song that is NULL! You are trying to insert a note into a song that doesn't exist!!");
+		warning("insert_note(): song = NULL. aborting");
 		return;
 	}
 	
@@ -103,6 +104,66 @@ void insert_note(Note **song, Note *note) {
 			after->next = note;
 			note->next = cur;
 		}
+	}
+}
+
+
+void note_delete(Note **song, Note *note)
+{
+	if(note == NULL)
+	{
+		warning("note_delete(): note = NULL. aborting");
+		return;
+	}
+	if(song == NULL)
+	{
+		warning("note_delete(): song = NULL. aborting");
+		return;
+	}
+	
+	printf("note_delete(): note->key = %ud, note->time = %.3f ms.%s",note->key,SongTimeSec(note->time),newline);
+	
+	// if the note you want to delete is the first note of the song,
+	if(*song == note)
+	{
+		note = note->next;				// grab the second note in the song
+		note_clear_from_memory(*song);	// free the first note in the song
+		SongNotesTotal--;				// remember to record that you deleted one.
+		*song = note;					// make the note start at the second note in the song (which is now the start of the new song).
+		return;
+	}
+	
+	Note *last_note = *song;
+	Note *cur = (*song)->next;
+	uint8_t done = 0;
+	uint8_t foundNote = 0;
+	while(!done)
+	{
+		// if the current note is NULL you have to stop, even though you didn't find the right note :/
+		if(cur == NULL)
+		{
+			foundNote = 0;
+			break;
+		}
+		// if you found the note you want to delete
+		if(cur == note)
+		{
+			last_note->next = cur->next;	// make the song skip this one
+			note_clear_from_memory(cur);	// delete the note you wanted to delete.
+			SongNotesTotal--;				// remember to record that you deleted one.
+			done = 1;
+			foundNote = 1;
+		}
+		// otherwise, if this was not the note you wanted to delete,
+		else
+		{
+			last_note = cur;		// save the current note as the next iteration's last_note.
+			cur = cur->next;		// move on to the next note
+		}
+	}
+	if(!foundNote)
+	{
+		warning("note_delete(): couldn't find the right note to delete");
 	}
 }
 

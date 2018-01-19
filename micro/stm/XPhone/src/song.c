@@ -73,6 +73,11 @@ void song_clear(Note *song)
 		warning("song_clear() was passed a NULL song! Exiting function...");
 		return;
 	}
+	if(song->key == KEY_TRACK_EMPTY)
+	{
+		printn("nothing to delete. song is empty.");
+		return;
+	}
 	// free all the notes until you get to the end (where the next note becomes NULL).
 	Note *cur = song;
 	Note *freeme;

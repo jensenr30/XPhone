@@ -1,11 +1,6 @@
 #ifndef SOLENOID_H_DEF
 	#define SOLENOID_H_DEF
-	#include <inttypes.h>
-	#include "GPIO.h"
-	#include "main.h"
-	#include "debug.h"
 	#include "key.h"
-	#include "UART.h"
 	//==============================================================================
 	// solenoid system
 	//==============================================================================
@@ -40,6 +35,6 @@
 	void solenoid_interrupt_recalculate();
 	void solenoid_shut_off_the_right_ones();
 	void TIM2_IRQHandler(void);
-	void solenoid_play(KeyType key, SolTimType length);
+	uint8_t solenoid_play(KeyType key, SolTimType length);
 
 #endif // SOLENOID_H_DEF

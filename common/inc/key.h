@@ -8,7 +8,7 @@
 	#define KEY_TIME_MAX		UINT32_MAX		// the is the max key time. 1.6 months.  :O
 	#define KEYS				((KeyType)37)	// this is the total number of keys on the XPhone hardware operated by the stm32
 	#define MIDI_OFFSET			((KeyType)60)	// the xylophone starts on middle C, and goes up from there.
-	
+
 	
 	// key input states
 	volatile KeyStateType key_input_states[KEYS];	// the key input states
@@ -49,6 +49,7 @@
 	/// Functions
 	Note* init_note(KeyType key, KeyTimeType time, KeyIntensityType intensity);
 	void insert_note(Note **song, Note *note);
+	void note_delete(Note **song, Note *note);
 	void clear_song(Note *song);
 	void note_clear_from_memory(Note *note);
 	void key_init();

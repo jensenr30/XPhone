@@ -1,4 +1,10 @@
 #include "solenoid.h"
+#include <inttypes.h>
+#include "GPIO.h"
+#include "main.h"
+#include "debug.h"
+#include "UART.h"
+#include "song.h"
 
 //==============================================================================
 // initialize all solenoid-related things
@@ -130,14 +136,14 @@ void TIM2_IRQHandler(void)
 // key		the key you want to play
 // length	the amount of time the solenoid will be on for in units of microseconds.
 //=============================================================================
-void solenoid_play(KeyType key, SolTimType length)
+uint8_t solenoid_play(KeyType key, SolTimType length)
 {
 	if (key >= KEYS)
 	{
 		warning("you tried to play a key out of the valid range! I'm going to play the highest key to let you know you suck and your program is broken.");
 		key = KEYS - 1;
 		#if(DEBUG_UART)
-			printf("key=%d  length=%.3f ms%s",key, length/(float)1000,newline);
+			printf("key=%d  length=%.3f ms%s",key, SongTimeSec(SongTime),newline);
 		#endif
 	}
 	if (length >= SOL_TIME_TOO_LONG)
@@ -145,7 +151,7 @@ void solenoid_play(KeyType key, SolTimType length)
 		warning("you are trying to play a key for too long. I'll still play the key, but there is probably an error in the code that is making it so long...");
 		length = SOL_TIME_TOO_LONG;
 		#if(DEBUG_UART)
-			printf("key=%d  length=%.3f ms%s",key, length/(float)1000,newline);
+			printf("key=%d  length=%.3f ms%s",key, SongTimeSec(SongTime),newline);
 		#endif
 	}
 	if (length <= SOL_TIME_TOO_SHORT)
@@ -153,16 +159,14 @@ void solenoid_play(KeyType key, SolTimType length)
 		warning("you are trying to play a key for too short. I'll still play the key (at the minimum length), but there is probably an error in the code (or calibration data) that is making it so short...");
 		length = SOL_TIME_TOO_SHORT;
 		#if(DEBUG_UART)
-			printf("key=%d  length=%.3f ms%s",key, length/(float)1000,newline);
+			printf("key=%d  length=%.3f ms%s",key, SongTimeSec(SongTime),newline);
 		#endif
 	}
 	if (solenoid_states[key])
 	{
-		warning("You try to play key that is already on!");
-		#if(DEBUG_UART)
-			printf("key=%d  length=%.3f ms%s",key, length/(float)1000,newline);
-		#endif
-		return;
+//		printn("You try to play key that is already on!");
+//		printf("key=%d  SongTime=%.3f s%s",key, SongTimeSec(SongTime),newline);
+		return 1;
 	}
 	
 	// record that you are turning on this solenoid.
@@ -173,4 +177,5 @@ void solenoid_play(KeyType key, SolTimType length)
 	solenoid_timing_array[key] = SOL_TIM->CNT + length - SOL_TIM_TURN_OFF_NOMINAL;
 	// figure out when the next interrupt will have to be to shut off the solenoid at the right time. 
 	solenoid_interrupt_recalculate();
+	return 0;
 }

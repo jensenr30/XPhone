@@ -133,7 +133,7 @@ void ctrl_init(){
 				{
 					SongLength = SongTime;													// set this as the song length.
 					#if(DEBUG_UART)
-						printf("SongTime = %.3f s%s",SongTime/(float)1000,newline);
+						printf("SongTime = %.3f s%s",SongTimeSec(SongTime),newline);
 					#endif
 				}
 			}
