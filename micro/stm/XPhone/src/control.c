@@ -232,4 +232,5 @@ void ctrl_init(){
 	{
 		song_set_to_beginning();
 		printn("S");
+		// todo: output a pulse on CTRL_OUT_SYNC anytime you do a sync. Perhaps you jsut do this inside the song_set_to_beginning() function.
 	}
