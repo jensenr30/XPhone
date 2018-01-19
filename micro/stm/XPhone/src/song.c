@@ -37,6 +37,7 @@ void song_set_to_beginning()
 	SongTime = 0;						// set the song time to 0
 	currentTime = KEY_TIME_MAX;			// reset the main.c while(1) loop current timer as well
 	noteToPlay = songCurrent;			// set the net note to play to be the first note in the song.
+	// todo: figure out if it makes sense to output a pulse on CTRL_OUT_SYNC anytime you reset the song to 0 time. I think it does...
 }
 
 
