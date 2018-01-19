@@ -351,33 +351,24 @@ int main(void)
 			noteToPlay = songCurrent;					// always start playing from the top!
 		}
 		
-		//----------------------------------------------------------------------
-		// play all the notes you must
-		//----------------------------------------------------------------------
-		if(ctrlMode==CTRL_MODE_PLAY || ctrlMode==CTRL_MODE_RECORD)
-		{
-			if(noteToPlay == NULL)								// if you have reached the end of the song,
-				noteToPlay = songCurrent;							// start over from the beginning
-			else if(noteToPlay->key == KEY_TRACK_EMPTY)			// if you have an empty track,
-				noteToPlay = songCurrent;							// try refreshing it
-			else if(noteToPlay->time >= SongLength)				// if the next note should be played AFTER THE SONG ENDS (ridiculous, should never happen)
-			{	
-				noteToPlay = songCurrent;							// restart the song
-				warning("Somehow, you got a note in your song that has a time that is AFTER your song ends!");
-			}
-			if(songCurrent->key != KEY_TRACK_EMPTY)				// if this is not an empty song
-			{
-				while( (noteToPlay->time == currentTime) && (noteToPlay != NULL) )				// if the next note to play should be played at the current time,
-				{
-					solenoid_ret = solenoid_play(noteToPlay->key,keyIntensityMin[noteToPlay->key]);	// play it  TODO: put in the proper intensity
-					//if(solenoid_ret == 1) note_delete(&songCurrent,noteToPlay);		// if the note was a repeat, delete it from the song.
-					KeyCooldownActive[noteToPlay->key] = 1;				// activate the cooldown for this key
-					KeyCooldownTimes[noteToPlay->key] = KEY_COOLDOWN;	// ^
-					noteToPlay = noteToPlay->next;						// move to the next note
-				}
-			}
-		}
 		
+		//----------------------------------------------------------------------
+		// reset key cool down if it is time too
+		//----------------------------------------------------------------------
+		for(k = 0; k < KEYS; k++)
+		{
+			if(KeyCooldownTimes[k])		// if there is still cooldown time left,
+			{
+				KeyCooldownTimes[k]--;		// decrement the cooldown timer.
+			}
+			else						// if the cooldown is over,
+			{
+				if(key_input_states[k]==0)	// if the key is actually off
+				{
+					KeyCooldownActive[k] = 0;	// you can finally deactivate the cooldown period.
+				}
+			}	
+		}
 		
 		//----------------------------------------------------------------------
 		// input all keys into key_inputs[] array.
@@ -416,21 +407,39 @@ int main(void)
 		}
 		
 		//----------------------------------------------------------------------
-		// reset key cool down if it is time too
+		// play all the notes you must
 		//----------------------------------------------------------------------
-		for(k = 0; k < KEYS; k++)
+		if(ctrlMode==CTRL_MODE_PLAY || ctrlMode==CTRL_MODE_RECORD)
 		{
-			if(KeyCooldownTimes[k])		// if there is still cooldown time left,
-			{
-				KeyCooldownTimes[k]--;		// decrement the cooldown timer.
+			if(noteToPlay == NULL)								// if you have reached the end of the song,
+				noteToPlay = songCurrent;							// start over from the beginning
+			else if(noteToPlay->key == KEY_TRACK_EMPTY)			// if you have an empty track,
+				noteToPlay = songCurrent;							// try refreshing it
+			else if(noteToPlay->time >= SongLength)				// if the next note should be played AFTER THE SONG ENDS (ridiculous, should never happen)
+			{	
+				noteToPlay = songCurrent;							// restart the song
+				warning("Somehow, you got a note in your song that has a time that is AFTER your song ends!");
 			}
-			else						// if the cooldown is over,
+			if(songCurrent->key != KEY_TRACK_EMPTY)				// if this is not an empty song
 			{
-				if(key_input_states[k]==0)	// if the key is actually off
+				while( (noteToPlay->time == currentTime) && (noteToPlay != NULL) )				// if the next note to play should be played at the current time,
 				{
-					KeyCooldownActive[k] = 0;	// you can finally deactivate the cooldown period.
+					if(SongSkipNextNotes == 0)
+					{
+						solenoid_ret = solenoid_play(noteToPlay->key,keyIntensityMin[noteToPlay->key]);	// play it  TODO: put in the proper intensity
+					}
+					else
+					{
+						SongSkipNextNotes--;
+						printf("skip k=%ul, t=%.3f%s",noteToPlay->key,SongTimeSec(noteToPlay->time),newline);
+					}
+					//if(solenoid_ret == 1) note_delete(&songCurrent,noteToPlay);		// if the note was a repeat, delete it from the song.
+					KeyCooldownActive[noteToPlay->key] = 1;				// activate the cooldown for this key
+					KeyCooldownTimes[noteToPlay->key] = KEY_COOLDOWN;	// ^
+					noteToPlay = noteToPlay->next;						// move to the next note
+					
 				}
-			}	
+			}
 		}
 		
 		//----------------------------------------------------------------------

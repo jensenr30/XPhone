@@ -143,6 +143,7 @@ void ctrl_init(){
 			{
 				song_set_to_beginning();												// set song to beginning
 				ctrl_mode_set(CTRL_MODE_RECORD);										// and start recording
+				SongSkipNextNotes = 1;													// skip the next note. If you don't skip this, it will try to play the note the user JUST played.
 			}
 			break;
 		case CTRL_MODE_RECORD:													// RECORD mode

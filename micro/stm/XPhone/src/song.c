@@ -14,6 +14,7 @@ void song_init()
 	key_make_track_empty(songCurrent);					// indicate the song is currently empty.
 	noteToPlay = songCurrent;							// make noteToPlay point at the song.
 	SongNotesTotal = 0;									// the initialized song has no notes.
+	SongSkipNextNotes = 0;								// don't skip any notes to start.
 	
 	// song 1-ms timer setup
 	__HAL_RCC_TIM3_CLK_ENABLE();
