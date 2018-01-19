@@ -1,5 +1,6 @@
 #include "control.h"
 #include "UART.h"
+#include "song.h"
 
 void ctrl_init(){
 		ctrlMode = CTRL_MODE_STOP;
@@ -18,17 +19,14 @@ void ctrl_init(){
 	{
 		ctrlMode = mode;
 		ctrlModeTimeAdder = ((SongTime%CTRL_LED_BLINK_PERIOD)+1)*CTRL_LED_BLINK_PERIOD - SongTime;
-		#if(DEBUG_UART)
-			switch(mode)
-			{
-				case CTRL_MODE_STOP:	printn("mode: STOP");		break;
-				case CTRL_MODE_ARMED:	printn("mode: ARMED");		break;
-				case CTRL_MODE_RECORD:	printn("mode: RECORD");		break;
-				case CTRL_MODE_PLAY:	printn("mode: PLAY");		break;
-				case CTRL_MODE_CAL:		printn("mode: CAL");		break;
-				default:				printn("mode: UNKNOWN!");	break;
-			}
-		#endif
+		switch(mode)
+		{
+			case CTRL_MODE_STOP:	printn("mode: STOP");		break;
+			case CTRL_MODE_ARMED:	printn("mode: ARMED");		break;
+			case CTRL_MODE_RECORD:	printn("mode: RECORD");		break;
+			case CTRL_MODE_PLAY:	printn("mode: PLAY");		break;
+			default:				error ("mode: UNKNOWN!");	break;
+		}
 	}
 	
 	
@@ -89,9 +87,18 @@ void ctrl_init(){
 		// if the clear button is held down,
 		if(pin_read(CTRL_IN_CLEAR_GPIO,CTRL_IN_CLEAR))
 		{
-			if(ctrlClearDBC < CTRL_CLEAR_HOLD_TIME)	ctrlClearDBC++;
-			else if(ctrlClear==CTRL_IN_INACTIVE)	ctrlClear = CTRL_IN_ACTIVE_NEW;
-			else									ctrlClear = CTRL_IN_ACTIVE_OLD;
+			if(ctrlClearDBC < CTRL_CLEAR_HOLD_TIME)
+			{
+				ctrlClearDBC++;
+			}
+			else if(ctrlClear==CTRL_IN_INACTIVE)
+			{
+				ctrlClear = CTRL_IN_ACTIVE_NEW;
+			}
+			else
+			{
+				ctrlClear = CTRL_IN_ACTIVE_OLD;
+			}
 		}
 		else
 		{
@@ -122,7 +129,7 @@ void ctrl_init(){
 			if( (ctrlArm==CTRL_IN_ACTIVE_NEW) || (ctrlPedal==CTRL_IN_ACTIVE_NEW) )	// if either the pedal or the arm button are activated by user,
 			{
 				ctrl_mode_set(CTRL_MODE_PLAY);											// stop recording; exit to play mode.
-				if(SongLength==KeyTimeMax)												// if this is the first thing you recorded,
+				if(SongLength==KEY_TIME_MAX)												// if this is the first thing you recorded,
 				{
 					SongLength = SongTime;													// set this as the song length.
 					#if(DEBUG_UART)
@@ -138,21 +145,20 @@ void ctrl_init(){
 				ctrl_mode_set(CTRL_MODE_RECORD);										// start recording use input again.
 			}
 			break;
-		case CTRL_MODE_CAL:
-			if( (ctrlArm==CTRL_IN_ACTIVE_NEW) || (ctrlPedal==CTRL_IN_ACTIVE_NEW) || (ctrlCal==CTRL_IN_ACTIVE_NEW) )	// if the user hits the arm button, steps on the pedal, or hits the cal button again,
-			{
-				ctrl_mode_set(CTRL_MODE_PLAY);										// we exit to PLAY mode.
-			}
-			break;
 		default:
 			warning("I have no clue what mode you are in man. It's not on the list.");
 			break;
 		}
-		/// enter cal mode if the user wants to.
-		if(ctrlCal==CTRL_IN_ACTIVE_NEW)
+		if(ctrlCal == CTRL_IN_ACTIVE_NEW)
 		{
-			ctrlMode = CTRL_MODE_CAL;
+			key_cal();
 		}
+		if(ctrlClear == CTRL_IN_ACTIVE_NEW)
+		{
+			song_clear(songCurrent);
+			ctrl_mode_set(CTRL_MODE_STOP);
+		}
+		
 	}
 	
 	
@@ -189,10 +195,6 @@ void ctrl_init(){
 			{
 				ctrl_LED_o();
 			}
-		}
-		else if(ctrlMode == CTRL_MODE_CAL)
-		{
-			ctrl_LED_y();
 		}
 		else												// if you don't know what mode you just got into,
 		{

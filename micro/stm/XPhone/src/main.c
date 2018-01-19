@@ -43,6 +43,12 @@ int main(void)
 	XPhone_online();					// play a little tune to indicate startup
 	
 	
+//	while(1)
+//	{
+//		pin_set(DEBUG_LED_GPIO,DEBUG_LED,pin_read(CTRL_IN_CLEAR_GPIO,CTRL_IN_CLEAR));
+//		pause_ms(1);
+//	}
+	
 	//key_step_intensity(1000,6000,100);	// this will get every key amplitude you would ever want to know, man.
 	
 	// code to test pause_us().
@@ -66,37 +72,37 @@ int main(void)
 	
 	// this code allows the user to play any keys, and the UART will print the analog voltage that was measured as a result of striking the key.
 	// this comes in handy when you want to know how different keys voltage output respond to user key strikes.
-	ADC_Type value;
-	uint8_t gotKey = 0;
-	uint8_t kk = 0;
-	uint8_t kkk = KEY_TRACK_EMPTY;
-	char buffer[100];
-	printn("key,voltage");
-	while(1)
-	{
-		keys_read();
-		gotKey = 0;
-		for(kk=0; kk<KEYS; kk++)
-		{
-			if(key_input_states[kk])
-			{
-				gotKey = 1;
-				kkk = kk;
-			}
-		}
-		
-		if(gotKey)
-		{
-			pause_ms(AMUX_SAMPLE_HOLDOFF);
-			value = amux_read(kkk);
-			sprintf(buffer, "%2d,%5.2f V",kkk,ADC_volt(value));
-			printf("%s%s",buffer,newline);
-		}
-		else
-		{
-			pause_ms(1);
-		}
-	}
+//	ADC_Type value;
+//	uint8_t gotKey = 0;
+//	uint8_t kk = 0;
+//	uint8_t kkk = KEY_TRACK_EMPTY;
+//	char buffer[100];
+//	printn("key,voltage");
+//	while(1)
+//	{
+//		keys_read();
+//		gotKey = 0;
+//		for(kk=0; kk<KEYS; kk++)
+//		{
+//			if(key_input_states[kk])
+//			{
+//				gotKey = 1;
+//				kkk = kk;
+//			}
+//		}
+//		
+//		if(gotKey)
+//		{
+//			pause_ms(AMUX_SAMPLE_HOLDOFF);
+//			value = amux_read(kkk);
+//			sprintf(buffer, "%2d,%5.2f V",kkk,ADC_volt(value));
+//			printf("%s%s",buffer,newline);
+//		}
+//		else
+//		{
+//			pause_ms(1);
+//		}
+//	}
 	
 	
 	
@@ -394,6 +400,7 @@ int main(void)
 				{
 					// add the key to the song
 					Note* n = init_note(k, currentTime, 128);	// TODO set a valid amplitude value
+					SongNotesTotal++;
 					insert_note(&songCurrent, n);
 					#if(DEBUG_UART)
 						printf("t %8.3f   k %2d%s",currentTime/(float)1000,k,newline);
@@ -428,7 +435,6 @@ int main(void)
 		//----------------------------------------------------------------------
 		ctrl_in_debounce();			// check inputs and debounce them
 		ctrl_mode_manage();			// manage/change the mode that the XPhone is in based on events, user input, etc...
-		if(ctrlClear == CTRL_IN_ACTIVE_NEW) song_clear(songCurrent);	// if the user wants to clear the song, do it.
 		//----------------------------------------------------------------------
 		// control LED based on the current mode
 		//----------------------------------------------------------------------

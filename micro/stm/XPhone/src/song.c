@@ -1,5 +1,6 @@
 #include "song.h"
 #include "debug.h"
+#include "UART.h"
 
 //=============================================================================
 // This sets up all the song stuff.
@@ -8,10 +9,11 @@ void song_init()
 {
 	// song variables
 	SongTime = 0;										// start out at 0 ms.
-	SongLength = KeyTimeMax;							// by default, the song is YEARS long.
+	SongLength = KEY_TIME_MAX;							// by default, the song is YEARS long.
 	songCurrent = init_note(0, 0, 0);					// create a new note to start the song.
 	key_make_track_empty(songCurrent);					// indicate the song is currently empty.
 	noteToPlay = songCurrent;							// make noteToPlay point at the song.
+	SongNotesTotal = 0;									// the initialized song has no notes.
 	
 	// song 1-ms timer setup
 	__HAL_RCC_TIM3_CLK_ENABLE();
@@ -64,6 +66,7 @@ void TIM3_IRQHandler(void)
 //=============================================================================
 void song_clear(Note *song)
 {
+	printf("clearing song. SongNotesTotal=%lu.%s",SongNotesTotal,newline);
 	// don't accept shitty input.
 	if(song == NULL)
 	{
@@ -71,14 +74,21 @@ void song_clear(Note *song)
 		return;
 	}
 	// free all the notes until you get to the end (where the next note becomes NULL).
-	Note *cur = song->next;
-	Note *freeme = NULL;
+	Note *cur = song;
+	Note *freeme;
+	uint32_t note_count = 0;
 	while(cur != NULL)
 	{
-		freeme = cur;
-		cur = cur->next;
-		free(freeme);
+		freeme = cur;			// record the current note that is not NULL
+		cur = cur->next;		// make cur point to the next note
+		free(freeme);			// delete the note that you know is not NULL
+		note_count++;			// record that you deleted one more note.
 	}
-	// indicate the song is now empty by changing the first note to a KEY_TRACK_EMPTY note using the proper function:
-	key_make_track_empty(song);
+	if(note_count != SongNotesTotal)
+	{
+		warning("The number of notes you just freed is not equal to the number of notes you recorded!");
+	}
+	printf("done. cleared %lu notes.%s",note_count,newline);
+	// start the song from scratch - re-init everything
+	song_init();
 }

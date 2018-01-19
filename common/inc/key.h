@@ -5,7 +5,7 @@
 	#define KeyIntensityType	uint8_t			// this is the data type used to store the intensity of the key hit. 
 	#define KeyStateType		uint8_t			// this is the data type used to record the state of a key (boolean: 0 or 1)
 	#define KeyTimeType 		uint32_t		// this is the data type used to record the time at which the key was played (ms)
-	#define KeyTimeMax			UINT32_MAX		// the is the max key time. 1.6 months.  :O
+	#define KEY_TIME_MAX		UINT32_MAX		// the is the max key time. 1.6 months.  :O
 	#define KEYS				((KeyType)37)	// this is the total number of keys on the XPhone hardware operated by the stm32
 	#define MIDI_OFFSET			((KeyType)60)	// the xylophone starts on middle C, and goes up from there.
 	

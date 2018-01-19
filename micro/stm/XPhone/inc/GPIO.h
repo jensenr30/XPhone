@@ -63,9 +63,8 @@
 	#define CTRL_IN_ARM			GPIO_PIN_11			// input pin for arming recording mode (recording doesn't start yet, but it will when the user hits a note, or steps on the pedal.
 	#define CTRL_IN_PEDAL_GPIO	GPIOC
 	#define CTRL_IN_PEDAL		GPIO_PIN_10			// input pin for the pedal. Active LOW. If mode is ARMED, stepping on the pedal will set it to RECORD mode. If in RECORD mode, stepping on pedal exits RECORD mode into PLAY mode).
-	// todo assign a pin to the cal gpio
-	#define CTRL_IN_CAL_GPIO	GPIOD
-	#define CTRL_IN_CAL			GPIO_PIN_9			// the calibration button. hold it for a little bit, and the XPhone will go thru a cal. procedure. 
+	#define CTRL_IN_CAL_GPIO	GPIOF
+	#define CTRL_IN_CAL			GPIO_PIN_0			// the calibration button. hold it for a little bit, and the XPhone will go thru a cal. procedure. 
 	#define CTRL_IN_CLEAR_GPIO	GPIOG
 	#define CTRL_IN_CLEAR		GPIO_PIN_0			// pin used to clear the current song 
 	#define CTRL_IN_TIMING_GPIO	GPIOG				

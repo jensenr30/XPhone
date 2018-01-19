@@ -20,20 +20,19 @@
 	#include "song.h"
 
 	#define ctrlType 				uint8_t
-	#define CTRL_MODE_STOP			(0)					// nothing happens in this state. default state.
-	#define CTRL_MODE_ARMED			(1)
-	#define CTRL_MODE_RECORD		(2)
-	#define CTRL_MODE_PLAY			(3)
-	#define CTRL_MODE_CAL			(4)
+	#define CTRL_MODE_STOP			((ctrlType)0)		// nothing happens in this state. default state.
+	#define CTRL_MODE_ARMED			((ctrlType)1)		// ready to start recording
+	#define CTRL_MODE_RECORD		((ctrlType)2)		// recording notes
+	#define CTRL_MODE_PLAY			((ctrlType)3)		// playing back notes to user (and looping automatically)
 	#define CTRL_ARM_DBC_TIME		((KeyTimeType)500)	// milliseconds that the use must hold the ARM button down for it to arm the XPhone.
 	#define CTRL_PEDAL_DBC_TIME		((KeyTimeType)500)	// milliseconds that the use must hold the ARM button down for it to arm the XPhone.
 	#define CTRL_LED_BLINK_PERIOD	((KeyTimeType)500)	// milliseconds it takes for the LED to turn on and off when in a blinking mode (record / armed).
-	#define CTRL_CAL_HOLD_TIME		((KeyTimeType)3000)	// milliseconds it takes for the calibration routine to be activated
+	#define CTRL_CAL_HOLD_TIME		((KeyTimeType)1000)	// milliseconds it takes for the calibration routine to be activated
 	#define CTRL_CLEAR_HOLD_TIME	((KeyTimeType)1000)	// milliseconds it takes for the clear to respond to user telling the device it needs to clear the song.
 
-	#define CTRL_IN_INACTIVE		(0)					// this indicates the input is inactive (off).
-	#define CTRL_IN_ACTIVE_NEW		(1)					// this indicates the input JUST changed state.
-	#define CTRL_IN_ACTIVE_OLD		(2)					// this indicates the input has been active for a while.
+	#define CTRL_IN_INACTIVE		((ctrlType)0)		// this indicates the input is inactive (off).
+	#define CTRL_IN_ACTIVE_NEW		((ctrlType)1)		// this indicates the input JUST changed state.
+	#define CTRL_IN_ACTIVE_OLD		((ctrlType)2)		// this indicates the input has been active for a while.
 
 	ctrlType ctrlMode; 									// default mode is stopped.
 	KeyTimeType ctrlModeTimeAdder;						// keeps track of when the last mode change was (useful for making the LED blink ON when the mode change happens - this gives VERY fast visual feedback.
@@ -42,11 +41,11 @@
 	KeyTimeType ctrlArmDBC;								// this is the debounce counter for the arm control input.
 	ctrlType ctrlPedal;									// this tells us when the user intended to step on the floor pedal.
 	KeyTimeType ctrlPedalDBC;							// this id the debounce counter for the floor pedal.
-	ctrlType ctrlKeyHit;									// this tells us if a key was just hit by the user.
+	ctrlType ctrlKeyHit;								// this tells us if a key was just hit by the user.
 	ctrlType ctrlCal;									// this tells us if the user wants to do a calibration.
 	KeyTimeType ctrlCalDBC;								// this tells us how long the cal button has been held down for
 	ctrlType ctrlClear;									// this tells you if the user wants to clear the current song.
-	ctrlType ctrlClearDBC;								// this tells you how long the user has been holding the clear button.
+	KeyTimeType ctrlClearDBC;							// this tells you how long the user has been holding the clear button.
 	
 	//==============================================================================
 	// input/output control functions

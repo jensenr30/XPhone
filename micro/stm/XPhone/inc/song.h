@@ -18,6 +18,7 @@
 	volatile KeyTimeType SongLength;						// this is how long the song is (ms). Defaults to maximum time (4294967295 milliseconds, or about 1.2 hours)
 	Note *songCurrent;										// this points to the current song you are playing
 	Note *noteToPlay;										// this will point to the next note you are going to play
+	uint32_t SongNotesTotal;								// this keeps track of the total number of notes the song has. This isn't truely necessary for making the song work, but it serves as a check when we clear a song to make sure the number of notes cleared equals the number of notes in the song.
 	
 	// TODO implement a way to limit to total possible notes
 	
