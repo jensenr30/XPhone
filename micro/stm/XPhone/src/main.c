@@ -442,6 +442,7 @@ int main(void)
 		// control LED based on the current mode
 		//----------------------------------------------------------------------
 		ctrl_LED();
+		if((currentTime%SONG_TICKS_PER_SEC)==0) printf("t=%.3f%s",SongTimeSec(SongTime),newline);
 	}
 }
 

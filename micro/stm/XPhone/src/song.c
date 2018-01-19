@@ -34,7 +34,7 @@ void song_set_to_beginning()
 {
 	SONG_TIM->CNT = 0;					// set the timer/counter to 0 (this ensures that the first ms of the song really lasts the full ms).
 	SongTime = 0;						// set the song time to 0
-	currentTime = 0;					// reset the main.c while(1) loop current timer as well
+	currentTime = KEY_TIME_MAX;			// reset the main.c while(1) loop current timer as well
 	noteToPlay = songCurrent;			// set the net note to play to be the first note in the song.
 }
 
