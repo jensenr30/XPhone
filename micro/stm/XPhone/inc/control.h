@@ -29,6 +29,7 @@
 	#define CTRL_LED_BLINK_PERIOD	((KeyTimeType)500)	// milliseconds it takes for the LED to turn on and off when in a blinking mode (record / armed).
 	#define CTRL_CAL_HOLD_TIME		((KeyTimeType)1000)	// milliseconds it takes for the calibration routine to be activated
 	#define CTRL_CLEAR_HOLD_TIME	((KeyTimeType)1000)	// milliseconds it takes for the clear to respond to user telling the device it needs to clear the song.
+	#define CTRL_SYNC_DBC_TIME		((KeyTimeType)1000)	// milliseconds after a sync input that the XPhone will ignore sync inputs.
 
 	#define CTRL_IN_INACTIVE		((ctrlType)0)		// this indicates the input is inactive (off).
 	#define CTRL_IN_ACTIVE_NEW		((ctrlType)1)		// this indicates the input JUST changed state.
@@ -46,7 +47,8 @@
 	KeyTimeType ctrlCalDBC;								// this tells us how long the cal button has been held down for
 	ctrlType ctrlClear;									// this tells you if the user wants to clear the current song.
 	KeyTimeType ctrlClearDBC;							// this tells you how long the user has been holding the clear button.
-	
+	ctrlType ctrlSync;									// this keeps track of if the user wants to sync the XPhone or not.
+	KeyTimeType ctrlSyncDBC;							// this keeps track of how long it has been since the last sync event.
 	//==============================================================================
 	// input/output control functions
 	//==============================================================================
@@ -56,6 +58,7 @@
 	void ctrl_in_debounce();
 	void ctrl_mode_manage();
 	void ctrl_LED();
+	void sync();
 	
 	
 #endif

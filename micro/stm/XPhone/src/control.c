@@ -7,12 +7,14 @@ void ctrl_init(){
 		ctrlModeTimeAdder = 0;
 		
 		ctrlArm = CTRL_IN_INACTIVE;
-		ctrlArmDBC = 0;
+		ctrlArmDBC = CTRL_ARM_DBC_TIME;
 		ctrlPedal = CTRL_IN_INACTIVE;
-		ctrlPedalDBC = 0;
+		ctrlPedalDBC = CTRL_PEDAL_DBC_TIME;
 		ctrlKeyHit = CTRL_IN_INACTIVE;
 		ctrlCal = CTRL_IN_INACTIVE;
 		ctrlCalDBC = 0;
+		ctrlSync = CTRL_IN_INACTIVE;
+		ctrlSyncDBC = CTRL_SYNC_DBC_TIME;
 	}
 	
 	void ctrl_mode_set(ctrlType mode)
@@ -105,6 +107,24 @@ void ctrl_init(){
 			ctrlClearDBC = 0;
 			ctrlClear = CTRL_IN_INACTIVE;
 		}
+		
+		ctrlSyncDBC++;
+		if(!pin_read(CTRL_IN_SYNC_GPIO,CTRL_IN_SYNC))
+		{
+			if( (ctrlSync == CTRL_IN_INACTIVE) && (ctrlSyncDBC >= CTRL_SYNC_DBC_TIME) )
+			{
+				ctrlSync = CTRL_IN_ACTIVE_NEW;
+				ctrlSyncDBC = 0;
+			}
+			else
+			{
+				ctrlSync = CTRL_IN_ACTIVE_OLD;
+			}
+		}
+		else
+		{
+			ctrlSync = CTRL_IN_INACTIVE;
+		}
 	}
 	
 	// run this as frequently as you like. I recommend once per ms of the song.
@@ -158,7 +178,10 @@ void ctrl_init(){
 			song_clear(songCurrent);
 			ctrl_mode_set(CTRL_MODE_STOP);
 		}
-		
+		if(ctrlSync == CTRL_IN_ACTIVE_NEW)
+		{
+			sync();
+		}
 	}
 	
 	
@@ -201,4 +224,11 @@ void ctrl_init(){
 			warning("You are in an unknown mode! WTF?!?!");		// make the LED white.
 			ctrl_LED_w();
 		}
+	}
+	
+	
+	void sync()
+	{
+		song_set_to_beginning();
+		printn("S");
 	}

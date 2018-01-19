@@ -382,6 +382,7 @@ int main(void)
 		//----------------------------------------------------------------------
 		// input all keys into key_inputs[] array.
 		//----------------------------------------------------------------------
+		// todo: move the ctrlMode checks to be encompasing the for loop. don't waste time in these for loops when you are not recording, man.
 		keys_read();
 		
 		ctrlKeyHit = CTRL_IN_INACTIVE;	// reset this flag. If the user hits a key, this will be set to CTRL_IN_ACTIVE_NEW.
