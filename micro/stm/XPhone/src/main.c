@@ -43,6 +43,39 @@ int main(void)
 	XPhone_online();					// play a little tune to indicate startup
 	
 	
+	
+	
+	
+//	// code to test key sensitivity (user hits keys, XPhone gives feedback by reacting with another key hit).
+//	uint8_t gotKey = 0;
+//	uint8_t kk = 0;
+//	uint8_t kkk = KEY_TRACK_EMPTY;
+//	uint8_t k_ofst = 7;
+//	printn("manual key sensitivity test");
+//	while(1)
+//	{
+//		keys_read();
+//		gotKey = 0;
+//		for(kk=0; kk<KEYS; kk++)
+//		{
+//			if(key_input_states[kk])
+//			{
+//				gotKey = 1;
+//				kkk = kk;
+//			}
+//		}
+//		if(gotKey)
+//		{
+//			if(kkk+k_ofst >= KEYS)
+//				kkk -= 5;
+//			else
+//				kkk += k_ofst;
+//			solenoid_play(kkk,keyIntensity[kkk]);
+//			pause_ms(KEY_COOLDOWN);
+//		}
+//	}
+	
+	
 //	while(1)
 //	{
 //		pin_set(DEBUG_LED_GPIO,DEBUG_LED,pin_read(CTRL_IN_CLEAR_GPIO,CTRL_IN_CLEAR));
@@ -426,12 +459,12 @@ int main(void)
 				{
 					if(SongSkipNextNotes == 0)
 					{
-						solenoid_ret = solenoid_play(noteToPlay->key,keyIntensityMin[noteToPlay->key]);	// play it  TODO: put in the proper intensity
+						solenoid_ret = solenoid_play(noteToPlay->key,keyIntensity[noteToPlay->key]);	// play it  TODO: put in the proper intensity
 					}
 					else
 					{
 						SongSkipNextNotes--;
-						printf("skip k=%ul, t=%.3f%s",noteToPlay->key,SongTimeSec(noteToPlay->time),newline);
+						printf("skip k=%u, t=%.3f%s",noteToPlay->key,SongTimeSec(noteToPlay->time),newline);
 					}
 					//if(solenoid_ret == 1) note_delete(&songCurrent,noteToPlay);		// if the note was a repeat, delete it from the song.
 					KeyCooldownActive[noteToPlay->key] = 1;				// activate the cooldown for this key
@@ -566,9 +599,9 @@ void XPhone_online()
 	uint16_t cycles = 1;	// how many times this is played
 	while(cycles > 0)
 	{
-		solenoid_play(19,keyIntensityMin[19]);
+		solenoid_play(19,keyIntensity[19]);
 		pause_ms(T);
-		solenoid_play(26,keyIntensityMin[26]);
+		solenoid_play(26,keyIntensity[26]);
 		pause_ms(T);
 		cycles--;
 	}

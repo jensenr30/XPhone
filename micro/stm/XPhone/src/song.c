@@ -1,6 +1,7 @@
 #include "song.h"
 #include "debug.h"
 #include "UART.h"
+#include "control.h"
 
 //=============================================================================
 // This sets up all the song stuff.
@@ -50,13 +51,11 @@ void TIM3_IRQHandler(void)
 	if (SONG_TIM->SR & TIM_SR_UIF) 				// if UIF flag is set
 	{
 		SONG_TIM->SR &= ~TIM_SR_UIF;				// clear UIF flag
-		if(SongTime+1 >= SongLength)				// if the song has reached its end,
+		SongTime++;									// increment song time by 1
+		// if the song has reached its end (and we are using internal timing)
+		if( (SongTime >= SongLength) && (ctrlTimingSource == CTRL_IN_TIMING_SOURCE_INTERNAL))
 		{
 			SongTime = 0;								// start over
-		}
-		else										// otherwise,
-		{
-			SongTime++;									// increment song time by 1
 		}
 	}
 }

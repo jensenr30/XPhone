@@ -15,6 +15,7 @@ void ctrl_init(){
 		ctrlCalDBC = 0;
 		ctrlSync = CTRL_IN_INACTIVE;
 		ctrlSyncDBC = CTRL_SYNC_DBC_TIME;
+		ctrlTimingSource = CTRL_IN_TIMING_SOURCE_INTERNAL;
 	}
 	
 	void ctrl_mode_set(ctrlType mode)
@@ -125,6 +126,16 @@ void ctrl_init(){
 		{
 			ctrlSync = CTRL_IN_INACTIVE;
 		}
+		// see if we are supposed to use internal or external timing to run the XPhone song.
+		if(pin_read(CTRL_IN_TIMING_GPIO,CTRL_IN_TIMING))
+		{
+			ctrlTimingSource = CTRL_IN_TIMING_SOURCE_EXTERNAL;
+		}
+		else
+		{
+			ctrlTimingSource = CTRL_IN_TIMING_SOURCE_INTERNAL;
+		}
+		
 	}
 	
 	// run this as frequently as you like. I recommend once per ms of the song.
@@ -179,7 +190,7 @@ void ctrl_init(){
 			song_clear(songCurrent);
 			ctrl_mode_set(CTRL_MODE_STOP);
 		}
-		if(ctrlSync == CTRL_IN_ACTIVE_NEW)
+		if( (ctrlSync == CTRL_IN_ACTIVE_NEW) && (ctrlTimingSource == CTRL_IN_TIMING_SOURCE_EXTERNAL) )
 		{
 			sync();
 		}
@@ -230,6 +241,8 @@ void ctrl_init(){
 	
 	void sync()
 	{
+		// make the song length equal the current time. In this way, if you switch back to internal timing, the internal timing will very close to whatever the time between external sync pulses was. It will sound acceptable in terms of rhythm, but it will drift away from your external source most likely because it is no longer sync'd.
+		SongLength = SongTime;
 		song_set_to_beginning();
 		printn("S");
 		// todo: output a pulse on CTRL_OUT_SYNC anytime you do a sync. Perhaps you jsut do this inside the song_set_to_beginning() function.

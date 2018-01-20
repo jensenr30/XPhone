@@ -243,46 +243,88 @@ void key_step_intensity(SolTimType start, SolTimType stop, SolTimType step)
 
 void key_cal_default()
 {
-	keyIntensityMin[0]	=	2822;
-	keyIntensityMin[1]	=	2618;
-	keyIntensityMin[2]	=	3009;
-	keyIntensityMin[3]	=	2710;
-	keyIntensityMin[4]	=	2499;
-	keyIntensityMin[5]	=	3231;
-	keyIntensityMin[6]	=	2419;
-	keyIntensityMin[7]	=	2674;
-	keyIntensityMin[8]	=	3102;
-	keyIntensityMin[9]	=	3581;
-	keyIntensityMin[10]	=	2962;
-	keyIntensityMin[11]	=	2481;
+	keyIntensity[0]	=	2822;
+	keyIntensity[1]	=	2618;
+	keyIntensity[2]	=	3009;
+	keyIntensity[3]	=	2710;
+	keyIntensity[4]	=	2499;
+	keyIntensity[5]	=	3231;
+	keyIntensity[6]	=	2419;
+	keyIntensity[7]	=	2674;
+	keyIntensity[8]	=	3102;
+	keyIntensity[9]	=	3581;
+	keyIntensity[10]	=	2962;
+	keyIntensity[11]	=	2481;
 	
-	keyIntensityMin[12]	=	2309;
-	keyIntensityMin[13]	=	2606;
-	keyIntensityMin[14]	=	2993;
-	keyIntensityMin[15]	=	2990;
-	keyIntensityMin[16]	=	2227;
-	keyIntensityMin[17]	=	2854;
-	keyIntensityMin[18]	=	1917;
-	keyIntensityMin[19]	=	3066;
-	keyIntensityMin[20]	=	3286;
-	keyIntensityMin[21]	=	1994;
-	keyIntensityMin[22]	=	2174;
-	keyIntensityMin[23]	=	2179;
+	keyIntensity[12]	=	2309;
+	keyIntensity[13]	=	2606;
+	keyIntensity[14]	=	2993;
+	keyIntensity[15]	=	2990;
+	keyIntensity[16]	=	2227;
+	keyIntensity[17]	=	2854;
+	keyIntensity[18]	=	1917;
+	keyIntensity[19]	=	3066;
+	keyIntensity[20]	=	3286;
+	keyIntensity[21]	=	1994;
+	keyIntensity[22]	=	2174;
+	keyIntensity[23]	=	2179;
 	
-	keyIntensityMin[24]	=	2669;
-	keyIntensityMin[25]	=	3172;
-	keyIntensityMin[26]	=	3641;
-	keyIntensityMin[27]	=	4149;
-	keyIntensityMin[28]	=	4222;
-	keyIntensityMin[29]	=	4817;
-	keyIntensityMin[30]	=	3009;
-	keyIntensityMin[31]	=	3242;
-	keyIntensityMin[32]	=	2618;
-	keyIntensityMin[33]	=	3069;
-	keyIntensityMin[34]	=	3428;
-	keyIntensityMin[35]	=	2729;
+	keyIntensity[24]	=	2669;
+	keyIntensity[25]	=	3172;
+	keyIntensity[26]	=	3641;
+	keyIntensity[27]	=	4149;
+	keyIntensity[28]	=	4222;
+	keyIntensity[29]	=	4817;
+	keyIntensity[30]	=	3009;
+	keyIntensity[31]	=	3242;
+	keyIntensity[32]	=	2618;
+	keyIntensity[33]	=	3069;
+	keyIntensity[34]	=	3428;
+	keyIntensity[35]	=	2729;
 	
-	keyIntensityMin[36]	=	3004;
+	keyIntensity[36]	=	3004;
+	
+	// these are the target voltage that we want to play. they are reasonable amplitudes.
+	keyCalVoltageTarget[0] = 0.5;
+	keyCalVoltageTarget[1] = 0.5;
+	keyCalVoltageTarget[2] = 0.5;
+	keyCalVoltageTarget[3] = 0.4;
+	keyCalVoltageTarget[4] = 0.5;
+	keyCalVoltageTarget[5] = 0.4;
+	keyCalVoltageTarget[6] = 0.5;
+	keyCalVoltageTarget[7] = 0.5;
+	keyCalVoltageTarget[8] = 0.6;
+	keyCalVoltageTarget[9] = 0.4;
+	keyCalVoltageTarget[10] = 0.4;
+	keyCalVoltageTarget[11] = 0.4;
+	
+	keyCalVoltageTarget[12] = 0.8;
+	keyCalVoltageTarget[13] = 0.7;
+	keyCalVoltageTarget[14] = 1.2;
+	keyCalVoltageTarget[15] = 0.7;
+	keyCalVoltageTarget[16] = 0.95;
+	keyCalVoltageTarget[17] = 1.1;
+	keyCalVoltageTarget[18] = 1.1;
+	keyCalVoltageTarget[19] = 0.4;
+	keyCalVoltageTarget[20] = 0.4;
+	keyCalVoltageTarget[21] = 0.8;
+	keyCalVoltageTarget[22] = 0.7;
+	keyCalVoltageTarget[23] = 0.8;
+	
+	keyCalVoltageTarget[24] = 0.4;
+	keyCalVoltageTarget[25] = 0.8;
+	keyCalVoltageTarget[26] = 0.4;
+	keyCalVoltageTarget[27] = 0.4;
+	keyCalVoltageTarget[28] = 0.5;
+	keyCalVoltageTarget[29] = 0.5;
+	keyCalVoltageTarget[30] = 0.7;
+	keyCalVoltageTarget[31] = 0.9;
+	keyCalVoltageTarget[32] = 0.95;
+	keyCalVoltageTarget[33] = 1.3;
+	keyCalVoltageTarget[34] = 1.0;
+	keyCalVoltageTarget[35] = 1.3;
+	
+	keyCalVoltageTarget[36] = 1.0;
 }
 
 
@@ -299,12 +341,12 @@ void key_cal()
 		for(key=0; key<KEYS; key++)
 		{
 			k = (key*step)%KEYS;											// step through the keys in a tasteful way
-			solenoid_play(k,keyIntensityMin[k]);							// play this key
+			solenoid_play(k,keyIntensity[k]);							// play this key
 			pause_ms(AMUX_SAMPLE_HOLDOFF);									// wait the appropriate holdoff time
 			voltages[k] = ADC_volt(amux_read(k));										// record the voltage produced by the key circuitry
-			sprintf(buffer, "%2d, %2d ,%4lu, %.2f",c,k,keyIntensityMin[k],voltages[k]);	// tell the user what you are doing.
+			sprintf(buffer, "%2d, %2d ,%4lu, %.2f",c,k,keyIntensity[k],voltages[k]);	// tell the user what you are doing.
 			printf("%s%s",buffer,newline);
-			keyIntensityMin[k] += (int16_t)((KEY_CAL_TARGET - voltages[k])*key_cal_adj(k));	// adjust the amount of time you turn the solenoid on for this key.
+			keyIntensity[k] += (int16_t)((keyCalVoltageTarget[k] - voltages[k])*key_cal_adj(k));	// adjust the amount of time you turn the solenoid on for this key.
 		}
 	}
 
@@ -330,7 +372,7 @@ void key_cal()
 //				gotMin |= key_input_states[k];
 //				t++;
 //			}
-//			if(!gotMin) keyIntensityMin[k] += KEY_CAL_STEP;
+//			if(!gotMin) keyIntensity[k] += KEY_CAL_STEP;
 //			pause_ms(KEY_CAL_STEP_TIME);
 //		}
 //		

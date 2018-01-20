@@ -30,11 +30,14 @@
 	#define CTRL_CAL_HOLD_TIME		((KeyTimeType)1000)	// milliseconds it takes for the calibration routine to be activated
 	#define CTRL_CLEAR_HOLD_TIME	((KeyTimeType)1000)	// milliseconds it takes for the clear to respond to user telling the device it needs to clear the song.
 	#define CTRL_SYNC_DBC_TIME		((KeyTimeType)1000)	// milliseconds after a sync input that the XPhone will ignore sync inputs.
-
+	
 	#define CTRL_IN_INACTIVE		((ctrlType)0)		// this indicates the input is inactive (off).
 	#define CTRL_IN_ACTIVE_NEW		((ctrlType)1)		// this indicates the input JUST changed state.
 	#define CTRL_IN_ACTIVE_OLD		((ctrlType)2)		// this indicates the input has been active for a while.
 
+	#define CTRL_IN_TIMING_SOURCE_INTERNAL	(0)			// this indicates we want to run on internal timers
+	#define CTRL_IN_TIMING_SOURCE_EXTERNAL	(1)			// this indicates we want the external trigger to control when the XPhone resets to songtime=0.
+	
 	ctrlType ctrlMode; 									// default mode is stopped.
 	KeyTimeType ctrlModeTimeAdder;						// keeps track of when the last mode change was (useful for making the LED blink ON when the mode change happens - this gives VERY fast visual feedback.
 	
@@ -49,6 +52,7 @@
 	KeyTimeType ctrlClearDBC;							// this tells you how long the user has been holding the clear button.
 	ctrlType ctrlSync;									// this keeps track of if the user wants to sync the XPhone or not.
 	KeyTimeType ctrlSyncDBC;							// this keeps track of how long it has been since the last sync event.
+	ctrlType ctrlTimingSource;							// 1=internal timing. 0=external sync timing. (0 means we reset the song to 0 when we get external sync input triggers. when this happens, we also set the song time to be the time between the last two external sync pulses. this makes it easier to switch between internal and external timing mode.).
 	//==============================================================================
 	// input/output control functions
 	//==============================================================================

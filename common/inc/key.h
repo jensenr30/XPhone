@@ -35,12 +35,14 @@
 	
 	
 	// TODO figure out a way to change uint32_t to SolTimType without having build issues. It is probably due to my shitty .h and .c structure...
-	uint32_t keyIntensityMin[KEYS];
-	uint32_t keyIntensityMax[KEYS];
+	uint32_t keyIntensity[KEYS];
+	//  this is the target voltage for each key when you calibrate.
+	float keyCalVoltageTarget[KEYS]; 
+	
 	#define KEY_CAL_START	((uint32_t)1500)	// initial solenoid intensity
 	#define KEY_CAL_STEP	((uint32_t)100)		// solenoid intensity step size.
 	#define KEY_CAL_STEP_TIME ((200))
-	#define KEY_CAL_TARGET		((float)1)		// the target voltage you are looking for from each key when doing a key_cal() routine.
+	//#define KEY_CAL_TARGET		((float)1)		// the target voltage you are looking for from each key when doing a key_cal() routine.
 	#define KEY_CAL_AUTO_ADJ_FACTOR	(500)		// this is the amount of microseconds per vol error the algorithm will adjust the solenoid hit time in the key_cal() routine.
 	#define KEY_CAL_a				((float)3.0)// this is one of the constants in my key calibration solenoid timing adjust control system. it controls the step size that is take when calibrating a key strike to a particular resultant voltage.
 	#define KEY_CAL_b				((float)0.2)// ^
