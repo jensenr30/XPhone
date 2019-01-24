@@ -74,7 +74,7 @@ int main(void)
 //			pause_ms(KEY_COOLDOWN);
 //		}
 //	}
-	
+//	
 	
 //	while(1)
 //	{
@@ -379,9 +379,10 @@ int main(void)
 		#endif
 		
 		// if this is the beginning of the song,
-		if(currentTime == 0)
+		if(SongWasReset == 1)
 		{
 			noteToPlay = songCurrent;					// always start playing from the top!
+			SongWasReset = 0;							// clear this flag
 		}
 		
 		
@@ -406,7 +407,7 @@ int main(void)
 		//----------------------------------------------------------------------
 		// input all keys into key_inputs[] array.
 		//----------------------------------------------------------------------
-		// todo: move the ctrlMode checks to be encompasing the for loop. don't waste time in these for loops when you are not recording, man.
+		// TODO: move the ctrlMode checks to be encompassing the for loop. don't waste time in these for loops when you are not recording, man.
 		keys_read();
 		
 		ctrlKeyHit = CTRL_IN_INACTIVE;	// reset this flag. If the user hits a key, this will be set to CTRL_IN_ACTIVE_NEW.
@@ -444,33 +445,42 @@ int main(void)
 		//----------------------------------------------------------------------
 		if(ctrlMode==CTRL_MODE_PLAY || ctrlMode==CTRL_MODE_RECORD)
 		{
-			if(noteToPlay == NULL)								// if you have reached the end of the song,
-				noteToPlay = songCurrent;							// start over from the beginning
-			else if(noteToPlay->key == KEY_TRACK_EMPTY)			// if you have an empty track,
-				noteToPlay = songCurrent;							// try refreshing it
-			else if(noteToPlay->time >= SongLength)				// if the next note should be played AFTER THE SONG ENDS (ridiculous, should never happen)
+			if(noteToPlay->time >= SongLength)								// if the next note should be played AFTER THE SONG ENDS (ridiculous, should never happen)
 			{	
-				noteToPlay = songCurrent;							// restart the song
+				noteToPlay = songCurrent;									// restart the song
 				warning("Somehow, you got a note in your song that has a time that is AFTER your song ends!");
 			}
-			if(songCurrent->key != KEY_TRACK_EMPTY)				// if this is not an empty song
+			if(songCurrent->key != KEY_TRACK_EMPTY)							// if this is not an empty song
 			{
-				while( (noteToPlay->time == currentTime) && (noteToPlay != NULL) )				// if the next note to play should be played at the current time,
+				// make sure you don't get stuck with notes that are before the current time (this causes the machine to wait until it makes a full cycle to start playing the song again)
+				while((noteToPlay->time < currentTime) && (noteToPlay != NULL))
 				{
-					if(SongSkipNextNotes == 0)
+					// we don't like to miss notes, so if the note is sufficiently close (we missed it only by X milliseconds), we can tolerate playing it late.  Better late than never, right?!
+					if(currentTime - noteToPlay->time <= SONG_LATE_MAX_PLAY_MS)
 					{
-						solenoid_ret = solenoid_play(noteToPlay->key,keyIntensity[noteToPlay->key]);	// play it  TODO: put in the proper intensity
+						solenoid_play(noteToPlay->key,keyIntensity[noteToPlay->key]);	// play it  TODO: put in the proper intensity
+						KeyCooldownActive[noteToPlay->key] = 1;				// activate the cooldown for this key
+						KeyCooldownTimes[noteToPlay->key] = KEY_COOLDOWN;	// ^
+					}
+					noteToPlay = noteToPlay->next;							// move to the next note
+				}
+				// if the next note to play should be played at the current time,
+				while((noteToPlay->time == currentTime) && (noteToPlay != NULL))
+				{
+					if (SongSkipNextNotes == 0)
+					{
+						solenoid_play(noteToPlay->key,keyIntensity[noteToPlay->key]);	// play it  TODO: put in the proper intensity
 					}
 					else
 					{
 						SongSkipNextNotes--;
-						printf("skip k=%u, t=%.3f%s",noteToPlay->key,SongTimeSec(noteToPlay->time),newline);
+						#if(DEBUG_UART)
+							printf("skip k=%u, t=%.3f%s",noteToPlay->key,SongTimeSec(noteToPlay->time),newline);
+						#endif
 					}
-					//if(solenoid_ret == 1) note_delete(&songCurrent,noteToPlay);		// if the note was a repeat, delete it from the song.
-					KeyCooldownActive[noteToPlay->key] = 1;				// activate the cooldown for this key
-					KeyCooldownTimes[noteToPlay->key] = KEY_COOLDOWN;	// ^
-					noteToPlay = noteToPlay->next;						// move to the next note
-					
+					KeyCooldownActive[noteToPlay->key] = 1;					// activate the cooldown for this key
+					KeyCooldownTimes[noteToPlay->key] = KEY_COOLDOWN;		// ^
+					noteToPlay = noteToPlay->next;							// move to the next note
 				}
 			}
 		}
@@ -595,13 +605,13 @@ void assert_failed(uint8_t *file, uint32_t line)
 // this is what happens when the XPhone resets
 void XPhone_online()
 {
-	uint16_t T = 80;		// ms between notes
-	uint16_t cycles = 1;	// how many times this is played
+	uint16_t T = 60;		// ms between events
+	uint16_t cycles = 2;	// how many times the sequence repeats
 	while(cycles > 0)
 	{
-		solenoid_play(19,keyIntensity[19]);
+		ctrl_LED_w();
 		pause_ms(T);
-		solenoid_play(26,keyIntensity[26]);
+		ctrl_LED_o();
 		pause_ms(T);
 		cycles--;
 	}

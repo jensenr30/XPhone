@@ -83,10 +83,15 @@
 	//#define CTRL_OUT_SYNC		//TODO			// output pin for syncing other modules. When (SongTime==0), sends out a 1 ms trigger signal (normally 0 V, 3.3 V for 1 ms). 
 	
 	#define ctrl_LED_o()		pin_off(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R); pin_off(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G); pin_off(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = off
+
 	#define ctrl_LED_r()		pin_on(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R);  pin_off(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G); pin_off(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = red
 	#define ctrl_LED_g()		pin_off(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R); pin_on(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G);  pin_off(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = green
 	#define ctrl_LED_b()		pin_off(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R); pin_off(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G); pin_on(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = blue
+
 	#define ctrl_LED_y()		pin_on(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R);  pin_on(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G);  pin_off(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = yellow
+	#define ctrl_LED_m()		pin_on(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R);  pin_off(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G); pin_on(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = magenta
+	#define ctrl_LED_c()		pin_off(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R); pin_on(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G);  pin_on(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = cyan
+
 	#define ctrl_LED_w()		pin_on(CTRL_OUT_LED_R_GPIO,CTRL_OUT_LED_R);  pin_on(CTRL_OUT_LED_G_GPIO,CTRL_OUT_LED_G);  pin_on(CTRL_OUT_LED_B_GPIO,CTRL_OUT_LED_B)	// led = white
 	
 	

@@ -10,6 +10,7 @@ void song_init()
 {
 	// song variables
 	SongTime = 0;										// start out at 0 ms.
+	SongWasReset = 1;
 	SongLength = KEY_TIME_MAX;							// by default, the song is YEARS long.
 	songCurrent = init_note(0, 0, 0);					// create a new note to start the song.
 	key_make_track_empty(songCurrent);					// indicate the song is currently empty.
@@ -56,6 +57,7 @@ void TIM3_IRQHandler(void)
 		if( (SongTime >= SongLength) && (ctrlTimingSource == CTRL_IN_TIMING_SOURCE_INTERNAL))
 		{
 			SongTime = 0;								// start over
+			SongWasReset = 1;
 		}
 	}
 }
