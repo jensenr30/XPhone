@@ -1,9 +1,11 @@
-*.layout
-*.depend
 *.o
+
 micro/stm/XPhone/Debug
+micro/stm/XPhone/.settings
+
 app/bin/XphoneDEBUG.exe
 app/bin/Xphone.exe
 app/bin/Xphone
 app/bin/songdata.txt
-micro/stm/XPhone/.settings
+*.layout
+*.depend
